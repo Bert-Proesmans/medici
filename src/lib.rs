@@ -4,20 +4,13 @@ mod hs_automaton;
 
 use std::convert::From;
 
-use containers::game::Game;
+use containers::games::Game;
+use containers::entities::EntityService;
+use containers::tapes::TapeService;
+use containers::listeners::ListenerService;
 use automata::pushdown_automaton::{Pushdown, Pullup};
 use hs_automaton::states::*;
 use hs_automaton::soft_transitions;
-
-#[derive(Debug)]
-pub struct Listener<T, U, H>
-where
-    H: Fn(Game<Trigger<T, U>>) -> Result<Game<Trigger<T, U>>, Game<Finished>>,
-{
-    timing: T,
-    trigger: U,
-    handler: H,
-}
 
 fn run_triggers(
     x: Game<Effect<Pre, EndTurn>>,
@@ -63,7 +56,12 @@ fn end_turn(x: Game<Wait<Input>>) -> Result<Game<Wait<Input>>, Game<Finished>> {
 
 
 pub fn entry() {
-    let new_game = Game { state: Wait { activity: Input() } };
+    let new_game = Game {
+        state: Wait { activity: Input() },
+        entities: EntityService {},
+        storage: TapeService {},
+        listeners: ListenerService {},
+    };
     // Do stuff
     let first_turn = end_turn(new_game).expect("Game finished");
     let second_turn = end_turn(first_turn).expect("Game finished");

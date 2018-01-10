@@ -1,3 +1,15 @@
+#[macro_use]
+extern crate state_derive;
+#[macro_use]
+extern crate timing_derive;
+#[macro_use]
+extern crate action_derive;
+#[macro_use]
+extern crate wait_derive;
+#[macro_use]
+extern crate trigger_derive;
+
+
 mod automata;
 mod containers;
 mod hs_automaton;
@@ -8,34 +20,38 @@ use containers::games::Game;
 use containers::entities::EntityService;
 use containers::tapes::TapeService;
 use containers::listeners::ListenerService;
-use automata::pushdown_automaton::{Pushdown, Pullup};
+use automata::pushdown_automaton::{Pullup, Pushdown};
 use hs_automaton::states::*;
+use hs_automaton::states::global_states::timing;
 use hs_automaton::soft_transitions;
 
 fn run_triggers(
-    x: Game<Effect<Pre, EndTurn>>,
-) -> Result<Game<Effect<Pre, EndTurn>>, Game<Finished>> {
-    let pre_trigger: Game<Trigger<Pre, EndTurn>> = x.pushdown();
-    let peri_trigger: Game<Trigger<Peri, EndTurn>> = pre_trigger.pushdown();
-    let post_trigger: Game<Trigger<Post, EndTurn>> = peri_trigger.pushdown();
+    x: Game<Effect<timing::Pre, EndTurn>>,
+) -> Result<Game<Effect<timing::Pre, EndTurn>>, Game<Finished>> {
+    let pre_trigger: Game<Trigger<timing::Pre, EndTurn>> = x.pushdown();
+    let peri_trigger: Game<Trigger<timing::Peri, EndTurn>> = pre_trigger.pushdown();
+    let post_trigger: Game<Trigger<timing::Post, EndTurn>> = peri_trigger.pushdown();
 
-    let pulling_up = Game::<Trigger<Peri, EndTurn>>::pullup(post_trigger);
-    let pulling_up = Game::<Trigger<Pre, EndTurn>>::pullup(pulling_up);
-    let pulling_up = Game::<Effect<Pre, EndTurn>>::pullup(pulling_up);
+    let pulling_up = Game::<Trigger<timing::Peri, EndTurn>>::pullup(post_trigger);
+    let pulling_up = Game::<Trigger<timing::Pre, EndTurn>>::pullup(pulling_up);
+    let pulling_up = Game::<Effect<timing::Pre, EndTurn>>::pullup(pulling_up);
     Ok(pulling_up)
 }
 
-fn run_death_phase<T, U>(x: Game<Death<T, U>>) -> Result<Game<Death<T, U>>, Game<Finished>> {
+fn run_death_phase<T, U>(x: Game<Death<T, U>>) -> Result<Game<Death<T, U>>, Game<Finished>>
+where
+    T: timing::Timing,
+{
     Ok(x)
 }
 
 fn end_turn(x: Game<Wait<Input>>) -> Result<Game<Wait<Input>>, Game<Finished>> {
-    let pre_action: Game<Action<Pre, EndTurn>> = x.into();
+    let pre_action: Game<Action<timing::Pre, EndTurn>> = x.into();
     // Execute pre_action handlers
-    let pre_effect: Game<Effect<Pre, EndTurn>> = pre_action.pushdown();
+    let pre_effect: Game<Effect<timing::Pre, EndTurn>> = pre_action.pushdown();
     let pre_effect = run_triggers(pre_effect)?;
     // Execute death phase
-    let pre_action = Game::<Action<Pre, EndTurn>>::pullup(pre_effect);
+    let pre_action = Game::<Action<timing::Pre, EndTurn>>::pullup(pre_effect);
     let pre_action_finished = run_death_phase(pre_action.into())?;
 
     // // Run actual action phase
@@ -47,25 +63,29 @@ fn end_turn(x: Game<Wait<Input>>) -> Result<Game<Wait<Input>>, Game<Finished>> {
     // let action_finished = run_death_phase(action.into());
 
     // let peri_action = pre_action_finished.into();
-    let post_action: Game<Action<Post, EndTurn>> = pre_action_finished.into();
-    let post_action_finished: Game<Death<Post, EndTurn>> = post_action.into();
+    let post_action: Game<Action<timing::Post, EndTurn>> = pre_action_finished.into();
+    let post_action_finished: Game<Death<timing::Post, EndTurn>> = post_action.into();
 
     // Set current state back to awaiting input
     Ok(post_action_finished.into())
 }
-
 
 pub fn entry() {
     let new_game = Game {
         state: Wait { activity: Input() },
         entities: EntityService {},
         storage: TapeService {},
-        listeners: ListenerService {},
+        listeners: ListenerService {
+            pre_action: Vec::new(),
+            peri_action: Vec::new(),
+            post_action: Vec::new(),
+            excluded_action: Vec::new(),
+        },
     };
+
     // Do stuff
     let first_turn = end_turn(new_game).expect("Game finished");
     let second_turn = end_turn(first_turn).expect("Game finished");
-
 
     // let item = Game { state: Pre(Action { activity: EndTurn() }) };
 

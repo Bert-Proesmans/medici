@@ -4,3 +4,8 @@ version = "0.1.0"
 authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 
 [dependencies]
+timing_derive = {path = "timing_derive"}
+state_derive = {path = "state_derive"}
+action_derive = {path = "action_derive"}
+wait_derive = {path = "wait_derive"}
+trigger_derive = {path = "trigger_derive"}

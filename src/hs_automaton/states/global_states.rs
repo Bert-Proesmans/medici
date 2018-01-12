@@ -33,33 +33,13 @@ pub mod timing {
     #[derive(Debug, Timing)]
     pub struct Post();
 
-    // TODO Push this into a procedural macro
-    #[derive(Debug)] // , FromGeneric
+    #[derive(Debug, FromGeneric)]
     pub enum EnumerationTiming {
-        // #[generic("::hs_automaton::states::global_states::timing::Pre")]
+        #[generic("::hs_automaton::states::global_states::timing::Pre")]
         Pre,
-        // #[generic("::hs_automaton::states::global_states::timing::Peri")]
+        #[generic("::hs_automaton::states::global_states::timing::Peri")]
         Peri,
-        // #[generic("::hs_automaton::states::global_states::timing::Post")]
+        #[generic("::hs_automaton::states::global_states::timing::Post")]
         Post,
     }
-
-    impl From<Pre> for EnumerationTiming {
-        fn from(_x: Pre) -> Self {
-            EnumerationTiming::Pre
-        }
-    }
-
-    impl From<Peri> for EnumerationTiming {
-        fn from(_x: Peri) -> Self {
-            EnumerationTiming::Peri
-        }
-    }
-
-    impl From<Post> for EnumerationTiming {
-        fn from(_x: Post) -> Self {
-            EnumerationTiming::Post
-        }
-    }
-
 }

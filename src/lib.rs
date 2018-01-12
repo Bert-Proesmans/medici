@@ -1,3 +1,5 @@
+#![feature(attr_literals)] // Used for 'from_generic_derive' macro
+
 #[macro_use]
 extern crate action_macros;
 extern crate action_traits;
@@ -31,6 +33,8 @@ fn run_triggers(
     let pre_trigger: Game<Trigger<timing::Pre, EndTurn>> = x.pushdown();
     let peri_trigger: Game<Trigger<timing::Peri, EndTurn>> = pre_trigger.pushdown();
     let post_trigger: Game<Trigger<timing::Post, EndTurn>> = peri_trigger.pushdown();
+
+    // TODO; Run operations for each state we enter!
 
     let pulling_up: Game<Trigger<timing::Peri, EndTurn>> = post_trigger.pullup();
     let pulling_up: Game<Trigger<timing::Pre, EndTurn>> = pulling_up.pullup();

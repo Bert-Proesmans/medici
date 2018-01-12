@@ -21,6 +21,5 @@ action_macros = {path = "action_derive/action_macros"}
 action_traits = {path = "action_derive/action_traits"}
 wait_macros = {path = "wait_derive/wait_macros"}
 wait_traits = {path = "wait_derive/wait_traits"}
-# trigger_derive = {path = "trigger_derive"}
 from_generic_macros = {path = "from_generic_derive/from_generic_macros"}
 from_generic_traits = {path = "from_generic_derive/from_generic_traits"}

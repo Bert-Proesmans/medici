@@ -99,3 +99,13 @@ pub fn entry() {
 
     println!("OK - Finished");
 }
+
+#[cfg(test)]
+mod tests {
+    use super::entry;
+
+    #[test]
+    fn it_works() {
+        entry();
+    }
+}

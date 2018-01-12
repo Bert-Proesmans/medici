@@ -1,6 +1,6 @@
-extern crate pot;
+extern crate medici;
 
-use pot::entry;
+use medici::entry;
 
 fn main() {
     println!("Starting - Running MAIN");

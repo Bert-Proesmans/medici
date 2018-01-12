@@ -1,9 +1,10 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
+use timing_traits::Timing;
+
 use containers::games::Game;
 use hs_automaton::states::*;
-use hs_automaton::states::global_states::timing;
 
 // TODO The following enums have to be constructed before compilation
 // Maybe execute a pre-build event?
@@ -27,36 +28,36 @@ pub enum EnumerationTrigger {
 pub trait Listener: Debug {}
 
 #[derive(Debug)]
-pub struct TriggerWrapper<T, U, H>
+pub struct TriggerWrapper<T, U>
 where
-    T: timing::Timing + Into<timing::EnumerationTiming>,
-    U: Into<EnumerationTrigger>,
-    H: Fn(Game<Trigger<T, U>>) -> Result<Game<Trigger<T, U>>, Game<Finished>>,
+    T: Timing + Debug,
+    U: Debug,
 {
-    handler: H,
+    handler: fn(Game<Trigger<T, U>>) -> Result<Game<Trigger<T, U>>, Game<Finished>>,
     phantom: PhantomData<(T, U)>,
 }
 
-impl<T, U, H> Listener for TriggerWrapper<T, U, H> 
+impl<T, U> Listener for TriggerWrapper<T, U>
 where
-    T: timing::Timing + Into<timing::EnumerationTiming>,
-    U: Into<EnumerationTrigger> + Debug,
-    H: Fn(Game<Trigger<T, U>>) -> Result<Game<Trigger<T, U>>, Game<Finished>> + Debug,
+    T: Timing + Debug,
+    U: Debug,
 {
 }
 
-impl<T, U, H> TriggerWrapper<T, U, H>
+impl<T, U> TriggerWrapper<T, U>
 where
-    T: timing::Timing + Into<timing::EnumerationTiming>,
-    U: Into<EnumerationTrigger>,
-    H: Fn(Game<Trigger<T, U>>) -> Result<Game<Trigger<T, U>>, Game<Finished>> + Debug,
+    T: Timing + Debug,
+    U: Debug,
 {
-    fn build_entry(timing: T, trigger: U, handler: H) -> ListenerEntry {
-        let timing = timing.into();
-        let trigger = trigger.into();
-        let wrapper = Self { handler: handler, phantom: PhantomData };
-        //
-        ListenerEntry(timing, trigger, Box::new(wrapper))
+    fn build_entry(
+        handler: fn(Game<Trigger<T, U>>) -> Result<Game<Trigger<T, U>>, Game<Finished>>,
+    ) -> ListenerEntry {
+        // let timing = EnumerationTiming::meta<T>();
+        // let trigger = EnumerationTrigger::meta<U>();
+        // let wrapper = Self { handler: handler, phantom: PhantomData };
+        // //
+        // ListenerEntry(timing, trigger, Box::new(wrapper))
+        unimplemented!()
     }
 }
 

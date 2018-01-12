@@ -1,19 +1,33 @@
-// Build parent (self) from child (T)
-pub trait Pullup<T>: Sized {
-    fn pullup(_: T) -> Self;
+pub trait PullupFrom<T>: Sized {
+    fn pullup_from(_: T) -> Self;
 }
 
-// Build child (T) from parent (self)
-pub trait Pushdown<T>: Sized {
+pub trait PullupInto<T> {
+    fn pullup(self) -> T;
+}
+
+impl<T, U> PullupInto<U> for T
+where
+    U: PullupFrom<T>,
+{
+    fn pullup(self) -> U {
+        U::pullup_from(self)
+    }
+}
+
+pub trait PushdownFrom<T>: Sized {
+    fn pushdown_from(_: T) -> Self;
+}
+
+pub trait PushdownInto<T> {
     fn pushdown(self) -> T;
 }
 
-// impl<P, C> Pullup<C> for P
-// where
-//     // Parent implements pushdown into child
-//     P: Pushdown<C>
-// {
-//     fn pullup(x: C) -> P {
-//         // TODO
-//     }
-// }
+impl<T, U> PushdownInto<U> for T
+where
+    U: PushdownFrom<T>,
+{
+    fn pushdown(self) -> U {
+        U::pushdown_from(self)
+    }
+}

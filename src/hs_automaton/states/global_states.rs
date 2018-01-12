@@ -1,9 +1,8 @@
-use std::fmt::Debug;
+use action_traits::{Actionable, Triggerable};
+use timing_traits::Timing;
+use wait_traits::Waitable;
 
-pub trait GlobalState: Debug {}
-pub trait Waitable: Debug {}
-pub trait Actionable: Triggerable + Debug {}
-pub trait Triggerable: Debug {}
+pub trait GlobalState {}
 
 #[derive(Debug)]
 pub struct Wait<W>
@@ -16,20 +15,17 @@ where
 #[derive(Debug)]
 pub struct Action<T, A>
 where
-    T: self::timing::Timing,
+    T: Timing,
     A: Actionable,
 {
     pub timing: T,
     pub activity: A,
 }
 
-#[derive(Debug, State)]
+#[derive(Debug)] // , State
 pub struct Finished();
 
 pub mod timing {
-    use std::fmt::Debug;
-    pub trait Timing: Debug {}
-
     #[derive(Debug, Timing)]
     pub struct Pre();
     #[derive(Debug, Timing)]
@@ -38,10 +34,13 @@ pub mod timing {
     pub struct Post();
 
     // TODO Push this into a procedural macro
-    #[derive(Debug)]
+    #[derive(Debug)] // , FromGeneric
     pub enum EnumerationTiming {
+        // #[generic("::hs_automaton::states::global_states::timing::Pre")]
         Pre,
+        // #[generic("::hs_automaton::states::global_states::timing::Peri")]
         Peri,
+        // #[generic("::hs_automaton::states::global_states::timing::Post")]
         Post,
     }
 

@@ -1,3 +1,5 @@
+use timing_traits::Timing;
+
 use containers::games::Game;
 use hs_automaton::states::*;
 use hs_automaton::states::global_states::timing;
@@ -65,7 +67,7 @@ impl<U> From<Game<Death<timing::Post, U>>> for Game<Wait<Input>> {
 
 impl<T, U> From<Game<Death<T, U>>> for Game<Finished>
 where
-    T: timing::Timing,
+    T: Timing,
 {
     fn from(x: Game<Death<T, U>>) -> Game<Finished> {
         Game {

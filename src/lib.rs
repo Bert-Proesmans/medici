@@ -1,29 +1,29 @@
 #[macro_use]
-extern crate state_derive;
+extern crate action_macros;
+extern crate action_traits;
 #[macro_use]
-extern crate timing_derive;
+extern crate from_generic_macros;
+extern crate from_generic_traits;
 #[macro_use]
-extern crate action_derive;
+extern crate timing_macros;
+extern crate timing_traits;
 #[macro_use]
-extern crate wait_derive;
-#[macro_use]
-extern crate trigger_derive;
-
+extern crate wait_macros;
+extern crate wait_traits;
 
 mod automata;
 mod containers;
 mod hs_automaton;
 
-use std::convert::From;
+use timing_traits::Timing;
 
 use containers::games::Game;
 use containers::entities::EntityService;
 use containers::tapes::TapeService;
 use containers::listeners::ListenerService;
-use automata::pushdown_automaton::{Pullup, Pushdown};
+use automata::pushdown_automaton::{PullupInto, PushdownInto};
 use hs_automaton::states::*;
 use hs_automaton::states::global_states::timing;
-use hs_automaton::soft_transitions;
 
 fn run_triggers(
     x: Game<Effect<timing::Pre, EndTurn>>,
@@ -32,15 +32,15 @@ fn run_triggers(
     let peri_trigger: Game<Trigger<timing::Peri, EndTurn>> = pre_trigger.pushdown();
     let post_trigger: Game<Trigger<timing::Post, EndTurn>> = peri_trigger.pushdown();
 
-    let pulling_up = Game::<Trigger<timing::Peri, EndTurn>>::pullup(post_trigger);
-    let pulling_up = Game::<Trigger<timing::Pre, EndTurn>>::pullup(pulling_up);
-    let pulling_up = Game::<Effect<timing::Pre, EndTurn>>::pullup(pulling_up);
+    let pulling_up: Game<Trigger<timing::Peri, EndTurn>> = post_trigger.pullup();
+    let pulling_up: Game<Trigger<timing::Pre, EndTurn>> = pulling_up.pullup();
+    let pulling_up: Game<Effect<timing::Pre, EndTurn>> = pulling_up.pullup();
     Ok(pulling_up)
 }
 
 fn run_death_phase<T, U>(x: Game<Death<T, U>>) -> Result<Game<Death<T, U>>, Game<Finished>>
 where
-    T: timing::Timing,
+    T: Timing,
 {
     Ok(x)
 }
@@ -51,7 +51,7 @@ fn end_turn(x: Game<Wait<Input>>) -> Result<Game<Wait<Input>>, Game<Finished>> {
     let pre_effect: Game<Effect<timing::Pre, EndTurn>> = pre_action.pushdown();
     let pre_effect = run_triggers(pre_effect)?;
     // Execute death phase
-    let pre_action = Game::<Action<timing::Pre, EndTurn>>::pullup(pre_effect);
+    let pre_action: Game<Action<timing::Pre, EndTurn>> = pre_effect.pullup();
     let pre_action_finished = run_death_phase(pre_action.into())?;
 
     // // Run actual action phase

@@ -33,13 +33,10 @@ pub mod timing {
     #[derive(Debug, Timing)]
     pub struct Post();
 
-    #[derive(Debug, FromGeneric)]
+    #[derive(Debug, Clone, PartialEq, FromGeneric)]
     pub enum EnumerationTiming {
-        #[generic("::hs_automaton::states::global_states::timing::Pre")]
-        Pre,
-        #[generic("::hs_automaton::states::global_states::timing::Peri")]
-        Peri,
-        #[generic("::hs_automaton::states::global_states::timing::Post")]
-        Post,
+        #[generic("::hs_automaton::states::global_states::timing::Pre")] Pre,
+        #[generic("::hs_automaton::states::global_states::timing::Peri")] Peri,
+        #[generic("::hs_automaton::states::global_states::timing::Post")] Post,
     }
 }

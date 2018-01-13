@@ -1,4 +1,6 @@
 #![feature(attr_literals)] // Used for 'from_generic_derive' macro
+#![feature(conservative_impl_trait)] // Used for 'fn() -> impl Iterator<Item=X>'
+#![feature(try_from)]
 
 #[macro_use]
 extern crate action_macros;
@@ -13,6 +15,8 @@ extern crate timing_traits;
 extern crate wait_macros;
 extern crate wait_traits;
 
+use std::convert::TryInto;
+
 mod automata;
 mod containers;
 mod hs_automaton;
@@ -22,16 +26,35 @@ use timing_traits::Timing;
 use containers::games::Game;
 use containers::entities::EntityService;
 use containers::tapes::TapeService;
-use containers::listeners::ListenerService;
+use containers::listeners::{ListenerService, TriggerWrapper};
 use automata::pushdown_automaton::{PullupInto, PushdownInto};
 use hs_automaton::states::*;
 use hs_automaton::states::global_states::timing;
+use hs_automaton::states::global_states::timing::EnumerationTiming;
+use hs_automaton::states::action_states::EnumerationTrigger;
 
 fn run_triggers(
     x: Game<Effect<timing::Pre, EndTurn>>,
 ) -> Result<Game<Effect<timing::Pre, EndTurn>>, Game<Finished>> {
     let pre_trigger: Game<Trigger<timing::Pre, EndTurn>> = x.pushdown();
-    let peri_trigger: Game<Trigger<timing::Peri, EndTurn>> = pre_trigger.pushdown();
+    let mut peri_trigger: Game<Trigger<timing::Peri, EndTurn>> = pre_trigger.pushdown();
+
+    let per_listeners: Vec<_> = peri_trigger
+        .listeners
+        .retrieve_peri_action::<timing::Peri, EndTurn>()
+        .map(|l| l.clone())
+        .collect();
+
+    // Cast and run each listener
+    for listener in per_listeners.into_iter() {
+        let wrapper: TriggerWrapper<timing::Peri, EndTurn> = match listener.try_into() {
+            Ok(item) => item,
+            // TODO: Notify user?
+            Err(_) => panic!(),
+        };
+        peri_trigger = (wrapper.get_handler())(peri_trigger)?;
+    }
+
     let post_trigger: Game<Trigger<timing::Post, EndTurn>> = peri_trigger.pushdown();
 
     // TODO; Run operations for each state we enter!
@@ -74,8 +97,15 @@ fn end_turn(x: Game<Wait<Input>>) -> Result<Game<Wait<Input>>, Game<Finished>> {
     Ok(post_action_finished.into())
 }
 
+fn turn_end_trigger(
+    x: Game<Trigger<timing::Peri, EndTurn>>,
+) -> Result<Game<Trigger<timing::Peri, EndTurn>>, Game<Finished>> {
+    println!("PERI - END TURN");
+    Ok(x)
+}
+
 pub fn entry() {
-    let new_game = Game {
+    let mut new_game = Game {
         state: Wait { activity: Input() },
         entities: EntityService {},
         storage: TapeService {},
@@ -86,6 +116,12 @@ pub fn entry() {
             excluded_action: Vec::new(),
         },
     };
+
+    // Add trigger
+    new_game
+        .listeners
+        .add_peri_action(turn_end_trigger)
+        .unwrap();
 
     // Do stuff
     let first_turn = end_turn(new_game).expect("Game finished");

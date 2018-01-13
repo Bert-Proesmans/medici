@@ -1,0 +1,6 @@
+[package]
+name = "medici_macros"
+version = "0.1.0"
+authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
+
+[dependencies]

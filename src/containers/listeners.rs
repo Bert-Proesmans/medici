@@ -17,8 +17,8 @@ type FNTrigger<T, U> = fn(Game<Trigger<T, U>>) -> Result<Game<Trigger<T, U>>, Ga
 #[derive(Debug)]
 pub struct TriggerWrapper<T, U>
 where
-    T: Timing + Debug,
-    U: Triggerable + Debug,
+    T: Timing,
+    U: Triggerable,
 {
     handler: FNTrigger<T, U>,
     phantom: PhantomData<(T, U)>,
@@ -26,8 +26,8 @@ where
 
 impl<T, U> Clone for TriggerWrapper<T, U>
 where
-    T: Timing + Debug,
-    U: Triggerable + Debug,
+    T: Timing,
+    U: Triggerable,
 {
     fn clone(&self) -> Self {
         Self {
@@ -39,8 +39,8 @@ where
 
 impl<T, U> TriggerWrapper<T, U>
 where
-    T: Timing + Debug,
-    U: Triggerable + Debug,
+    T: Timing,
+    U: Triggerable,
     EnumerationTiming: FromGeneric<T>,
     EnumerationTrigger: FromGeneric<U>,
 {
@@ -57,12 +57,18 @@ where
 }
 
 #[derive(Debug, Clone)]
-pub struct ListenerEntry(pub EnumerationTiming, pub EnumerationTrigger, pub *const ());
+pub struct ListenerEntry(EnumerationTiming, EnumerationTrigger, *const ());
+
+impl ListenerEntry {
+    fn new(timing: EnumerationTiming, trigger: EnumerationTrigger, ptr: *const ()) -> Self {
+        ListenerEntry(timing, trigger, ptr)
+    }
+}
 
 impl<T, U> From<TriggerWrapper<T, U>> for ListenerEntry
 where
-    T: Timing + Debug,
-    U: Triggerable + Debug,
+    T: Timing,
+    U: Triggerable,
     EnumerationTiming: FromGeneric<T>,
     EnumerationTrigger: FromGeneric<U>,
 {
@@ -70,14 +76,14 @@ where
         let timing = <EnumerationTiming as FromGeneric<T>>::from_generic();
         let trigger = <EnumerationTrigger as FromGeneric<U>>::from_generic();
         let transmuted = x.handler as *const ();
-        ListenerEntry(timing, trigger, transmuted)
+        ListenerEntry::new(timing, trigger, transmuted)
     }
 }
 
 impl<T, U> TryFrom<ListenerEntry> for TriggerWrapper<T, U>
 where
-    T: Timing + Debug,
-    U: Triggerable + Debug,
+    T: Timing,
+    U: Triggerable,
     EnumerationTiming: FromGeneric<T>,
     EnumerationTrigger: FromGeneric<U>,
 {
@@ -108,35 +114,52 @@ where
 #[derive(Debug)]
 pub struct ListenerService {
     // Contains all objects which should be invoked when certain requirements are met.
-    pub pre_action: Vec<ListenerEntry>,
-    pub peri_action: Vec<ListenerEntry>,
-    pub post_action: Vec<ListenerEntry>,
-    pub excluded_action: Vec<ListenerEntry>, // Non action related trigger listeners?
+    pub pre_actions: Vec<ListenerEntry>,
+    pub peri_actions: Vec<ListenerEntry>,
+    pub post_actions: Vec<ListenerEntry>,
+    pub pure_triggers: Vec<ListenerEntry>, // Non action related trigger listeners?
+}
+
+// TODO; Use Medici-Macros and move actual implementation BACK into 'impl ListenerService'!
+// The intention is to use the blanket_impl!{} macro to easily copy ONE implementation
+// multiple times with certain identifiers replaced.
+macro_rules! add_entry {
+    ($method_name:ident ; $container:ident) => {
+        pub fn $method_name<T, U>(&mut self, handler: FNTrigger<T, U>) -> Result<(), String>
+        where
+            T: Timing,
+            U: Triggerable,
+            EnumerationTiming: FromGeneric<T>,
+            EnumerationTrigger: FromGeneric<U>,
+        {
+            let wrapper = TriggerWrapper::<T, U>::new(handler);
+            self.$container.push(wrapper.into());
+            Ok(())
+        }
+    }
+}
+
+macro_rules! retrieve_entry {
+    ($method_name:ident ; $container:ident) => {
+        pub fn $method_name<T, U>(&self) -> impl Iterator<Item = &ListenerEntry>
+        where
+            T: Timing,
+            U: Triggerable,
+            EnumerationTiming: FromGeneric<T>,
+            EnumerationTrigger: FromGeneric<U>,
+        {
+            self.$container
+                .iter()
+                .filter(|l| l.0 == <EnumerationTiming as FromGeneric<T>>::from_generic())
+                .filter(|l| l.1 == <EnumerationTrigger as FromGeneric<U>>::from_generic())
+        }
+    }
 }
 
 impl ListenerService {
-    pub fn add_peri_action<T, U>(&mut self, handler: FNTrigger<T, U>) -> Result<(), String>
-    where
-        T: Timing + Debug + 'static,
-        U: Triggerable + Debug + 'static,
-        EnumerationTiming: FromGeneric<T>,
-        EnumerationTrigger: FromGeneric<U>,
-    {
-        let wrapper = TriggerWrapper::<T, U>::new(handler);
-        self.peri_action.push(wrapper.into());
-        Ok(())
-    }
+    add_entry!(add_peri_action; peri_actions);
+    add_entry!(add_pure_trigger; pure_triggers);
 
-    pub fn retrieve_peri_action<T, U>(&self) -> impl Iterator<Item = &ListenerEntry>
-    where
-        T: Timing + Debug + 'static,
-        U: Triggerable + Debug + 'static,
-        EnumerationTiming: FromGeneric<T>,
-        EnumerationTrigger: FromGeneric<U>,
-    {
-        self.peri_action
-            .iter()
-            .filter(|l| l.0 == <EnumerationTiming as FromGeneric<T>>::from_generic())
-            .filter(|l| l.1 == <EnumerationTrigger as FromGeneric<U>>::from_generic())
-    }
+    retrieve_entry!(retrieve_peri_actions; peri_actions);
+    retrieve_entry!(retrieve_pure_triggers; pure_triggers);
 }

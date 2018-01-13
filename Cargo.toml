@@ -23,3 +23,4 @@ wait_macros = {path = "wait_derive/wait_macros"}
 wait_traits = {path = "wait_derive/wait_traits"}
 from_generic_macros = {path = "from_generic_derive/from_generic_macros"}
 from_generic_traits = {path = "from_generic_derive/from_generic_traits"}
+medici_macros = {path = "medici_macros"}

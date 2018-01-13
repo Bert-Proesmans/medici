@@ -14,6 +14,8 @@ extern crate timing_traits;
 #[macro_use]
 extern crate wait_macros;
 extern crate wait_traits;
+#[macro_use]
+extern crate medici_macros;
 
 use std::convert::TryInto;
 
@@ -22,6 +24,8 @@ mod containers;
 mod hs_automaton;
 
 use timing_traits::Timing;
+use from_generic_traits::FromGeneric;
+use action_traits::Triggerable;
 
 use containers::games::Game;
 use containers::entities::EntityService;
@@ -33,27 +37,13 @@ use hs_automaton::states::global_states::timing;
 use hs_automaton::states::global_states::timing::EnumerationTiming;
 use hs_automaton::states::action_states::EnumerationTrigger;
 
-fn run_triggers(
+fn exec_triggers(
     x: Game<Effect<timing::Pre, EndTurn>>,
 ) -> Result<Game<Effect<timing::Pre, EndTurn>>, Game<Finished>> {
     let pre_trigger: Game<Trigger<timing::Pre, EndTurn>> = x.pushdown();
-    let mut peri_trigger: Game<Trigger<timing::Peri, EndTurn>> = pre_trigger.pushdown();
-
-    let per_listeners: Vec<_> = peri_trigger
-        .listeners
-        .retrieve_peri_action::<timing::Peri, EndTurn>()
-        .map(|l| l.clone())
-        .collect();
-
-    // Cast and run each listener
-    for listener in per_listeners.into_iter() {
-        let wrapper: TriggerWrapper<timing::Peri, EndTurn> = match listener.try_into() {
-            Ok(item) => item,
-            // TODO: Notify user?
-            Err(_) => panic!(),
-        };
-        peri_trigger = (wrapper.get_handler())(peri_trigger)?;
-    }
+    let peri_trigger: Game<Trigger<timing::Peri, EndTurn>> = pre_trigger.pushdown();
+    // Execute all listeners for the specified state.
+    let peri_trigger = exec_trigger_step(peri_trigger)?;
 
     let post_trigger: Game<Trigger<timing::Post, EndTurn>> = peri_trigger.pushdown();
 
@@ -65,9 +55,42 @@ fn run_triggers(
     Ok(pulling_up)
 }
 
-fn run_death_phase<T, U>(x: Game<Death<T, U>>) -> Result<Game<Death<T, U>>, Game<Finished>>
+fn exec_trigger_step<T, U>(state: Game<Trigger<T, U>>) -> Result<Game<Trigger<T,U>>, Game<Finished>> 
 where
     T: Timing,
+    U: Triggerable,
+    EnumerationTiming: FromGeneric<T>,
+    EnumerationTrigger: FromGeneric<U>,
+{
+    let mut s = state;
+
+    let listeners: Vec<_> = s.listeners
+        .retrieve_pure_triggers::<T, U>()
+        .map(|l| l.clone())
+        // Collect must be done to drop the immutable reference on x.
+        .collect();
+
+    // Cast and run each listener
+    for l in listeners.into_iter() {
+        // The failure case is unreachable if no rogue entity inserted their custom
+        // entry.
+        let wrapper: TriggerWrapper<T, U> = match l.try_into() {
+            Ok(item) => item,
+            // TODO: Notify user?
+            Err(_) => panic!("Shit's on fire, Yo!"),
+        };
+        s = (wrapper.get_handler())(s)?;
+    }
+
+    Ok(s)
+}
+
+fn exec_death_phase<T, U>(x: Game<Death<T, U>>) -> Result<Game<Death<T, U>>, Game<Finished>>
+where
+    T: Timing,
+    U: Triggerable,
+    EnumerationTiming: FromGeneric<T>,
+    EnumerationTrigger: FromGeneric<U>,
 {
     Ok(x)
 }
@@ -76,10 +99,10 @@ fn end_turn(x: Game<Wait<Input>>) -> Result<Game<Wait<Input>>, Game<Finished>> {
     let pre_action: Game<Action<timing::Pre, EndTurn>> = x.into();
     // Execute pre_action handlers
     let pre_effect: Game<Effect<timing::Pre, EndTurn>> = pre_action.pushdown();
-    let pre_effect = run_triggers(pre_effect)?;
+    let pre_effect = exec_triggers(pre_effect)?;
     // Execute death phase
     let pre_action: Game<Action<timing::Pre, EndTurn>> = pre_effect.pullup();
-    let pre_action_finished = run_death_phase(pre_action.into())?;
+    let pre_action_finished = exec_death_phase(pre_action.into())?;
 
     // // Run actual action phase
     // let action = pre_action_finished.into();
@@ -110,17 +133,17 @@ pub fn entry() {
         entities: EntityService {},
         storage: TapeService {},
         listeners: ListenerService {
-            pre_action: Vec::new(),
-            peri_action: Vec::new(),
-            post_action: Vec::new(),
-            excluded_action: Vec::new(),
+            pre_actions: Vec::new(),
+            peri_actions: Vec::new(),
+            post_actions: Vec::new(),
+            pure_triggers: Vec::new(),
         },
     };
 
     // Add trigger
     new_game
         .listeners
-        .add_peri_action(turn_end_trigger)
+        .add_pure_trigger(turn_end_trigger)
         .unwrap();
 
     // Do stuff

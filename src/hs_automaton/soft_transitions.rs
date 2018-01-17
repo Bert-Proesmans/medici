@@ -1,12 +1,11 @@
 use automata::pushdown_automaton::{PullupFrom, PushdownFrom};
 use containers::games::Game;
 use hs_automaton::states::*;
-use hs_automaton::states::global_states::timing;
 
-impl PushdownFrom<Game<Action<timing::Pre, EndTurn>>> for Game<Effect<timing::Pre, EndTurn>> {
-    fn pushdown_from(x: Game<Action<timing::Pre, EndTurn>>) -> Self {
+impl PushdownFrom<Game<Action<Pre, EndTurn>>> for Game<Effect<Pre, EndTurn>> {
+    fn pushdown_from(x: Game<Action<Pre, EndTurn>>) -> Self {
         Game {
-            state: Effect(timing::Pre(), EndTurn()),
+            state: Effect(Pre(), EndTurn()),
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,
@@ -14,11 +13,11 @@ impl PushdownFrom<Game<Action<timing::Pre, EndTurn>>> for Game<Effect<timing::Pr
     }
 }
 
-impl PullupFrom<Game<Effect<timing::Pre, EndTurn>>> for Game<Action<timing::Pre, EndTurn>> {
-    fn pullup_from(x: Game<Effect<timing::Pre, EndTurn>>) -> Self {
+impl PullupFrom<Game<Effect<Pre, EndTurn>>> for Game<Action<Pre, EndTurn>> {
+    fn pullup_from(x: Game<Effect<Pre, EndTurn>>) -> Self {
         Game {
             state: Action {
-                timing: timing::Pre(),
+                timing: Pre(),
                 activity: EndTurn(),
             },
             listeners: x.listeners,
@@ -28,10 +27,10 @@ impl PullupFrom<Game<Effect<timing::Pre, EndTurn>>> for Game<Action<timing::Pre,
     }
 }
 
-impl PushdownFrom<Game<Effect<timing::Pre, EndTurn>>> for Game<Trigger<timing::Pre, EndTurn>> {
-    fn pushdown_from(x: Game<Effect<timing::Pre, EndTurn>>) -> Self {
+impl PushdownFrom<Game<Effect<Pre, EndTurn>>> for Game<Trigger<Pre, EndTurn>> {
+    fn pushdown_from(x: Game<Effect<Pre, EndTurn>>) -> Self {
         Game {
-            state: Trigger(timing::Pre(), EndTurn()),
+            state: Trigger(Pre(), EndTurn()),
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,
@@ -39,10 +38,10 @@ impl PushdownFrom<Game<Effect<timing::Pre, EndTurn>>> for Game<Trigger<timing::P
     }
 }
 
-impl PullupFrom<Game<Trigger<timing::Pre, EndTurn>>> for Game<Effect<timing::Pre, EndTurn>> {
-    fn pullup_from(x: Game<Trigger<timing::Pre, EndTurn>>) -> Self {
+impl PullupFrom<Game<Trigger<Pre, EndTurn>>> for Game<Effect<Pre, EndTurn>> {
+    fn pullup_from(x: Game<Trigger<Pre, EndTurn>>) -> Self {
         Game {
-            state: Effect(timing::Pre(), EndTurn()),
+            state: Effect(Pre(), EndTurn()),
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,
@@ -50,10 +49,10 @@ impl PullupFrom<Game<Trigger<timing::Pre, EndTurn>>> for Game<Effect<timing::Pre
     }
 }
 
-impl PushdownFrom<Game<Trigger<timing::Pre, EndTurn>>> for Game<Trigger<timing::Peri, EndTurn>> {
-    fn pushdown_from(x: Game<Trigger<timing::Pre, EndTurn>>) -> Self {
+impl PushdownFrom<Game<Trigger<Pre, EndTurn>>> for Game<Trigger<Peri, EndTurn>> {
+    fn pushdown_from(x: Game<Trigger<Pre, EndTurn>>) -> Self {
         Game {
-            state: Trigger(timing::Peri(), EndTurn()),
+            state: Trigger(Peri(), EndTurn()),
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,
@@ -61,10 +60,10 @@ impl PushdownFrom<Game<Trigger<timing::Pre, EndTurn>>> for Game<Trigger<timing::
     }
 }
 
-impl PullupFrom<Game<Trigger<timing::Peri, EndTurn>>> for Game<Trigger<timing::Pre, EndTurn>> {
-    fn pullup_from(x: Game<Trigger<timing::Peri, EndTurn>>) -> Self {
+impl PullupFrom<Game<Trigger<Peri, EndTurn>>> for Game<Trigger<Pre, EndTurn>> {
+    fn pullup_from(x: Game<Trigger<Peri, EndTurn>>) -> Self {
         Game {
-            state: Trigger(timing::Pre(), EndTurn()),
+            state: Trigger(Pre(), EndTurn()),
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,
@@ -72,10 +71,10 @@ impl PullupFrom<Game<Trigger<timing::Peri, EndTurn>>> for Game<Trigger<timing::P
     }
 }
 
-impl PushdownFrom<Game<Trigger<timing::Peri, EndTurn>>> for Game<Trigger<timing::Post, EndTurn>> {
-    fn pushdown_from(x: Game<Trigger<timing::Peri, EndTurn>>) -> Self {
+impl PushdownFrom<Game<Trigger<Peri, EndTurn>>> for Game<Trigger<Post, EndTurn>> {
+    fn pushdown_from(x: Game<Trigger<Peri, EndTurn>>) -> Self {
         Game {
-            state: Trigger(timing::Post(), EndTurn()),
+            state: Trigger(Post(), EndTurn()),
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,
@@ -83,10 +82,10 @@ impl PushdownFrom<Game<Trigger<timing::Peri, EndTurn>>> for Game<Trigger<timing:
     }
 }
 
-impl PullupFrom<Game<Trigger<timing::Post, EndTurn>>> for Game<Trigger<timing::Peri, EndTurn>> {
-    fn pullup_from(x: Game<Trigger<timing::Post, EndTurn>>) -> Self {
+impl PullupFrom<Game<Trigger<Post, EndTurn>>> for Game<Trigger<Peri, EndTurn>> {
+    fn pullup_from(x: Game<Trigger<Post, EndTurn>>) -> Self {
         Game {
-            state: Trigger(timing::Peri(), EndTurn()),
+            state: Trigger(Peri(), EndTurn()),
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,

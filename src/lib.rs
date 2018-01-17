@@ -1,3 +1,4 @@
+#![feature(proc_macro)]
 #![feature(attr_literals)] // Used for 'from_generic_derive' macro
 #![feature(conservative_impl_trait)] // Used for 'fn() -> impl Iterator<Item=X>'
 #![feature(try_from)]
@@ -6,16 +7,26 @@
 extern crate medici_macros;
 extern crate medici_traits;
 
+#[macro_use]
+extern crate cc_idents;
+
 use std::convert::TryInto;
 
 #[cfg(test)]
 mod tests {
+    use cc_idents::cc_idents;
     use medici_traits::FromType;
     use medici_traits::timing_traits::default::{Pre, EnumerationTiming};
 
     #[test]
     fn value_from_type() {
         let e: EnumerationTiming = <EnumerationTiming as FromType<Pre>>::from_type();
+    }
+
+    #[test]
+    fn concat_idents() {
+        let cc_idents!(tmp_, var) = "Test";
+        assert_eq!(tmp_var, "Test");
     }
 
     #[test]

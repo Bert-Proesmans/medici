@@ -1,7 +1,7 @@
 use proc_macro2::{Span, TokenStream};
 use syn::DeriveInput;
 
-/*
+
 pub fn impl_derive_action(ast: &DeriveInput) -> TokenStream {
     // Defines the location where the macro is called
     let macro_call_site = Span::call_site();
@@ -24,4 +24,3 @@ pub fn impl_derive_action(ast: &DeriveInput) -> TokenStream {
 
     return tokens.into();
 }
-*/

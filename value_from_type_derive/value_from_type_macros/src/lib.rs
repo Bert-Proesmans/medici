@@ -8,13 +8,12 @@ extern crate quote;
 #[macro_use]
 extern crate syn;
 
+use proc_macro::Diagnostic;
 use proc_macro2::{Span, TokenStream, TokenTree};
 use syn::{Ident, Item, ItemMod, ItemStruct, ItemEnum, ItemImpl, ItemExternCrate};
 use syn::synom::Synom;
 use syn::spanned::Spanned;
 use quote::ToTokens;
-
-const PROC_ATTR_NAME: &str = "value_from_type";
 
 struct AttrArgs {
     enum_name: Ident,
@@ -43,27 +42,31 @@ pub fn value_from_type(
 ) -> proc_macro::TokenStream {
     match value_from_type_impl(args, input) {
     	Ok(v) => v,
-    	Err(e) => panic!("{:}", e)
+    	Err(e) => {
+    		e.emit();
+    		panic!("See emitted errors");
+    	}
     }
 }
 
-fn value_from_type_impl(args: proc_macro::TokenStream, input: proc_macro::TokenStream) -> Result<proc_macro::TokenStream, &'static str> {
+fn value_from_type_impl(args: proc_macro::TokenStream, input: proc_macro::TokenStream) -> Result<proc_macro::TokenStream, Diagnostic> {
     let input: TokenStream = input.into();
+    let call_site = Span::call_site();
+
     println!("ARG TOKENS: {:?}", args.to_string());
-    let args: AttrArgs = match syn::parse2(args.into()) {
-        Ok(v) => v,
-        Err(e) => panic!("{:?} - Failed parsing arguments: {:?}", PROC_ATTR_NAME, e),
-    };
+    let args: AttrArgs = syn::parse2(args.into())
+    	.map_err(|e| {
+    		let msg = format!("Failed parsing arguments: {:}", e);
+    		call_site.unstable().error(msg)
+    	})?;
 
     // Parse module code
     // IMPORTANT: Our own macro attribute is automatically stripped!
-	let mut module_def: ItemMod = match syn::parse2(input.into()) {
-		Ok(v) => v,
-		Err(e) => panic!(
-		    "{:?} - You have syntax errors in your module: {:?}",
-		    PROC_ATTR_NAME, e
-		),
-	};
+	let mut module_def: ItemMod = syn::parse2(input.into())
+		.map_err(|e| {
+			let msg = format!("You have syntax errors in your module: {:}", e);
+			call_site.unstable().error(msg)
+		})?;
 
 	{ // Push usage of value_from_type_traits
 		let fab_import: ItemExternCrate = parse_quote!{
@@ -77,7 +80,8 @@ fn value_from_type_impl(args: proc_macro::TokenStream, input: proc_macro::TokenS
 
     let all_structs: Vec<_> = locate_structs(&module_def).map(|s| s.clone()).collect();
     if all_structs.len() < 1 {
-    	return Err("You have no structs defined in your module");
+    	let msg = "You have no structs defined in your module";
+    	return Err(module_def.span().unstable().error(msg));
     }
 
     let enum_name = Ident::from(args.enum_name.as_ref());
@@ -125,10 +129,15 @@ fn locate_structs(data: &ItemMod) -> impl Iterator<Item = &ItemStruct> {
         });
 }
 
-fn push_into_module(module: &mut ItemMod, i: Item) -> Result<(), &'static str> {
+fn push_into_module(module: &mut ItemMod, i: Item) -> Result<(), Diagnostic> {
+	let mod_span = module.span();
 	match module.content.as_mut() {
-		Some(&mut (_, ref mut c)) => c.push(i),
-		None => {},
-	};
-	Ok(())
+		Some(&mut (_, ref mut c)) => {
+			c.push(i); Ok(())
+		},
+		None => {
+			let msg = "This module doesn't have any contents!";
+			Err(mod_span.unstable().error(msg))
+		},
+	}
 }

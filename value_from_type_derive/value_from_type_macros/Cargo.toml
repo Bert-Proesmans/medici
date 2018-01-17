@@ -1,5 +1,5 @@
 [package]
-name = "action_macros"
+name = "value_from_type_macros"
 version = "0.1.0"
 authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 
@@ -7,6 +7,6 @@ authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 proc-macro = true
 
 [dependencies]
-syn = {version = "0.12", features = ['derive', 'parsing', 'printing', 'extra-traits'] }
+syn = {version = "0.12", features = ['full'] }
 quote = "0.4"
 proc-macro2 = { version = "0.2", features = ["nightly"] }

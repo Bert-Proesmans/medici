@@ -7,20 +7,9 @@ authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 # Only exclude the sub-root workspace declarations here. This method prevents 
 # Cargo from complaining about multiple defined root workspaces.
 exclude = [
-	"from_generic_derive",
-	"action_derive",	
-	"timing_derive",	
-	"wait_derive",
+	"medici_derive",
 ]
 
 [dependencies]
-timing_macros = {path = "timing_derive/timing_macros"}
-timing_traits = {path = "timing_derive/timing_traits"}
-# state_derive = {path = "state_derive"}
-action_macros = {path = "action_derive/action_macros"}
-action_traits = {path = "action_derive/action_traits"}
-wait_macros = {path = "wait_derive/wait_macros"}
-wait_traits = {path = "wait_derive/wait_traits"}
-from_generic_macros = {path = "from_generic_derive/from_generic_macros"}
-from_generic_traits = {path = "from_generic_derive/from_generic_traits"}
-medici_macros = {path = "medici_macros"}
+medici_macros = {path = "medici_derive/medici_macros"}
+medici_traits = {path = "medici_derive/medici_traits"}

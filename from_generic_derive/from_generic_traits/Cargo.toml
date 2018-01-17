@@ -1,6 +1,0 @@
-[package]
-name = "from_generic_traits"
-version = "0.1.0"
-authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
-
-[dependencies]

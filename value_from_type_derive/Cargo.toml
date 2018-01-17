@@ -1,0 +1,5 @@
+[workspace]
+members = [
+	"value_from_type_macros",
+	"value_from_type_traits",
+]

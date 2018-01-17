@@ -1,0 +1,8 @@
+[package]
+name = "medici_traits"
+version = "0.1.0"
+authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
+
+[dependencies]
+value_from_type_macros = {path= "../../value_from_type_derive/value_from_type_macros"}
+value_from_type_traits = {path= "../../value_from_type_derive/value_from_type_traits"}

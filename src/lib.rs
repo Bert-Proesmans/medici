@@ -3,40 +3,47 @@
 #![feature(try_from)]
 
 #[macro_use]
-extern crate action_macros;
-extern crate action_traits;
-#[macro_use]
-extern crate from_generic_macros;
-extern crate from_generic_traits;
-#[macro_use]
-extern crate timing_macros;
-extern crate timing_traits;
-#[macro_use]
-extern crate wait_macros;
-extern crate wait_traits;
-#[macro_use]
 extern crate medici_macros;
+extern crate medici_traits;
 
 use std::convert::TryInto;
 
-mod automata;
-mod containers;
-mod hs_automaton;
+#[cfg(test)]
+mod tests {
+    use medici_traits::FromType;
+    use medici_traits::timing_traits::default::{Pre, EnumerationTiming};
 
-use timing_traits::Timing;
-use from_generic_traits::FromGeneric;
-use action_traits::Triggerable;
+    #[test]
+    fn value_from_type() {
+        let e: EnumerationTiming = <EnumerationTiming as FromType<Pre>>::from_type();
+    }
 
-use containers::games::Game;
-use containers::entities::EntityService;
-use containers::tapes::TapeService;
-use containers::listeners::{ListenerService, TriggerWrapper};
-use automata::pushdown_automaton::{PullupInto, PushdownInto};
-use hs_automaton::states::*;
-use hs_automaton::states::global_states::timing;
-use hs_automaton::states::global_states::timing::EnumerationTiming;
-use hs_automaton::states::action_states::EnumerationTrigger;
+    #[test]
+    fn it_works() {
+        // entry();
+    }
+}
 
+
+// mod automata;
+// mod containers;
+// mod hs_automaton;
+
+// use timing_traits::Timing;
+// use from_generic_traits::FromGeneric;
+// use medici_traits::action_traits::Triggerable;
+
+// use containers::games::Game;
+// use containers::entities::EntityService;
+// use containers::tapes::TapeService;
+// use containers::listeners::{ListenerService, TriggerWrapper};
+// use automata::pushdown_automaton::{PullupInto, PushdownInto};
+// use hs_automaton::states::*;
+// use hs_automaton::states::global_states::timing;
+// use hs_automaton::states::global_states::timing::EnumerationTiming;
+// use hs_automaton::states::action_states::EnumerationTrigger;
+
+/*
 fn exec_triggers(
     x: Game<Effect<timing::Pre, EndTurn>>,
 ) -> Result<Game<Effect<timing::Pre, EndTurn>>, Game<Finished>> {
@@ -168,3 +175,4 @@ mod tests {
         entry();
     }
 }
+*/

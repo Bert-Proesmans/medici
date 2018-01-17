@@ -3,7 +3,7 @@ use proc_macro2::{Span, TokenStream};
 use syn::{self, Data, DeriveInput};
 use syn::spanned::Spanned;
 
-pub fn impl_derive_trigger(
+pub fn impl_derive_timing(
     input: proc_macro::TokenStream,
 ) -> Result<proc_macro::TokenStream, Diagnostic> {
     let input: TokenStream = input.into();
@@ -30,9 +30,9 @@ pub fn impl_derive_trigger(
     let tokens = quote!{
         mod scoped {
             extern crate medici_traits;
-            use self::medici_traits::trigger_traits::Triggerable;
+            use self::medici_traits::timing_traits::Timing;
 
-            impl Triggerable for #subj_name {
+            impl Timing for #subj_name {
                 // TODO add method implementations here
             }
         }

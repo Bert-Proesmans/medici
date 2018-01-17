@@ -9,11 +9,10 @@ extern crate quote;
 extern crate syn;
 
 use proc_macro::Diagnostic;
-use proc_macro2::{Span, TokenStream, TokenTree};
-use syn::{Ident, Item, ItemMod, ItemStruct, ItemEnum, ItemImpl, ItemExternCrate};
+use proc_macro2::{Span, TokenStream};
+use syn::{Ident, Item, ItemMod, ItemStruct, ItemEnum, ItemImpl, ItemExternCrate, Visibility};
 use syn::synom::Synom;
 use syn::spanned::Spanned;
-use quote::ToTokens;
 
 struct AttrArgs {
     enum_name: Ident,
@@ -40,6 +39,8 @@ pub fn value_from_type(
     args: proc_macro::TokenStream,
     input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
+	println!("Running proc macro: value_from_type");
+
     match value_from_type_impl(args, input) {
     	Ok(v) => v,
     	Err(e) => {
@@ -52,8 +53,10 @@ pub fn value_from_type(
 fn value_from_type_impl(args: proc_macro::TokenStream, input: proc_macro::TokenStream) -> Result<proc_macro::TokenStream, Diagnostic> {
     let input: TokenStream = input.into();
     let call_site = Span::call_site();
+    let def_site = Span::def_site();
 
-    println!("ARG TOKENS: {:?}", args.to_string());
+    // println!("ARG TOKENS: {:?}", args.to_string());
+    
     let args: AttrArgs = syn::parse2(args.into())
     	.map_err(|e| {
     		let msg = format!("Failed parsing arguments: {:}", e);
@@ -91,6 +94,7 @@ fn value_from_type_impl(args: proc_macro::TokenStream, input: proc_macro::TokenS
     { // Build enum from structs
 		let variants = enum_variant_names.iter();
 	    let fab_enum: ItemEnum = parse_quote!{
+	    	#[derive(Debug, Clone, PartialEq)]
 	    	pub enum #enum_name {
 	    		#( #variants ),*
 	    	}
@@ -112,7 +116,13 @@ fn value_from_type_impl(args: proc_macro::TokenStream, input: proc_macro::TokenS
 	    }
 	}
     
-    let module_tokens = module_def.into_tokens();
+    // Make sure module is public!  
+    let public_vis: Visibility = parse_quote!{pub};
+    module_def.vis = public_vis;
+    let output_span = module_def.span().resolved_at(def_site);
+    let module_tokens = quote_spanned!{output_span=>
+    	#module_def
+    };
     return Ok(module_tokens.into());
 }
 

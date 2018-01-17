@@ -3,30 +3,20 @@
 #![feature(conservative_impl_trait)] // Used for 'fn() -> impl Iterator<Item=X>'
 #![feature(try_from)]
 
-#[macro_use]
 extern crate medici_macros;
 extern crate medici_traits;
 
-#[macro_use]
-extern crate cc_idents;
-
-use std::convert::TryInto;
+// use std::convert::TryInto;
 
 #[cfg(test)]
 mod tests {
-    use cc_idents::cc_idents;
     use medici_traits::FromType;
-    use medici_traits::timing_traits::default::{Pre, EnumerationTiming};
+    use medici_traits::timing_traits::default::{EnumerationTiming, Pre};
 
     #[test]
     fn value_from_type() {
-        let e: EnumerationTiming = <EnumerationTiming as FromType<Pre>>::from_type();
-    }
-
-    #[test]
-    fn concat_idents() {
-        let cc_idents!(tmp_, var) = "Test";
-        assert_eq!(tmp_var, "Test");
+        let variant: EnumerationTiming = <EnumerationTiming as FromType<Pre>>::from_type();
+        assert_eq!(variant, EnumerationTiming::Pre);
     }
 
     #[test]
@@ -34,7 +24,6 @@ mod tests {
         // entry();
     }
 }
-
 
 // mod automata;
 // mod containers;

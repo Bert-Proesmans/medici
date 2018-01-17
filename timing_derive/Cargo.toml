@@ -1,5 +1,0 @@
-[workspace]
-members = [
-	"timing_macros",
-	"timing_traits",
-]

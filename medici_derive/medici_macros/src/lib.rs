@@ -13,24 +13,21 @@ mod derived;
 #[macro_use]
 mod procedural;
 
-use proc_macro2::{Span, TokenStream};
-use syn::DeriveInput;
-
 macro_rules! derive_impl {
-    (# [ $m_name:ident ] struct X => $m_func:path) => {
+    (# [ $m_name:ident ] X => $m_func:path) => {
         interpolate_idents! {
         	#[proc_macro_derive($m_name)]
             #[allow(non_snake_case)]
     		pub fn [$m_name _action](input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    		    const MACRO_NAME: &str = stringify!($m_name);
-
-    		    let ast: DeriveInput = syn::parse2(input.into()).unwrap();
-    		    if let syn::Data::Struct(_) = ast.data {
-    		        // Build the derived implementation for Timing
-    		        return $m_func(&ast).into();
-    		    } else {
-    		        panic!(format!("#[derive({})] is only defined for structs, not enums!", MACRO_NAME));
-    		    };
+                let proc_name = stringify!($m_name);
+                println!("Running proc macro: {:}", proc_name);
+                match $m_func(input) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        e.emit();
+                        proc_macro::TokenStream::empty()
+                    }
+                }
     		}
         }
     }
@@ -38,46 +35,10 @@ macro_rules! derive_impl {
 
 ////////////////////////////////////////////////////////////////////////
 
-derive_impl!(#[ActionState] struct X => derived::action_state::impl_derive_action);
+derive_impl!(#[ActionState] X => derived::action_state::impl_derive_action);
 
-/*#[proc_macro_derive(ActionState)]
-pub fn derive_action(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    const MACRO_NAME: &str = "ActionState";
-    const MACRO_IMPL: fn(&DeriveInput) -> TokenStream = impl_derive_action;
+derive_impl!(#[TriggerState] X => derived::trigger_state::impl_derive_trigger);
 
-    // Parse the rust code into an ast.
-    // This node will encode an ENUM or STRUCT
-    let ast: DeriveInput = syn::parse2(input.into()).unwrap();
-
-    if let syn::Data::Struct(_) = ast.data {
-        // Build the derived implementation for Timing
-        let gen = (MACRO_IMPL)(&ast);
-        // Return the parsed ast
-        return gen.into();
-    } else {
-        panic!(format!("#[derive({})] is only defined for structs, not enums!", MACRO_NAME));
-    };
-}*/
+derive_impl!(#[TimingState] X => derived::timing_state::impl_derive_timing);
 
 ////////////////////////////////////////////////////////////////////////
-
-// derive_impl!(#[TriggerState] struct X => derived::trigger_state::impl_derive_trigger);
-
-/*#[proc_macro_derive(TriggerState)]
-pub fn derive_trigger(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    const MACRO_NAME: &str = "TriggerState";
-    const MACRO_IMPL: fn(&DeriveInput) -> TokenStream = impl_derive_trigger;
-
-    // Parse the rust code into an ast.
-    // This node will encode an ENUM or STRUCT
-    let ast: DeriveInput = syn::parse2(input.into()).unwrap();
-
-    if let syn::Data::Struct(_) = ast.data {
-        // Build the derived implementation for Timing
-        let gen = (MACRO_IMPL)(&ast);
-        // Return the parsed ast
-        return gen.into();
-    } else {
-        panic!(format!("#[derive({})] is only defined for structs, not enums!", MACRO_NAME));
-    };
-}*/

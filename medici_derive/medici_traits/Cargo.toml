@@ -6,3 +6,6 @@ authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 [dependencies]
 value_from_type_macros = {path= "../../value_from_type_derive/value_from_type_macros"}
 value_from_type_traits = {path= "../../value_from_type_derive/value_from_type_traits"}
+
+# DO NOT INCLUDE medici_macros BECAUSE THAT CREAYES A CIRCULAR INCLUDE
+# medici_macros = {path = "../medici_macros"}

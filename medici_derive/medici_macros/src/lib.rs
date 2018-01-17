@@ -41,4 +41,6 @@ derive_impl!(#[TriggerState] X => derived::trigger_state::impl_derive_trigger);
 
 derive_impl!(#[TimingState] X => derived::timing_state::impl_derive_timing);
 
+derive_impl!(#[WaitState] X => derived::wait_state::impl_derive_wait);
+
 ////////////////////////////////////////////////////////////////////////

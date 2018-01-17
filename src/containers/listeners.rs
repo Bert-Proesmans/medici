@@ -3,14 +3,13 @@ use std::clone::Clone;
 use std::marker::PhantomData;
 use std::convert::TryFrom;
 
-use timing_traits::Timing;
-use from_generic_traits::FromGeneric;
-use action_traits::Triggerable;
+use medici_traits::FromType;
+use medici_traits::timing_traits::Timing;
+use medici_traits::timing_traits::default::EnumerationTiming;
+use medici_traits::action_traits::Triggerable;
 
 use containers::games::Game;
 use hs_automaton::states::*;
-use hs_automaton::states::global_states::timing::EnumerationTiming;
-use hs_automaton::states::action_states::EnumerationTrigger;
 
 type FNTrigger<T, U> = fn(Game<Trigger<T, U>>) -> Result<Game<Trigger<T, U>>, Game<Finished>>;
 
@@ -41,8 +40,8 @@ impl<T, U> TriggerWrapper<T, U>
 where
     T: Timing,
     U: Triggerable,
-    EnumerationTiming: FromGeneric<T>,
-    EnumerationTrigger: FromGeneric<U>,
+    EnumerationTiming: FromType<T>,
+    EnumerationTrigger: FromType<U>,
 {
     fn new(handler: FNTrigger<T, U>) -> Self {
         Self {
@@ -69,12 +68,12 @@ impl<T, U> From<TriggerWrapper<T, U>> for ListenerEntry
 where
     T: Timing,
     U: Triggerable,
-    EnumerationTiming: FromGeneric<T>,
-    EnumerationTrigger: FromGeneric<U>,
+    EnumerationTiming: FromType<T>,
+    EnumerationTrigger: FromType<U>,
 {
     fn from(x: TriggerWrapper<T, U>) -> Self {
-        let timing = <EnumerationTiming as FromGeneric<T>>::from_generic();
-        let trigger = <EnumerationTrigger as FromGeneric<U>>::from_generic();
+        let timing = <EnumerationTiming as FromType<T>>::from_type();
+        let trigger = <EnumerationTrigger as FromType<U>>::from_type();
         let transmuted = x.handler as *const ();
         ListenerEntry::new(timing, trigger, transmuted)
     }
@@ -84,14 +83,14 @@ impl<T, U> TryFrom<ListenerEntry> for TriggerWrapper<T, U>
 where
     T: Timing,
     U: Triggerable,
-    EnumerationTiming: FromGeneric<T>,
-    EnumerationTrigger: FromGeneric<U>,
+    EnumerationTiming: FromType<T>,
+    EnumerationTrigger: FromType<U>,
 {
     type Error = String;
 
     fn try_from(x: ListenerEntry) -> Result<Self, Self::Error> {
-        let timing = <EnumerationTiming as FromGeneric<T>>::from_generic();
-        let trigger = <EnumerationTrigger as FromGeneric<U>>::from_generic();
+        let timing = <EnumerationTiming as FromType<T>>::from_type();
+        let trigger = <EnumerationTrigger as FromType<U>>::from_type();
 
         if x.2.is_null() {
             return Err("Handler is NULL!".into());
@@ -129,8 +128,8 @@ macro_rules! add_entry {
         where
             T: Timing,
             U: Triggerable,
-            EnumerationTiming: FromGeneric<T>,
-            EnumerationTrigger: FromGeneric<U>,
+            EnumerationTiming: FromType<T>,
+            EnumerationTrigger: FromType<U>,
         {
             let wrapper = TriggerWrapper::<T, U>::new(handler);
             self.$container.push(wrapper.into());
@@ -145,13 +144,13 @@ macro_rules! retrieve_entry {
         where
             T: Timing,
             U: Triggerable,
-            EnumerationTiming: FromGeneric<T>,
-            EnumerationTrigger: FromGeneric<U>,
+            EnumerationTiming: FromType<T>,
+            EnumerationTrigger: FromType<U>,
         {
             self.$container
                 .iter()
-                .filter(|l| l.0 == <EnumerationTiming as FromGeneric<T>>::from_generic())
-                .filter(|l| l.1 == <EnumerationTrigger as FromGeneric<U>>::from_generic())
+                .filter(|l| l.0 == <EnumerationTiming as FromType<T>>::from_type())
+                .filter(|l| l.1 == <EnumerationTrigger as FromType<U>>::from_type())
         }
     }
 }

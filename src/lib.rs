@@ -6,6 +6,9 @@
 extern crate medici_macros;
 extern crate medici_traits;
 
+extern crate value_from_type_macros;
+extern crate value_from_type_traits;
+
 // use std::convert::TryInto;
 
 #[cfg(test)]
@@ -25,9 +28,9 @@ mod tests {
     }
 }
 
-// mod automata;
-// mod containers;
-// mod hs_automaton;
+mod automata;
+mod containers;
+mod hs_automaton;
 
 // use timing_traits::Timing;
 // use from_generic_traits::FromGeneric;

@@ -3,7 +3,7 @@ use proc_macro2::{Span, TokenStream};
 use syn::{self, Data, DeriveInput};
 use syn::spanned::Spanned;
 
-pub fn impl_derive_action(
+pub fn impl_derive_wait(
     input: proc_macro::TokenStream,
 ) -> Result<proc_macro::TokenStream, Diagnostic> {
     let input: TokenStream = input.into();
@@ -30,15 +30,10 @@ pub fn impl_derive_action(
     let tokens = quote!{
         mod scoped {
             extern crate medici_traits;
-            use self::medici_traits::action_traits::Actionable;
-            use self::medici_traits::action_traits::Triggerable;
+            use self::medici_traits::wait_traits::Waitable;
 
-            impl Actionable for #subj_name {
+            impl Waitable for #subj_name {
                 // TODO add method implementations here
-            }
-
-            impl Triggerable for #subj_name {
-                // TODO add method implementations here   
             }
         }
     };

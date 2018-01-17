@@ -1,6 +1,6 @@
-use action_traits::{Actionable, Triggerable};
-use timing_traits::Timing;
-use wait_traits::Waitable;
+use medici_traits::action_traits::{Actionable, Triggerable};
+use medici_traits::timing_traits::Timing;
+use medici_traits::wait_traits::Waitable;
 
 pub trait GlobalState {}
 

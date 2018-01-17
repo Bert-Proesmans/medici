@@ -1,5 +1,0 @@
-[workspace]
-members = [
-	"wait_macros",
-	"wait_traits",
-]

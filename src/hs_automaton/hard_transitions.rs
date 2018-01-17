@@ -1,8 +1,9 @@
-use timing_traits::Timing;
+use medici_traits::action_traits::Actionable;
+use medici_traits::timing_traits::Timing;
+use medici_traits::timing_traits::default as timing;
 
 use containers::games::Game;
 use hs_automaton::states::*;
-use hs_automaton::states::global_states::timing;
 
 impl From<Game<Wait<Input>>> for Game<Action<timing::Pre, EndTurn>> {
     fn from(x: Game<Wait<Input>>) -> Self {
@@ -54,7 +55,10 @@ impl From<Game<Action<timing::Post, EndTurn>>> for Game<Death<timing::Post, EndT
     }
 }
 
-impl<U> From<Game<Death<timing::Post, U>>> for Game<Wait<Input>> {
+impl<U> From<Game<Death<timing::Post, U>>> for Game<Wait<Input>> 
+where
+    U: Actionable,
+{
     fn from(x: Game<Death<timing::Post, U>>) -> Self {
         Game {
             state: Wait { activity: Input() },
@@ -68,6 +72,7 @@ impl<U> From<Game<Death<timing::Post, U>>> for Game<Wait<Input>> {
 impl<T, U> From<Game<Death<T, U>>> for Game<Finished>
 where
     T: Timing,
+    U: Actionable,
 {
     fn from(x: Game<Death<T, U>>) -> Game<Finished> {
         Game {

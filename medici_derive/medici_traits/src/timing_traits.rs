@@ -10,14 +10,17 @@ mod default {
     #![value_from_type(EnumerationTiming)]
 
     #[derive(Debug)]
+    #[allow(dead_code)]
     pub struct Pre();
     impl Timing for Pre {}
 
     #[derive(Debug)]
+    #[allow(dead_code)]
     pub struct Peri();
     impl Timing for Peri {}
 
     #[derive(Debug)]
+    #[allow(dead_code)]
     pub struct Post();
     impl Timing for Post {}
 
@@ -36,14 +39,13 @@ mod default {
 #[cfg(test)]
 mod tests {
     // We need an absolute import here because the entire default module is rewritten!
-    use super::default;
+    use super::default::{EnumerationTiming, Pre};
     use value_from_type_traits::FromType;
 
     #[test]
     fn default_timing_into() {
-        let pre_variant: default::EnumerationTiming =
-            <default::EnumerationTiming as FromType<default::Pre>>::from_type();
-        assert_eq!(pre_variant, default::EnumerationTiming::Pre);
+        let pre_variant: EnumerationTiming = <EnumerationTiming as FromType<Pre>>::from_type();
+        assert_eq!(pre_variant, EnumerationTiming::Pre);
         let var_clone = pre_variant.clone();
         assert_eq!(pre_variant == var_clone, true);
     }

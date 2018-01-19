@@ -10,9 +10,10 @@ extern crate syn;
 
 use proc_macro::Diagnostic;
 use proc_macro2::{Span, TokenStream};
-use syn::{Ident, Item, ItemMod, ItemStruct, ItemEnum, ItemImpl, ItemExternCrate, Visibility};
+use syn::{Ident, Item, ItemMod, ItemStruct, ItemEnum, ItemImpl};
 use syn::synom::Synom;
 use syn::spanned::Spanned;
+use quote::ToTokens;
 
 struct AttrArgs {
     enum_name: Ident,
@@ -53,7 +54,7 @@ pub fn value_from_type(
 fn value_from_type_impl(args: proc_macro::TokenStream, input: proc_macro::TokenStream) -> Result<proc_macro::TokenStream, Diagnostic> {
     let input: TokenStream = input.into();
     let call_site = Span::call_site();
-    let def_site = Span::def_site();
+    let _def_site = Span::def_site();
 
     // println!("ARG TOKENS: {:?}", args.to_string());
     
@@ -71,31 +72,35 @@ fn value_from_type_impl(args: proc_macro::TokenStream, input: proc_macro::TokenS
 			call_site.unstable().error(msg)
 		})?;
 
-	{ // Push usage of value_from_type_traits
-		let fab_import: ItemExternCrate = parse_quote!{
-			extern crate value_from_type_traits;
-		}; 
-		// use self::value_from_type_traits::FromType;
-		// self will resolve to the local module
-		push_into_module(&mut module_def, fab_import.into())?;
-	}
-	
-
     let all_structs: Vec<_> = locate_structs(&module_def).map(|s| s.clone()).collect();
     if all_structs.len() < 1 {
     	let msg = "You have no structs defined in your module";
     	return Err(module_def.span().unstable().error(msg));
     }
 
-    let enum_name = Ident::from(args.enum_name.as_ref());
-    let struct_names: Vec<_> = all_structs.iter().map(|s| s.ident).collect();
-    let enum_variant_names: Vec<_> = all_structs.iter().map(|s| Ident::from(s.ident.as_ref())).collect();
+    let enum_site = args.enum_name.span().resolved_at(call_site);
+    let enum_access = Ident::new(args.enum_name.as_ref(), enum_site);
+    let struct_idents: Vec<_> = all_structs.iter().map(|s| s.ident).collect();
+    let enum_variant_idents: Vec<_> = all_structs.iter().map(|s| Ident::new(s.ident.as_ref(), enum_site)).collect();
+
+    // Prepare submodule which imports the necessary types so we can push implementation details into it.
+	let lower_enum_name = String::from(args.enum_name.as_ref()).to_lowercase();
+	let impl_mod_name = format!("_impl_{:}", lower_enum_name);
+	let impl_mod_access = Ident::from(impl_mod_name);
+	let mut impl_module: ItemMod = parse_quote!{
+		mod #impl_mod_access {
+			// self will resolve to the local module
+			extern crate value_from_type_traits;
+			use self::value_from_type_traits::FromType;
+			use super::#enum_access;
+		}
+	}; 
 
     { // Build enum from structs
-		let variants = enum_variant_names.iter();
+		let variants = enum_variant_idents.iter();
 	    let fab_enum: ItemEnum = parse_quote!{
 	    	#[derive(Debug, Clone, PartialEq)]
-	    	pub enum #enum_name {
+	    	pub enum #enum_access {
 	    		#( #variants ),*
 	    	}
 	    };
@@ -104,25 +109,23 @@ fn value_from_type_impl(args: proc_macro::TokenStream, input: proc_macro::TokenS
 	}
 
 	{ // Build conversion implementations
-	    for (struct_name, enum_variant) in struct_names.iter().zip(enum_variant_names.iter()) {
+	    for (struct_access, enum_variant_access) in struct_idents.into_iter().zip(enum_variant_idents) {
 	    	let fab_impl: ItemImpl = parse_quote!{
-	    		impl self::value_from_type_traits::FromType<#struct_name> for #enum_name {
+	    		impl FromType<super::#struct_access> for #enum_access {
 	    			fn from_type() -> Self {
-	    				#enum_name::#enum_variant
+	    				#enum_access::#enum_variant_access
 	    			}
 	    		}
 	    	};
-	    	push_into_module(&mut module_def, fab_impl.into())?;
+	    	// Note: Push this into the IMPLEMENTATION MODULE!
+	    	push_into_module(&mut impl_module, fab_impl.into())?;
 	    }
 	}
+
+	// Push implementations module into original module.
+	push_into_module(&mut module_def, impl_module.into())?;
     
-    // Make sure module is public!  
-    let public_vis: Visibility = parse_quote!{pub};
-    module_def.vis = public_vis;
-    let output_span = module_def.span().resolved_at(def_site);
-    let module_tokens = quote_spanned!{output_span=>
-    	#module_def
-    };
+    let module_tokens = module_def.into_tokens();
     return Ok(module_tokens.into());
 }
 

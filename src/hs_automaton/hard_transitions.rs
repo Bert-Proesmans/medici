@@ -1,15 +1,14 @@
 use medici_traits::action_traits::Actionable;
 use medici_traits::timing_traits::Timing;
-use medici_traits::timing_traits::default as timing;
 
 use containers::games::Game;
 use hs_automaton::states::*;
 
-impl From<Game<Wait<Input>>> for Game<Action<timing::Pre, EndTurn>> {
+impl From<Game<Wait<Input>>> for Game<Action<Pre, EndTurn>> {
     fn from(x: Game<Wait<Input>>) -> Self {
         Game {
             state: Action {
-                timing: timing::Pre(),
+                timing: Pre(),
                 activity: EndTurn(),
             },
             listeners: x.listeners,
@@ -19,10 +18,10 @@ impl From<Game<Wait<Input>>> for Game<Action<timing::Pre, EndTurn>> {
     }
 }
 
-impl From<Game<Action<timing::Pre, EndTurn>>> for Game<Death<timing::Pre, EndTurn>> {
-    fn from(x: Game<Action<timing::Pre, EndTurn>>) -> Self {
+impl From<Game<Action<Pre, EndTurn>>> for Game<Death<Pre, EndTurn>> {
+    fn from(x: Game<Action<Pre, EndTurn>>) -> Self {
         Game {
-            state: Death(timing::Pre(), EndTurn()),
+            state: Death(Pre(), EndTurn()),
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,
@@ -30,11 +29,11 @@ impl From<Game<Action<timing::Pre, EndTurn>>> for Game<Death<timing::Pre, EndTur
     }
 }
 
-impl From<Game<Death<timing::Pre, EndTurn>>> for Game<Action<timing::Post, EndTurn>> {
-    fn from(x: Game<Death<timing::Pre, EndTurn>>) -> Self {
+impl From<Game<Death<Pre, EndTurn>>> for Game<Action<Post, EndTurn>> {
+    fn from(x: Game<Death<Pre, EndTurn>>) -> Self {
         Game {
             state: Action {
-                timing: timing::Post(),
+                timing: Post(),
                 activity: EndTurn(),
             },
             listeners: x.listeners,
@@ -44,10 +43,10 @@ impl From<Game<Death<timing::Pre, EndTurn>>> for Game<Action<timing::Post, EndTu
     }
 }
 
-impl From<Game<Action<timing::Post, EndTurn>>> for Game<Death<timing::Post, EndTurn>> {
-    fn from(x: Game<Action<timing::Post, EndTurn>>) -> Self {
+impl From<Game<Action<Post, EndTurn>>> for Game<Death<Post, EndTurn>> {
+    fn from(x: Game<Action<Post, EndTurn>>) -> Self {
         Game {
-            state: Death(timing::Post(), EndTurn()),
+            state: Death(Post(), EndTurn()),
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,
@@ -55,11 +54,11 @@ impl From<Game<Action<timing::Post, EndTurn>>> for Game<Death<timing::Post, EndT
     }
 }
 
-impl<U> From<Game<Death<timing::Post, U>>> for Game<Wait<Input>> 
+impl<U> From<Game<Death<Post, U>>> for Game<Wait<Input>>
 where
     U: Actionable,
 {
-    fn from(x: Game<Death<timing::Post, U>>) -> Self {
+    fn from(x: Game<Death<Post, U>>) -> Self {
         Game {
             state: Wait { activity: Input() },
             listeners: x.listeners,

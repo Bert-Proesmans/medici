@@ -1,4 +1,3 @@
-use std::fmt::Debug;
 use std::clone::Clone;
 use std::marker::PhantomData;
 use std::convert::TryFrom;
@@ -155,7 +154,9 @@ macro_rules! retrieve_entry {
     }
 }
 
+#[allow(dead_code)]
 impl ListenerService {
+
     add_entry!(add_peri_action; peri_actions);
     add_entry!(add_pure_trigger; pure_triggers);
 

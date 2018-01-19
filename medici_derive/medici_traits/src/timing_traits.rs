@@ -5,7 +5,7 @@ pub trait Timing: Debug {}
 use value_from_type_macros::value_from_type;
 
 // The module is made public by the proc macro
-mod default {
+pub mod default {
     // This macro will build enum EnumerationTiming into the this module.
     #![value_from_type(EnumerationTiming)]
 

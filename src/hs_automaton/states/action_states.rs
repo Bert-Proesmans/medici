@@ -1,16 +1,13 @@
-
 use value_from_type_macros::value_from_type;
+use medici_macros::ActionState;
 
 pub use self::custom::{EndTurn, EnumerationTrigger};
 
 mod custom {
     #![value_from_type(EnumerationTrigger)]
 
-    use medici_macros::{TriggerState, ActionState};
-
     #[derive(Debug, ActionState)]
     pub struct EndTurn();
-
 
     /*
     #[derive(Debug, Clone, PartialEq, FromGeneric)]

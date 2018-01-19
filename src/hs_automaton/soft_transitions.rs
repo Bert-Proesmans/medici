@@ -1,4 +1,5 @@
-use automata::pushdown_automaton::{PullupFrom, PushdownFrom};
+use medici_traits::pushdown_automaton::{PullupFrom, PushdownFrom};
+
 use containers::games::Game;
 use hs_automaton::states::*;
 

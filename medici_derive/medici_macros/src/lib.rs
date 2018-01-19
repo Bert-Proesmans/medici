@@ -20,7 +20,7 @@ macro_rules! derive_impl {
             #[allow(non_snake_case)]
     		pub fn [$m_name _action](input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 let proc_name = stringify!($m_name);
-                println!("Running proc macro: {:}", proc_name);
+                println!("[BUILD] Running proc macro: {:}", proc_name);
                 match $m_func(input) {
                     Ok(v) => v,
                     Err(e) => {

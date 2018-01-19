@@ -40,7 +40,7 @@ pub fn value_from_type(
     args: proc_macro::TokenStream,
     input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-	println!("Running proc macro: value_from_type");
+	println!("[BUILD] Running proc macro: value_from_type");
 
     match value_from_type_impl(args, input) {
     	Ok(v) => v,

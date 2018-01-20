@@ -157,9 +157,13 @@ macro_rules! retrieve_entry {
 #[allow(dead_code)]
 impl ListenerService {
 
+    add_entry!(add_pre_action; pre_actions);
     add_entry!(add_peri_action; peri_actions);
+    add_entry!(add_post_action; post_actions);
     add_entry!(add_pure_trigger; pure_triggers);
 
+    retrieve_entry!(retrieve_pre_actions; pre_actions);
     retrieve_entry!(retrieve_peri_actions; peri_actions);
+    retrieve_entry!(retrieve_post_actions; post_actions);
     retrieve_entry!(retrieve_pure_triggers; pure_triggers);
 }

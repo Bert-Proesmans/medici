@@ -54,7 +54,7 @@ pub fn value_from_type(
 fn value_from_type_impl(args: proc_macro::TokenStream, input: proc_macro::TokenStream) -> Result<proc_macro::TokenStream, Diagnostic> {
     let input: TokenStream = input.into();
     let call_site = Span::call_site();
-    let _def_site = Span::def_site();
+    let def_site = Span::def_site();
 
     // println!("ARG TOKENS: {:?}", args.to_string());
     
@@ -80,7 +80,6 @@ fn value_from_type_impl(args: proc_macro::TokenStream, input: proc_macro::TokenS
 
     let enum_site = args.enum_name.span().resolved_at(call_site);
     let enum_access = Ident::new(args.enum_name.as_ref(), enum_site);
-    let struct_idents: Vec<_> = all_structs.iter().map(|s| s.ident).collect();
     let enum_variant_idents: Vec<_> = all_structs.iter().map(|s| Ident::new(s.ident.as_ref(), enum_site)).collect();
 
     // Prepare submodule which imports the necessary types so we can push implementation details into it.
@@ -109,14 +108,23 @@ fn value_from_type_impl(args: proc_macro::TokenStream, input: proc_macro::TokenS
 	}
 
 	{ // Build conversion implementations
-	    for (struct_access, enum_variant_access) in struct_idents.into_iter().zip(enum_variant_idents) {
-	    	let fab_impl: ItemImpl = parse_quote!{
-	    		impl FromType<super::#struct_access> for #enum_access {
+	    for (struct_item, enum_variant_access) in all_structs.into_iter().zip(enum_variant_idents) {
+	    	let (impl_generics, ty_generics, where_clause) = struct_item.generics.split_for_impl();
+	    	let struct_access = struct_item.ident;
+	    	let target_site = struct_item.ident.span().resolved_at(def_site);
+
+	    	let fab_tokens = quote_spanned!{target_site=>
+	    		impl #impl_generics FromType<super::#struct_access #ty_generics> for #enum_access #where_clause {
 	    			fn from_type() -> Self {
 	    				#enum_access::#enum_variant_access
 	    			}
 	    		}
 	    	};
+	    	let fab_impl: ItemImpl = syn::parse2(fab_tokens.into())
+	    		.map_err(|e| {
+	    			let msg = format!("Issue building the implementation: {:}", e);
+	    			target_site.unstable().error(msg)
+	    		})?;
 	    	// Note: Push this into the IMPLEMENTATION MODULE!
 	    	push_into_module(&mut impl_module, fab_impl.into())?;
 	    }

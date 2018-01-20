@@ -12,3 +12,4 @@ pub mod action_traits;
 pub mod timing_traits;
 pub mod wait_traits;
 pub mod pushdown_automaton;
+pub mod entity_traits;

@@ -3,6 +3,8 @@
 #![feature(conservative_impl_trait)] // Used for 'fn() -> impl Iterator<Item=X>'
 #![feature(try_from)]
 
+#[macro_use] extern crate maplit;
+
 extern crate medici_macros;
 extern crate medici_traits;
 

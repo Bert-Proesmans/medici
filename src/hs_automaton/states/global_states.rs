@@ -1,6 +1,4 @@
-use medici_traits::action_traits::Actionable;
-use medici_traits::timing_traits::Timing;
-use medici_traits::wait_traits::Waitable;
+use medici_traits::prelude::*;
 
 pub trait GlobalState {}
 

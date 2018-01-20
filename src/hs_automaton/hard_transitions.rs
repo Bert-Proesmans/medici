@@ -1,5 +1,4 @@
-use medici_traits::action_traits::Actionable;
-use medici_traits::timing_traits::Timing;
+use medici_traits::prelude::*;
 
 use containers::games::Game;
 use hs_automaton::states::*;

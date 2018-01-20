@@ -1,5 +1,4 @@
-use medici_traits::action_traits::{Actionable, Triggerable};
-use medici_traits::timing_traits::Timing;
+use medici_traits::prelude::*;
 
 #[derive(Debug)]
 pub struct Effect<T: Timing, E: Triggerable>(pub T, pub E);

@@ -3,11 +3,14 @@ pub mod effect_states;
 pub mod global_states;
 pub mod wait_states;
 
-pub use medici_traits::timing_traits::default::{EnumerationTiming, Peri, Post, Pre};
 pub use self::action_states::*;
 pub use self::effect_states::*;
 pub use self::global_states::*;
 pub use self::wait_states::*;
+
+// We do not declare the timing structs ourselves.
+// Instead we import the defaults provided to us!
+pub use medici_traits::timing::default::{EnumerationTiming, Peri, Post, Pre};
 
 #[cfg(test)]
 mod tests {
@@ -21,10 +24,5 @@ mod tests {
 
         let variant: EnumerationTiming = <EnumerationTiming as FromType<Pre>>::from_type();
         assert_eq!(variant, EnumerationTiming::Pre);
-    }
-
-    #[test]
-    fn it_works() {
-        // entry();
     }
 }

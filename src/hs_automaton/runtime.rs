@@ -1,9 +1,9 @@
 use std::convert::TryInto;
 
-use medici_traits::pushdown_automaton::{PushdownInto, PullupInto};
-use medici_traits::action_traits::{Actionable, Triggerable};
-use medici_traits::timing_traits::Timing;
 use value_from_type_traits::FromType;
+
+use medici_traits::automata::pushdown_automaton::{PushdownInto, PullupInto};
+use medici_traits::prelude::*;
 
 use containers::games::Game;
 use containers::listeners::TriggerWrapper;

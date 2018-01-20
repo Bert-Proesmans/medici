@@ -2,10 +2,7 @@ use std::clone::Clone;
 use std::marker::PhantomData;
 use std::convert::TryFrom;
 
-use medici_traits::FromType;
-use medici_traits::timing_traits::Timing;
-use medici_traits::timing_traits::default::EnumerationTiming;
-use medici_traits::action_traits::Triggerable;
+use medici_traits::prelude::*;
 
 use containers::games::Game;
 use hs_automaton::states::*;

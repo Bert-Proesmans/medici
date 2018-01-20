@@ -30,7 +30,7 @@ pub fn impl_derive_timing(
     let tokens = quote!{
         mod scoped {
             extern crate medici_traits;
-            use self::medici_traits::timing_traits::Timing;
+            use self::medici_traits::prelude::*;
 
             impl Timing for #subj_name {
                 // TODO add method implementations here

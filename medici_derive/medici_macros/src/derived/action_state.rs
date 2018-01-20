@@ -30,8 +30,7 @@ pub fn impl_derive_action(
     let tokens = quote!{
         mod scoped {
             extern crate medici_traits;
-            use self::medici_traits::action_traits::Actionable;
-            use self::medici_traits::action_traits::Triggerable;
+            use self::medici_traits::prelude::*;
 
             impl Actionable for #subj_name {
                 // TODO add method implementations here

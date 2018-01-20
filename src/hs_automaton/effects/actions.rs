@@ -1,4 +1,4 @@
-use medici_traits::pushdown_automaton::{PushdownInto, PullupInto};
+use medici_traits::automata::pushdown_automaton::{PushdownInto, PullupInto};
 
 use containers::games::Game;
 use hs_automaton::states::*;

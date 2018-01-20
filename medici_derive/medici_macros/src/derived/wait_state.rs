@@ -30,7 +30,7 @@ pub fn impl_derive_wait(
     let tokens = quote!{
         mod scoped {
             extern crate medici_traits;
-            use self::medici_traits::wait_traits::Waitable;
+            use self::medici_traits::prelude::*;
 
             impl Waitable for #subj_name {
                 // TODO add method implementations here

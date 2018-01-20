@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::convert::From;
 
-use medici_traits::FromType;
+use medici_traits::prelude::FromType;
 
 use hs_automaton::entities::EnumerationPrototype;
 
@@ -12,6 +12,7 @@ pub trait EntityPrototype {}
 pub struct EntityService {
 	// This contains all entities instantiated within a certain game.
 	entities: HashMap<EntityId, Entity>,
+	zones: u32,
 }
 
 #[derive(Debug)]
@@ -31,13 +32,18 @@ impl EntityData {
 
 #[derive(Debug)]
 pub struct Entity {
-	data: EntityData,
 	card: u32,
+	data: EntityData,
 	prototypes: Vec<EnumerationPrototype>,
 }
 
 impl Entity {
-    fn proto<'a, P>(&'a self) -> Result<P, ()> 
+
+	fn entity_data(&self) -> &EntityData {
+		&self.data
+	}
+
+    fn as_proto<'a, P>(&'a self) -> Result<P, ()> 
     where
     	P: EntityPrototype + From<&'a Entity>,
     	EnumerationPrototype: FromType<P>,

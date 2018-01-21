@@ -1,9 +1,9 @@
-use medici_traits::automata::pushdown_automaton::{PushdownInto, PullupInto};
+use medici_traits::automata::pushdown_automaton::{PullupInto, PushdownInto};
 
 use containers::games::Game;
 use hs_automaton::states::*;
 
-use hs_automaton::runtime::{exec_triggers, exec_death_phase};
+use hs_automaton::runtime::{exec_death_phase, exec_triggers};
 
 pub fn end_turn(x: Game<Wait<Input>>) -> Result<Game<Wait<Input>>, Game<Finished>> {
     let pre_action: Game<Action<Pre, EndTurn>> = x.into();

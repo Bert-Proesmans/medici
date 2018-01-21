@@ -11,11 +11,10 @@ pub mod timing;
 pub mod waiting;
 
 pub mod prelude {
-	// Immediate re-export for usability
-	// TODO: Move this into Prelude module
-	pub use value_from_type_traits::FromType;
+    // Immediate re-export for usability
+    pub use value_from_type_traits::IntoEnum;
 
-	pub use action::{Triggerable, Actionable};
-	pub use waiting::{Waitable};
-	pub use timing::{Timing};
+    pub use action::{Actionable, Triggerable};
+    pub use waiting::Waitable;
+    pub use timing::Timing;
 }

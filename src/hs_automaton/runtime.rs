@@ -2,14 +2,16 @@ use std::convert::TryInto;
 
 use value_from_type_traits::FromType;
 
-use medici_traits::automata::pushdown_automaton::{PushdownInto, PullupInto};
+use medici_traits::automata::pushdown_automaton::{PullupInto, PushdownInto};
 use medici_traits::prelude::*;
 
 use containers::games::Game;
 use containers::listeners::TriggerWrapper;
 use hs_automaton::states::*;
 
-pub fn exec_triggers(x: Game<Effect<Pre, EndTurn>>) -> Result<Game<Effect<Pre, EndTurn>>, Game<Finished>> {
+pub fn exec_triggers(
+    x: Game<Effect<Pre, EndTurn>>,
+) -> Result<Game<Effect<Pre, EndTurn>>, Game<Finished>> {
     let pre_trigger: Game<Trigger<Pre, EndTurn>> = x.pushdown();
     let peri_trigger: Game<Trigger<Peri, EndTurn>> = pre_trigger.pushdown();
     // Execute all listeners for the specified state.
@@ -25,7 +27,9 @@ pub fn exec_triggers(x: Game<Effect<Pre, EndTurn>>) -> Result<Game<Effect<Pre, E
     Ok(pulling_up)
 }
 
-pub fn exec_trigger_step<T, U>(state: Game<Trigger<T, U>>) -> Result<Game<Trigger<T,U>>, Game<Finished>> 
+pub fn exec_trigger_step<T, U>(
+    state: Game<Trigger<T, U>>,
+) -> Result<Game<Trigger<T, U>>, Game<Finished>>
 where
     T: Timing,
     U: Triggerable,

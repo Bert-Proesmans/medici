@@ -37,7 +37,7 @@ pub fn impl_derive_action(
             }
 
             impl Triggerable for #subj_name {
-                // TODO add method implementations here   
+                // TODO add method implementations here
             }
         }
     };

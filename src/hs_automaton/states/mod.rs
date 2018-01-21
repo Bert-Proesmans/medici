@@ -14,15 +14,15 @@ pub use medici_traits::timing::default::{EnumerationTiming, Peri, Post, Pre};
 
 #[cfg(test)]
 mod tests {
-    use medici_traits::FromType;
+    use medici_traits::prelude::IntoEnum;
     use super::*;
 
     #[test]
     fn value_from_type() {
-        let variant: EnumerationTrigger = <EnumerationTrigger as FromType<EndTurn>>::from_type();
+        let variant: EnumerationTrigger = EndTurn::into_enum();
         assert_eq!(variant, EnumerationTrigger::EndTurn);
 
-        let variant: EnumerationTiming = <EnumerationTiming as FromType<Pre>>::from_type();
+        let variant: EnumerationTiming = Pre::into_enum();
         assert_eq!(variant, EnumerationTiming::Pre);
     }
 }

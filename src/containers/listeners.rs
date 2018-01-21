@@ -36,8 +36,6 @@ impl<T, U> TriggerWrapper<T, U>
 where
     T: Timing,
     U: Triggerable,
-    EnumerationTiming: FromType<T>,
-    EnumerationTrigger: FromType<U>,
 {
     fn new(handler: FNTrigger<T, U>) -> Self {
         Self {
@@ -62,14 +60,12 @@ impl ListenerEntry {
 
 impl<T, U> From<TriggerWrapper<T, U>> for ListenerEntry
 where
-    T: Timing,
-    U: Triggerable,
-    EnumerationTiming: FromType<T>,
-    EnumerationTrigger: FromType<U>,
+    T: Timing + IntoEnum<EnumerationTiming>,
+    U: Triggerable + IntoEnum<EnumerationTrigger>,
 {
     fn from(x: TriggerWrapper<T, U>) -> Self {
-        let timing = <EnumerationTiming as FromType<T>>::from_type();
-        let trigger = <EnumerationTrigger as FromType<U>>::from_type();
+        let timing: EnumerationTiming = T::into_enum();
+        let trigger: EnumerationTrigger = U::into_enum();
         let transmuted = x.handler as *const ();
         ListenerEntry::new(timing, trigger, transmuted)
     }
@@ -77,16 +73,14 @@ where
 
 impl<T, U> TryFrom<ListenerEntry> for TriggerWrapper<T, U>
 where
-    T: Timing,
-    U: Triggerable,
-    EnumerationTiming: FromType<T>,
-    EnumerationTrigger: FromType<U>,
+    T: Timing + IntoEnum<EnumerationTiming>,
+    U: Triggerable + IntoEnum<EnumerationTrigger>,
 {
     type Error = String;
 
     fn try_from(x: ListenerEntry) -> Result<Self, Self::Error> {
-        let timing = <EnumerationTiming as FromType<T>>::from_type();
-        let trigger = <EnumerationTrigger as FromType<U>>::from_type();
+        let timing: EnumerationTiming = T::into_enum();
+        let trigger: EnumerationTrigger = U::into_enum();
 
         if x.2.is_null() {
             return Err("Handler is NULL!".into());
@@ -109,10 +103,21 @@ where
 #[derive(Debug)]
 pub struct ListenerService {
     // Contains all objects which should be invoked when certain requirements are met.
-    pub pre_actions: Vec<ListenerEntry>,
-    pub peri_actions: Vec<ListenerEntry>,
-    pub post_actions: Vec<ListenerEntry>,
-    pub pure_triggers: Vec<ListenerEntry>, // Non action related trigger listeners?
+    pre_actions: Vec<ListenerEntry>,
+    peri_actions: Vec<ListenerEntry>,
+    post_actions: Vec<ListenerEntry>,
+    pure_triggers: Vec<ListenerEntry>, // Non action related trigger listeners?
+}
+
+impl ListenerService {
+    pub fn new() -> Self {
+        Self {
+            pre_actions: Vec::new(),
+            peri_actions: Vec::new(),
+            post_actions: Vec::new(),
+            pure_triggers: Vec::new(),
+        }
+    }
 }
 
 // TODO; Use Medici-Macros and move actual implementation BACK into 'impl ListenerService'!
@@ -122,10 +127,8 @@ macro_rules! add_entry {
     ($method_name:ident ; $container:ident) => {
         pub fn $method_name<T, U>(&mut self, handler: FNTrigger<T, U>) -> Result<(), String>
         where
-            T: Timing,
-            U: Triggerable,
-            EnumerationTiming: FromType<T>,
-            EnumerationTrigger: FromType<U>,
+            T: Timing + IntoEnum<EnumerationTiming>,
+            U: Triggerable + IntoEnum<EnumerationTrigger>,
         {
             let wrapper = TriggerWrapper::<T, U>::new(handler);
             self.$container.push(wrapper.into());
@@ -138,22 +141,19 @@ macro_rules! retrieve_entry {
     ($method_name:ident ; $container:ident) => {
         pub fn $method_name<T, U>(&self) -> impl Iterator<Item = &ListenerEntry>
         where
-            T: Timing,
-            U: Triggerable,
-            EnumerationTiming: FromType<T>,
-            EnumerationTrigger: FromType<U>,
+            T: Timing + IntoEnum<EnumerationTiming>,
+            U: Triggerable + IntoEnum<EnumerationTrigger>,
         {
             self.$container
                 .iter()
-                .filter(|l| l.0 == <EnumerationTiming as FromType<T>>::from_type())
-                .filter(|l| l.1 == <EnumerationTrigger as FromType<U>>::from_type())
+                .filter(|l| l.0 == T::into_enum())
+                .filter(|l| l.1 == U::into_enum())
         }
     }
 }
 
 #[allow(dead_code)]
 impl ListenerService {
-
     add_entry!(add_pre_action; pre_actions);
     add_entry!(add_peri_action; peri_actions);
     add_entry!(add_post_action; post_actions);

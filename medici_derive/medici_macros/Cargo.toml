@@ -7,7 +7,7 @@ authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 proc-macro = true
 
 [dependencies]
-syn = {version = "0.12", features = ['derive', 'parsing', 'printing', 'extra-traits'] }
+syn = {version = "0.12", features = ['full', 'extra-traits'] }
 quote = "0.4"
 proc-macro2 = { version = "0.2", features = ["nightly"] }
 interpolate_idents = "0.2.1"

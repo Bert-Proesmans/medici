@@ -6,19 +6,20 @@ use std::default::Default;
 use super::syn_state_obj::StateObject;
 
 pub struct GlobalStates {
-	group_ident: Ident,
-	wait_state: StateObject,
-	action_state: StateObject,
-	finished_state: StateObject,
-	effect_state: StateObject,
-	trigger_state: StateObject,
+	pub group_ident: Ident,
+	pub wait_state: StateObject,
+	pub action_state: StateObject,
+	pub finished_state: StateObject,
+	pub effect_state: StateObject,
+	pub trigger_state: StateObject,
 
-	other_states: Vec<StateObject>,
+	pub other_states: Vec<StateObject>,
 }
 
 impl Synom for GlobalStates {
     named!(parse -> Self, do_parse!(
     	group_ident: syn!(Ident) >>
+        cond_reduce!(group_ident.as_ref() == "global_states") >>
     	mut body: braces!(do_parse!(
     		structs: call!(Punctuated::<StateObject, Token![,]>::parse_terminated_nonempty) >>
     		structs: value!(structs.into_iter()) >>
@@ -58,11 +59,11 @@ impl Default for GlobalStates {
     fn default() -> Self {
     	let tokens = quote!{
     		global_states {
-				Wait<Waitable>(),
-				Action<Timing, Actionable: Triggerable>(),
-				Finished(),
-				Effect<Timing, Triggerable>(),
-				Trigger<Timing, Triggerable>(),
+                #[derive(Debug, GlobalState)] Wait<W: Waitable>(W),
+                #[derive(Debug, GlobalState)] Action<T: Timing, U: Actionable>(T, U),
+                #[derive(Debug, GlobalState)] Finished(),
+                #[derive(Debug, GlobalState)] Effect<T: Timing, U: Triggerable>(T, U),
+                #[derive(Debug, GlobalState)] Trigger<T: Timing, U: Triggerable>(T, U),
 			}
     	};
     	syn::parse::<GlobalStates>(tokens.into()).unwrap()

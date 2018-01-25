@@ -5,7 +5,7 @@ use medici_traits::prelude::IntoEnum;
 
 use containers::cards::{Card, GAME_CARD};
 
-use hs_automaton::entities::{EnumerationPrototype, Game as GameEntity};
+// use hs_automaton::entities::{EnumerationPrototype, Game as GameEntity};
 
 pub type EntityId = u32;
 pub const GAME_E_ID: EntityId = 0;
@@ -17,11 +17,23 @@ pub struct EntityService {
     // This contains all entities instantiated within a certain game.
     // This could become a Vec (because we know EntityId is actually a monotone
     // integer)
-    entities: HashMap<EntityId, Entity>,
+    entities: HashMap<EntityId, EntityId>, // TODO; Replace EntityId with Entity
     last_entity_id: EntityId,
     zones: u32,
 }
 
+// DBG
+impl EntityService {
+    pub fn new() -> Self {
+        Self {
+            entities: hashmap!{},
+            last_entity_id: GAME_E_ID,
+            zones: 0,
+        }
+    }
+}
+
+/*
 impl EntityService {
     pub fn new() -> Self {
         // Build game entity
@@ -162,3 +174,5 @@ impl Entity {
         }
     }
 }
+
+*/

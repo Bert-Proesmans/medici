@@ -12,21 +12,28 @@ extern crate medici_traits;
 extern crate value_from_type_macros;
 extern crate value_from_type_traits;
 
-// mod containers;
-mod hs_automaton;
+mod containers;
+// mod hs_automaton;
 
+/*
 #[cfg(test)]
 mod tests {
-    use containers::games::Game;
-    use containers::listeners::ListenerService;
-    use containers::entities::{Entity, EntityService, GAME_E_ID};
+    use hs_automaton::Game;
+    
+    // use containers::listeners::ListenerService;
+    // use containers::entities::{Entity, EntityService, GAME_E_ID};
+    // use containers::tapes::TapeService;
+    use containers::entities::EntityService;
     use containers::tapes::TapeService;
 
-    use hs_automaton::effects::triggers::turn_end_trigger;
-    use hs_automaton::effects::actions::end_turn;
-    use hs_automaton::states::*;
+    // use hs_automaton::effects::triggers::turn_end_trigger;
+    // use hs_automaton::effects::actions::end_turn;
+    // use hs_automaton::states::*;
 
-    use hs_automaton::entities::Game as GameEntity;
+    use hs_automaton::states::global::*;
+    use hs_automaton::states::custom::*;
+
+    // use hs_automaton::entities::Game as GameEntity;
 
     impl Game<Wait<Input>> {
         pub fn new() -> Self {
@@ -88,3 +95,4 @@ mod tests {
         let game_entity = game_entity.as_proto::<GameEntity>();
     }
 }
+*/

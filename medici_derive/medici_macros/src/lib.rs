@@ -1,6 +1,6 @@
+#![plugin(interpolate_idents)]
 #![feature(proc_macro)]
 #![feature(plugin)]
-#![plugin(interpolate_idents)]
 
 extern crate proc_macro;
 extern crate proc_macro2;
@@ -54,6 +54,8 @@ macro_rules! proc_impl {
 }
 
 ////////////////////////////////////////////////////////////////////////
+
+derive_impl!(#[GlobalState] X => derived::impl_derive_global);
 
 derive_impl!(#[ActionState] X => derived::impl_derive_action);
 

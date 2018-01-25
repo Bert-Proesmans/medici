@@ -16,6 +16,7 @@ pub fn impl_derive_action(
 
     // This is the name of the thing we're implementing for
     let subj_name = subject.ident;
+    let (impl_generics, ty_generics, where_clause) = subject.generics.split_for_impl();
 
     let _struct_data = match subject.data {
         Data::Struct(d) => d,
@@ -32,11 +33,11 @@ pub fn impl_derive_action(
             extern crate medici_traits;
             use self::medici_traits::prelude::*;
 
-            impl Actionable for #subj_name {
+            impl #impl_generics Actionable for #subj_name #ty_generics #where_clause {
                 // TODO add method implementations here
             }
 
-            impl Triggerable for #subj_name {
+            impl #impl_generics Triggerable for #subj_name #ty_generics #where_clause {
                 // TODO add method implementations here
             }
         }

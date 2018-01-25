@@ -4,26 +4,23 @@ pub trait Timing: Debug {}
 // Attribute macro must be imported through a use statement
 use value_from_type_macros::value_from_type;
 
-// The module is made public by the proc macro
 pub mod default {
     // This macro will build enum EnumerationTiming into the this module.
     #![value_from_type(EnumerationTiming)]
 
     #[derive(Debug)]
-    #[allow(dead_code)]
     pub struct Pre();
     impl Timing for Pre {}
 
     #[derive(Debug)]
-    #[allow(dead_code)]
     pub struct Peri();
     impl Timing for Peri {}
 
     #[derive(Debug)]
-    #[allow(dead_code)]
     pub struct Post();
     impl Timing for Post {}
 
+    // Example of auto-implemented enumeration.
     // #[derive(Debug, Clone, PartialEq)]
     // pub enum EnumerationTiming {
     //     Pre,

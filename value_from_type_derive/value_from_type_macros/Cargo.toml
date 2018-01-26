@@ -1,6 +1,6 @@
 [package]
 name = "value_from_type_macros"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 description = "Implement enum (and cast methods) for a set of struct types"
 license = "MIT"

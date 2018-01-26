@@ -1,6 +1,6 @@
 [package]
 name = "value_from_type_traits"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 description = "Traits accompanying the value_from_type_macros crate"
 license = "MIT"

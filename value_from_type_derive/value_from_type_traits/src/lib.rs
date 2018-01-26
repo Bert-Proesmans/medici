@@ -1,10 +1,37 @@
+//! Traits used in conjunction with the [`value_from_type_macros`] crate.
+
 
 /// Returns an enum variant for the generic argument.
 /// 
-/// This trait is similar to ['From`], without needing to provide an
-/// actual (l-)value.
+/// This trait is similar to [From] without needing to provide an
+/// actual (l-)value.   
+/// As with the [From] trait, developers are encouraged to implement
+/// this trait for their types or equivalently use the procedural macro attribute
+/// [`value_from_type_macros::value_from_type`] found within the [value_from_type_macros] crate.
 /// 
-/// [`From`]: std::convert::From
+/// 
+/// # Examples
+/// 
+/// ``` 
+/// # use value_from_type_traits::{FromType, IntoEnum};
+/// #[derive(Debug)]
+/// struct X;
+/// #[derive(Debug, PartialEq)]
+/// enum StructVariants { X_V };
+/// 
+/// impl FromType<X> for StructVariants {
+/// 	fn from_type() -> Self {
+/// 		StructVariants::X_V
+/// 	}
+/// }
+/// 
+/// assert_eq!(StructVariants::X_V, <StructVariants as FromType<X>>::from_type());
+/// assert_eq!(StructVariants::X_V, X::into_enum()); 
+/// ```
+/// 
+/// 
+/// [From]: std::convert::From
+/// [value_from_type_macros]: value_from_type_macros
 pub trait FromType<T> {
     fn from_type() -> Self;
 }

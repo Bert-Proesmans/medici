@@ -2,7 +2,7 @@ Value from Type -Macros
 ===============================
 
 [![Latest Version](https://img.shields.io/crates/v/value_from_type_macros.svg)](https://crates.io/crates/value_from_type_macros)
-[![Rust Documentation](https://img.shields.io/badge/api-rustdoc-blue.svg)](https://docs.rs/value_from_type_macros)
+[![Rust Documentation](https://docs.rs/value_from_type_macros/badge.svg)](https://docs.rs/value_from_type_macros)
 
 Procedural macro attribute to match structure types with an enum variant.
 

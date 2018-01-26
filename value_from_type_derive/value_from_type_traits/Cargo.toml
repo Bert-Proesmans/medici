@@ -4,5 +4,6 @@ version = "1.0.0"
 authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 description = "Traits accompanying the value_from_type_macros crate"
 license = "MIT"
+documentation = "https://docs.rs/value_from_type_traits"
 
 [dependencies]

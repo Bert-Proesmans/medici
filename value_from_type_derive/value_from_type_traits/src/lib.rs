@@ -1,5 +1,6 @@
 //! Traits used in conjunction with the [`value_from_type_macros`] crate.
 
+#![doc(html_root_url = "https://docs.rs/value_from_type_traits")]
 
 /// Returns an enum variant for the generic argument.
 /// 

@@ -1,21 +1,21 @@
-mod syn_game_struct;
-mod syn_state_obj;
-mod syn_global_states;
-mod syn_custom_states;
-mod syn_transitions;
+mod state_container;
+mod state_parent_container;
+mod transition_container;
+mod transition_parent_container;
 
-use quote;
+use quote::{self, Tokens, ToTokens};
 use proc_macro::{self, Diagnostic};
 use proc_macro2::{Span, TokenStream, TokenNode};
 use syn::synom::Synom;
-use syn::{self, Ident};
+use syn::{self, Ident, Type, ItemStruct, Path, Item, ItemMod};
 use syn::spanned::Spanned;
 
+use heck::SnakeCase;
 
-use self::syn_game_struct::GameStruct;
-use self::syn_global_states::GlobalStates;
-use self::syn_custom_states::CustomStates;
-use self::syn_transitions::Transitions;
+use self::state_container::StateContainer;
+use self::state_parent_container::StateParentContainer;
+use self::transition_container::TransitionContainer;
+use self::transition_parent_container::TransitionParentContainer;
 
 use syn::Path as StateReference;
 
@@ -34,23 +34,20 @@ fn call_site_all(t: TokenStream) -> TokenStream {
 
 
 struct Automaton {
-    game_struct: GameStruct,
-    global_states: Option<GlobalStates>,
-    custom_states: Option<CustomStates>,
-    transitions: Option<Transitions>,
+    game_struct: ItemStruct,
+    states: StateParentContainer,
+    transitions: TransitionParentContainer,
 }
 
 impl Synom for Automaton {
     named!(parse -> Self, do_parse!(
-        game_struct: syn!(GameStruct) >>
-        global_states: option!(syn!(GlobalStates)) >>
-        custom_states: option!(syn!(CustomStates)) >>
-        transitions: option!(syn!(Transitions)) >>
+        game_struct: syn!(ItemStruct) >>
+        states: syn!(StateParentContainer) >>
+        transitions: syn!(TransitionParentContainer) >>
         ({
             Automaton {
                 game_struct,
-                global_states,
-                custom_states,
+                states,
                 transitions,
             }
         })
@@ -71,140 +68,109 @@ pub fn impl_build_automaton(
         call_site.unstable().error(msg)
     })?;
 
-    let game_struct = &subject.game_struct;
-    println!("Game struct identifier: {:}", &game_struct.ident);
+    // Deconstruct subject and build state machine.
+    let Automaton {game_struct, states, transitions} = subject;
 
-    let mut result_tokens = quote_spanned!{def_site=>
-        extern crate medici_traits;
-    };
+    validate_game_struct(&game_struct)?;
+    
+    validate_states(&states)?;
+    let state_module = states.build_ast_modules()?;
 
-    let game_struct_tokens = build_game_struct(game_struct)?;
-    result_tokens.append_all(game_struct_tokens);
+    validate_transitions(&transitions)?;
 
-    let state_tokens = build_states(&subject.global_states, &subject.custom_states)?;
-    result_tokens.append_all(state_tokens);
+    
+    let mut return_tokens = Tokens::new();
+    game_struct.to_tokens(&mut return_tokens);
+    state_module.to_tokens(&mut return_tokens);
 
-    return Ok(result_tokens.into());
+    return Ok(return_tokens.into());
 }
 
-fn build_game_struct(data: &GameStruct) -> Result<quote::Tokens, Diagnostic> {
-    let call_site = Span::call_site();
-    let def_site = Span::def_site();
+fn validate_game_struct(game_struct: &ItemStruct) -> Result<(), Diagnostic> {
+    let mut field_iter = game_struct.fields.iter();
+    let first_field = field_iter.nth(0).ok_or_else(|| {
+        let msg = format!("State field is missing from game struct!");
+        game_struct.span().unstable().error(msg)
+    })?;
 
-    let g_ident = data.ident;
-
-    let state_ident = data.state_field.ident.unwrap();
-
-    let other_fields: Vec<_> = data.other_fields
-            .iter()
-            .cloned()
-            .map(|f| {
-                // TODO; Possibly do something to their span.
-                f
-            }).collect();
-
-    // let constraints = data.other_fields
-    //         .iter()
-    //         .map(|f| {
-    //             // Possibly add constraints to types contained by Game struct.
-    //             let test_site = def_site.located_at(f.ty.span());
-    //             quote_spanned!{test_site=>
-    //                 // TODO
-    //                 #f
-    //             }
-    //         });
-
-    let tokens = quote_spanned!{def_site=>       
-        pub struct #g_ident<X: medici_traits::prelude::Global> {
-            #state_ident: X,
-
-            #( #other_fields ),*
+    if let Some(ident) = first_field.ident {
+        if ident.as_ref() != "state" {
+            let msg = format!("Expected first field to be named `state`");
+            return Err(first_field.span().unstable().error(msg));
         }
+    } else {
+        let msg = format!("Game struct must have named fields!");
+        return Err(first_field.span().unstable().error(msg));
+    }
 
-        // #( #constraints )*
-    };
-    Ok(tokens)
+    let state_match_path: Path = parse_quote!{X};
+    if let Type::Path(ref p) = first_field.ty {
+        if p.path != state_match_path {
+            let msg = format!("First field's type must be equal to: {:}", state_match_path.into_tokens());
+            return Err(p.span().unstable().error(msg));
+        }
+    } else {
+        let msg = format!("Unexpected AST type for state field type");
+        return Err(first_field.span().unstable().error(msg));
+    }
+
+    let generic_params = &game_struct.generics.params;
+    if !generic_params.is_empty() {
+        let params_iter = game_struct.generics.type_params();
+        let type_str_match = stringify!{X};
+        // Find generic parameter which exactly indicates 
+        let mut filtered = params_iter.filter(|tp| tp.ident.as_ref() == type_str_match);
+        if let None = filtered.next() {
+            let msg = format!("Expected a generic parameter with identifier: {:}", type_str_match);
+            return Err(game_struct.generics.span().unstable().error(msg));
+        }
+    } else {
+        let msg = format!("The game structure must have at least ONE generic constraint for the state field type");
+        return Err(game_struct.ident.span().unstable().error(msg));
+    }        
+
+    Ok(())
 }
 
-fn build_states(global: &Option<GlobalStates>, custom: &Option<CustomStates>) 
-    -> Result<quote::Tokens, Diagnostic> 
-{
-    let call_site = Span::call_site();
-    let def_site = Span::def_site();
+fn validate_states(states: &StateParentContainer) -> Result<(), Diagnostic> {
+    let states_ident_match = "states";
+    if states.ident.as_ref() != states_ident_match {
+        let msg = format!("Top level module containing states must be named `{:}`", states_ident_match);
+        return Err(states.ident.span().unstable().error(msg));
+    }
 
-    let global_states = match *global {
-        Some(ref s) => build_global_states(s)?,
-        None => build_global_states(&GlobalStates::default())?,
-    };
+    if states.content.len() < 1 {
+        let msg = format!("States container must have contents");
+        return Err(states.ident.span().unstable().error(msg));
+    }
 
-    let ns_ident = Ident::new("states", call_site);
-    let tokens = quote_spanned!{def_site=> 
-        pub mod #ns_ident {
-            #global_states
+    let global_submod_ident_match = "global";
+    let mut global_submod = states.content.iter().filter(|s_mod| {
+        let snek_mod_ident = s_mod.ident.as_ref().to_snake_case();
+        if &snek_mod_ident == global_submod_ident_match { true } else { false }
+    });
 
-            // #custom_states
-        }
-    };
-    Ok(tokens)
+    if let None = global_submod.next() {
+        let msg = format!("The states module must have a `{:}` container defined", global_submod_ident_match);
+        return Err(states.ident.span().unstable().error(msg));
+    }
+
+    Ok(())
 }
 
-fn build_global_states(data: &GlobalStates) -> Result<quote::Tokens, Diagnostic> {
-    let call_site = Span::call_site();
-    let def_site = Span::def_site();
+fn validate_transitions(states: &TransitionParentContainer) -> Result<(), Diagnostic> {
+    let intos = &states.into_transitions;
+    let pushdowns = &states.pushdown_transitions;
+    
+    if intos.transitions.len() < 1 {
+        let msg = format!("No transitions defined");
+        return Err(intos.ident.span().unstable().error(msg));
+    }
 
-    let ref wait_state = data.wait_state;
-    let ref action_state = data.action_state;
-    let ref finished_state = data.finished_state;
-    let ref effect_state = data.effect_state;
-    let ref trigger_state = data.trigger_state;
+    if pushdowns.transitions.len() < 1 {
+        let msg = format!("No transitions defined");
+        return Err(pushdowns.ident.span().unstable().error(msg));
+    }
 
-    let ref other_states = data.other_states;
-
-    // TODO; Constrain each state
-
-    // Collect all states and process them into tokens
-    let implementations = [
-        wait_state, action_state, finished_state, effect_state, trigger_state
-    ];
-    // Need cloned here because [T; n] does NOT implement IntoIter.
-    // The type gets converted to &[T; n], which does 
-    let implementations = implementations.into_iter().cloned().chain(other_states.iter());
-
-    let implementations = implementations
-            .map(|s| {
-                let attrs = &s.attrs;
-                let s_ident = s.ident;
-                let fields = &s.fields;
-
-                if let Some(ref g) = s.generics {
-                    let (_impl_generics, ty_generics, where_clause) = g.split_for_impl();
-
-                    let tokens = quote_spanned!{def_site=>
-                        #( #attrs )*
-                        pub struct #s_ident #ty_generics #where_clause
-                        #fields;
-                    };
-
-                    println!("DBG - BUILDING: {:}", tokens.clone().to_string());
-                    // Manually override all token spans into call_site.
-                    tokens
-                } else {
-                    let tokens = quote_spanned!{def_site=>
-                        #( #attrs )*
-                        pub struct #s_ident
-                        #fields;
-                    };
-
-                    println!("DBG - BUILDING: {:}", tokens.clone().to_string());
-                    tokens
-                }                
-            });
-
-    let ns_ident = Ident::new("global", call_site);
-    let tokens = quote_spanned!{def_site=>
-        pub mod #ns_ident {
-            #( #implementations )*
-        }
-    };
-    Ok(tokens)
+    Ok(())
 }

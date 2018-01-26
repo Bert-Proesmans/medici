@@ -9,6 +9,8 @@ extern crate quote;
 #[macro_use]
 extern crate syn;
 
+extern crate heck;
+
 #[macro_use]
 mod derived;
 #[macro_use]

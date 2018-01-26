@@ -13,7 +13,7 @@ extern crate value_from_type_macros;
 extern crate value_from_type_traits;
 
 mod containers;
-// mod hs_automaton;
+mod hs_automaton;
 
 /*
 #[cfg(test)]

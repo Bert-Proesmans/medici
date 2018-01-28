@@ -7,6 +7,19 @@ use containers::tapes::TapeService;
 use medici_macros::build_automaton;
 use medici_traits::prelude::*;
 
+/* DBG IMPLS */
+impl<W: Waitable> Global for self::states::global::Wait<W> {}
+impl<T: Timing, U: Actionable> Global for self::states::global::Action<T, U> {}
+impl Global for self::states::global::Finished {}
+impl<T: Timing, U: Triggerable> Global for self::states::global::Effect<T, U> {}
+impl<T: Timing, U: Triggerable> Global for self::states::global::Trigger<T, U> {}
+impl<T: Timing, U: Actionable> Global for self::states::global::Death<T, U> {}
+
+impl Waitable for self::states::waitable::Input {}
+
+impl Actionable for self::states::actionable::EndTurn {}
+impl Triggerable for self::states::actionable::EndTurn {}
+
 build_automaton!{
 
 	// Game object layout
@@ -35,11 +48,14 @@ build_automaton!{
 			struct Effect<T: Timing, U: Triggerable>(T, U);
 			#[derive(Debug)]
 			struct Trigger<T: Timing, U: Triggerable>(T, U);
+			#[derive(Debug)]
+			struct Death<T: Timing, U: Actionable>(T, U);
 
 			// Custom states can be defined below.
 		}
 
 		Waitable {
+			#[derive(Debug)]
 			struct Input();
 		}
 
@@ -51,6 +67,7 @@ build_automaton!{
 		}
 
 		Actionable {
+			#[derive(Debug)]
 			struct EndTurn();
 		}
 
@@ -85,15 +102,29 @@ build_automaton!{
 	}
 }
 
-// #[cfg(test)]
+#[cfg(test)]
 mod tests {
+	use std::marker::PhantomData;
 	use medici_traits::prelude::*;
+	use medici_traits::automata::{PullupInto, PushdownInto};
 
-	use super::Game;
+	use super::*;
+	use super::states::global::*;
+	use super::states::waitable::*;
+	use super::states::timing::*;
+	use super::states::actionable::*;
 
-	// #[test]
-	// fn game_struct() {
-	//     let game = Game::new();
-	// }
+	#[test]
+	fn game_transitions() {
+	    let game: Game<Wait<Input>> = Game {
+	    	state: PhantomData,
+			entities: EntityService::new(),
+			storage: TapeService::new(),
+	    };
+
+	    let game: Game<Action<Pre, EndTurn>> = game.into();
+	    let game: Game<Effect<Pre, EndTurn>> = game.pushdown();
+	    let game: Game<Action<Pre, EndTurn>> = game.pullup();
+	}
 }
 

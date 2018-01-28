@@ -38,7 +38,7 @@ impl StateParentContainer {
     	let call_site = Span::call_site();
     	let pub_vis: Visibility = parse_quote!{pub};
 
-    	let sub_modules = content.into_iter().map(|c| {
+    	let sub_modules_iter = content.into_iter().map(|c| {
     		let snek_sub_mod_name = c.ident.as_ref().to_snake_case();
     		let sub_mod_name = Ident::new(&snek_sub_mod_name, c.ident.span());
     		let sub_mod_site = c.ident.span().resolved_at(call_site);
@@ -59,13 +59,22 @@ impl StateParentContainer {
     				#( #sub_mod_items )*
     			}
     		};
-    		sub_mod_tokens
+
+            let sub_use_tokens = quote_spanned!{sub_mod_site=>
+                pub use self::#sub_mod_name::*;
+            };
+    		(sub_mod_tokens, sub_use_tokens)
     	});
+
+        // Consumes and splits the entire iterator.
+        let (sub_modules, sub_use_stmts): (Vec<_>, Vec<_>) = sub_modules_iter.unzip();
 
     	let snek_top_mod_name = ident.as_ref().to_snake_case();
     	let top_mod_name = Ident::new(&snek_top_mod_name, ident.span());
     	let mod_tokens = quote_spanned!{call_site=>
-    		pub mod top_mod_name {
+    		pub mod #top_mod_name {
+                #( #sub_use_stmts )*
+
     			#( #sub_modules )*
     		}
     	};

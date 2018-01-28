@@ -7,17 +7,15 @@ use quote::{self, Tokens, ToTokens};
 use proc_macro::{self, Diagnostic};
 use proc_macro2::{Span, TokenStream, TokenNode};
 use syn::synom::Synom;
-use syn::{self, Ident, Type, ItemStruct, Path, Item, ItemMod};
+use syn::{self, Ident, Type, ItemStruct, Path, Item, ItemMod, Fields, ItemUse, Visibility};
 use syn::spanned::Spanned;
 
 use heck::SnakeCase;
 
 use self::state_container::StateContainer;
 use self::state_parent_container::StateParentContainer;
-use self::transition_container::TransitionContainer;
+use self::transition_container::{TransitionContainer, TransitionEntry};
 use self::transition_parent_container::TransitionParentContainer;
-
-use syn::Path as StateReference;
 
 // Code ripped from 
 // https://github.com/alexcrichton/weird-proc-macro-spans/blob/af3b0ac5a5376679f8a2017bed758884e6df4e8e/src/lib.rs#L21
@@ -72,16 +70,18 @@ pub fn impl_build_automaton(
     let Automaton {game_struct, states, transitions} = subject;
 
     validate_game_struct(&game_struct)?;
-    
     validate_states(&states)?;
-    let state_module = states.build_ast_modules()?;
-
     validate_transitions(&transitions)?;
-
     
     let mut return_tokens = Tokens::new();
-    game_struct.to_tokens(&mut return_tokens);
+    // This method also performs transformations.
+    let game_struct = write_game_struct(game_struct, &mut return_tokens)?;    
+    
+    let state_module = states.build_ast_modules()?; 
     state_module.to_tokens(&mut return_tokens);
+
+    let transition_module = transitions.build_ast_module(&game_struct)?;    
+    transition_module.to_tokens(&mut return_tokens);
 
     return Ok(return_tokens.into());
 }
@@ -93,9 +93,10 @@ fn validate_game_struct(game_struct: &ItemStruct) -> Result<(), Diagnostic> {
         game_struct.span().unstable().error(msg)
     })?;
 
+    let state_field_match_ident = "state";
     if let Some(ident) = first_field.ident {
-        if ident.as_ref() != "state" {
-            let msg = format!("Expected first field to be named `state`");
+        if ident.as_ref() != state_field_match_ident {
+            let msg = format!("Expected first field to be named `{:}`", state_field_match_ident);
             return Err(first_field.span().unstable().error(msg));
         }
     } else {
@@ -163,14 +164,86 @@ fn validate_transitions(states: &TransitionParentContainer) -> Result<(), Diagno
     let pushdowns = &states.pushdown_transitions;
     
     if intos.transitions.len() < 1 {
-        let msg = format!("No transitions defined");
+        let msg = format!("No Into transitions defined");
         return Err(intos.ident.span().unstable().error(msg));
     }
 
+    let invalid_intos = intos.transitions.iter().any(|e| match *e {
+        TransitionEntry::IntoTR(_) => false,
+        _ => true,
+    });
+
     if pushdowns.transitions.len() < 1 {
-        let msg = format!("No transitions defined");
+        let msg = format!("No Pushdown transitions defined");
+        return Err(pushdowns.ident.span().unstable().error(msg));
+    }
+
+    let invalid_pushdowns = pushdowns.transitions.iter().any(|e| match *e {
+        TransitionEntry::PushdownTR(_) => false,
+        _ => true,
+    });
+
+    if invalid_intos {
+        let msg = format!("Invalid Into transitions detected"); 
+        return Err(intos.ident.span().unstable().error(msg));
+    }
+
+    if invalid_pushdowns {
+        let msg = format!("Invalid Pushdown transitions detected"); 
         return Err(pushdowns.ident.span().unstable().error(msg));
     }
 
     Ok(())
+}
+
+fn write_game_struct(mut game_struct: ItemStruct, mut output: &mut Tokens) -> Result<ItemStruct, Diagnostic> {
+    // Build the game struct into a new submodule and re-export it within it's parent
+    // module.
+    let call_site = Span::call_site();
+
+    {
+        let pub_vis: Visibility = parse_quote!{pub};
+        // Force public visibility.
+        game_struct.vis = pub_vis;
+
+        let state_field_match_ident = "state";
+        let mut state_field = match game_struct.fields {
+            Fields::Named(ref mut fields) => fields.named.iter_mut().find(|f| {
+                match f.ident {
+                    Some(i) => i.as_ref() == state_field_match_ident,
+                    None => false,
+                }
+            }),
+            _ => unreachable!(),
+        };
+
+        // .. and update it's type
+        match state_field {
+            Some(ref mut f) => {
+                // Build phantom type wrapper
+                let x_type = f.ty.clone();
+                let phantom_type_tokens = quote_spanned!{call_site=>
+                    PhantomData<#x_type>
+                };
+                let phantom_type: Type = syn::parse2(phantom_type_tokens.into()).unwrap();
+                // Replace original with phantom type
+                f.ty = phantom_type;
+            },
+            _ => unreachable!(),
+        };
+    }
+
+    // Push game struct onto tokenstream.
+    // DO NOT implement the structure in some submodule because the implementations and transitions
+    // MUST be able to access the fields. This is only possible if these tokens are defined in the same
+    // module are within a submodule of the game structure!
+    let sub_mod_site = game_struct.span().resolved_at(call_site);
+    let mod_tokens = quote_spanned!{sub_mod_site=>        
+        use std::marker::PhantomData;
+        // Actual game struct implementation
+        #game_struct
+    };
+
+    mod_tokens.to_tokens(&mut output);
+    Ok(game_struct)
 }

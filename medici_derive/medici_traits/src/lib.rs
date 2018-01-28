@@ -1,5 +1,6 @@
 #![feature(proc_macro)]
 #![feature(attr_literals)]
+#![recursion_limit="256"]
 
 extern crate value_from_type_macros;
 extern crate value_from_type_traits;

@@ -1,8 +1,7 @@
 use proc_macro::{self, Diagnostic};
-use proc_macro2::{Span, TokenStream, TokenNode};
+use proc_macro2::{Span, TokenStream};
 use syn::{self, Data, DeriveInput};
 use syn::spanned::Spanned;
-use quote::ToTokens;
 
 pub fn impl_derive_global(
     input: proc_macro::TokenStream,
@@ -46,17 +45,4 @@ pub fn impl_derive_global(
     };
 
     return Ok(tokens.into());
-}
-
-// Code ripped from 
-// https://github.com/alexcrichton/weird-proc-macro-spans/blob/af3b0ac5a5376679f8a2017bed758884e6df4e8e/src/lib.rs#L21
-fn call_site_all(t: TokenStream) -> TokenStream {
-    t.into_iter().map(|mut tt| {
-        tt.span = Span::call_site();
-        tt.kind = match tt.kind {
-            TokenNode::Group(d, ts) => TokenNode::Group(d, call_site_all(ts)),
-            node => node,
-        };
-        tt
-    }).collect()
 }

@@ -147,7 +147,7 @@ fn value_from_type_impl(
     let impl_mod_access = Ident::new(&impl_mod_name, call_site);
 
     let impl_tokens = quote_spanned!{def_site=>
-        // Hide this module because crates referring the macro invocation crate
+        // Hide this module in docs because crates referring the macro-invocation crate
         // are able to access this module!
         #[doc(hidden)]
         mod #impl_mod_access {
@@ -188,7 +188,7 @@ fn value_from_type_impl(
             // Resolving at def_site to prevent tampering through type aliases.
             let target_site = struct_item.span().resolved_at(def_site);
             // But the struct reference comes from the call_site!
-            let struct_access = Ident::new(struct_item.ident.as_ref(), call_site);
+            let struct_access = struct_item.ident;
 
             let fab_tokens = quote_spanned!{target_site=>
                 // We can directly use #enum_access because it was imported earlier
@@ -201,6 +201,7 @@ fn value_from_type_impl(
                     }
                 }
             };
+
             let fab_impl: ItemImpl = syn::parse2(fab_tokens.into()).map_err(|e| {
                 let msg = format!("Issue building the implementation: {:}", e);
                 target_site.unstable().error(msg)

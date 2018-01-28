@@ -5,6 +5,7 @@ pub trait Timing: Debug {}
 use value_from_type_macros::value_from_type;
 
 pub mod default {
+    #![allow(dead_code)]
     // This macro will build enum EnumerationTiming into the this module.
     #![value_from_type(EnumerationTiming)]
 

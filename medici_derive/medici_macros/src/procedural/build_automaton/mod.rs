@@ -2,51 +2,46 @@ mod state_container;
 mod state_parent_container;
 mod transition_container;
 mod transition_parent_container;
+mod prototype_container;
+mod prototype_parent_container;
 
-use quote::{self, Tokens, ToTokens};
+use quote::{Tokens, ToTokens};
 use proc_macro::{self, Diagnostic};
-use proc_macro2::{Span, TokenStream, TokenNode};
+use proc_macro2::{Span, TokenStream};
 use syn::synom::Synom;
-use syn::{self, Ident, Type, ItemStruct, Path, Item, ItemMod, Fields, ItemUse, Visibility};
+use syn::{self, Type, ItemStruct, Path, Fields, Visibility};
 use syn::spanned::Spanned;
 
-use heck::SnakeCase;
-
-use self::state_container::StateContainer;
+// use self::state_container::StateContainer;
 use self::state_parent_container::StateParentContainer;
 use self::transition_container::{TransitionContainer, TransitionEntry};
 use self::transition_parent_container::TransitionParentContainer;
-
-// Code ripped from 
-// https://github.com/alexcrichton/weird-proc-macro-spans/blob/af3b0ac5a5376679f8a2017bed758884e6df4e8e/src/lib.rs#L21
-fn call_site_all(t: TokenStream) -> TokenStream {
-    t.into_iter().map(|mut tt| {
-        tt.span = Span::call_site();
-        tt.kind = match tt.kind {
-            TokenNode::Group(d, ts) => TokenNode::Group(d, call_site_all(ts)),
-            node => node,
-        };
-        tt
-    }).collect()
-}
+// use self::prototype_container::ProtoTypeContainer;
+use self::prototype_parent_container::ProtoTypeParentContainer;
 
 
 struct Automaton {
     game_struct: ItemStruct,
+    entity_struct: ItemStruct,
     states: StateParentContainer,
     transitions: TransitionParentContainer,
+    prototypes: ProtoTypeParentContainer,
 }
 
 impl Synom for Automaton {
     named!(parse -> Self, do_parse!(
         game_struct: syn!(ItemStruct) >>
+        entity_struct: syn!(ItemStruct) >>
         states: syn!(StateParentContainer) >>
         transitions: syn!(TransitionParentContainer) >>
+        prototypes: syn!(ProtoTypeParentContainer) >>
         ({
             Automaton {
                 game_struct,
+                entity_struct,
                 states,
                 transitions,
+                prototypes,
             }
         })
     ));
@@ -57,9 +52,8 @@ pub fn impl_build_automaton(
 ) -> Result<proc_macro::TokenStream, Diagnostic> {
     let input: TokenStream = input.into();
     let call_site = Span::call_site();
-    let def_site = Span::def_site();
 
-    println!("DBG: {:}", input.clone().to_string());
+    // println!("DBG: {:}", input.clone().to_string());
 
     let subject: Automaton = syn::parse2(input).map_err(|e| {
         let msg = format!("Failed parsing macro contents: {:?}", e);
@@ -67,21 +61,30 @@ pub fn impl_build_automaton(
     })?;
 
     // Deconstruct subject and build state machine.
-    let Automaton {game_struct, states, transitions} = subject;
+    let Automaton {game_struct, mut entity_struct, states, 
+        transitions, prototypes} = subject;
 
     validate_game_struct(&game_struct)?;
-    validate_states(&states)?;
-    validate_transitions(&transitions)?;
+    // No validation for the entity_structure
+    states.validate()?;
+    transitions.validate()?;
     
     let mut return_tokens = Tokens::new();
-    // This method also performs transformations.
-    let game_struct = write_game_struct(game_struct, &mut return_tokens)?;    
+    // Note: This method also performs transformations on the game structure!
+    let game_struct = write_game_struct(game_struct, &mut return_tokens)?;
+
+    let pub_vis: Visibility = parse_quote!{pub};
+    entity_struct.vis = pub_vis;
+    entity_struct.to_tokens(&mut return_tokens);    
     
-    let state_module = states.build_ast_modules()?; 
+    let state_module = states.build_output()?; 
     state_module.to_tokens(&mut return_tokens);
 
     let transition_module = transitions.build_ast_module(&game_struct)?;    
     transition_module.to_tokens(&mut return_tokens);
+
+    let prototype_module = prototypes.build_output()?;
+    prototype_module.to_tokens(&mut return_tokens);
 
     return Ok(return_tokens.into());
 }
@@ -129,69 +132,6 @@ fn validate_game_struct(game_struct: &ItemStruct) -> Result<(), Diagnostic> {
         let msg = format!("The game structure must have at least ONE generic constraint for the state field type");
         return Err(game_struct.ident.span().unstable().error(msg));
     }        
-
-    Ok(())
-}
-
-fn validate_states(states: &StateParentContainer) -> Result<(), Diagnostic> {
-    let states_ident_match = "states";
-    if states.ident.as_ref() != states_ident_match {
-        let msg = format!("Top level module containing states must be named `{:}`", states_ident_match);
-        return Err(states.ident.span().unstable().error(msg));
-    }
-
-    if states.content.len() < 1 {
-        let msg = format!("States container must have contents");
-        return Err(states.ident.span().unstable().error(msg));
-    }
-
-    let global_submod_ident_match = "global";
-    let mut global_submod = states.content.iter().filter(|s_mod| {
-        let snek_mod_ident = s_mod.ident.as_ref().to_snake_case();
-        if &snek_mod_ident == global_submod_ident_match { true } else { false }
-    });
-
-    if let None = global_submod.next() {
-        let msg = format!("The states module must have a `{:}` container defined", global_submod_ident_match);
-        return Err(states.ident.span().unstable().error(msg));
-    }
-
-    Ok(())
-}
-
-fn validate_transitions(states: &TransitionParentContainer) -> Result<(), Diagnostic> {
-    let intos = &states.into_transitions;
-    let pushdowns = &states.pushdown_transitions;
-    
-    if intos.transitions.len() < 1 {
-        let msg = format!("No Into transitions defined");
-        return Err(intos.ident.span().unstable().error(msg));
-    }
-
-    let invalid_intos = intos.transitions.iter().any(|e| match *e {
-        TransitionEntry::IntoTR(_) => false,
-        _ => true,
-    });
-
-    if pushdowns.transitions.len() < 1 {
-        let msg = format!("No Pushdown transitions defined");
-        return Err(pushdowns.ident.span().unstable().error(msg));
-    }
-
-    let invalid_pushdowns = pushdowns.transitions.iter().any(|e| match *e {
-        TransitionEntry::PushdownTR(_) => false,
-        _ => true,
-    });
-
-    if invalid_intos {
-        let msg = format!("Invalid Into transitions detected"); 
-        return Err(intos.ident.span().unstable().error(msg));
-    }
-
-    if invalid_pushdowns {
-        let msg = format!("Invalid Pushdown transitions detected"); 
-        return Err(pushdowns.ident.span().unstable().error(msg));
-    }
 
     Ok(())
 }

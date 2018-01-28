@@ -2,7 +2,7 @@ use proc_macro::Diagnostic;
 use proc_macro2::Span;
 
 use quote::{Tokens, ToTokens};
-use syn::{self, Ident, ItemMod, ItemStruct, Visibility, ItemImpl};
+use syn::{self, Ident, ItemMod, ItemStruct};
 use syn::synom::Synom;
 use syn::token::Brace;
 use syn::spanned::Spanned;
@@ -39,11 +39,47 @@ impl Synom for TransitionParentContainer {
 }
 
 impl TransitionParentContainer {
+    pub fn validate(&self) -> Result<(), Diagnostic> {
+        let intos = &self.into_transitions;
+        let pushdowns = &self.pushdown_transitions;
+        
+        if intos.transitions.len() < 1 {
+            let msg = format!("No Into transitions defined");
+            return Err(intos.ident.span().unstable().error(msg));
+        }
+
+        let invalid_intos = intos.transitions.iter().any(|e| match *e {
+            TransitionEntry::IntoTR(_) => false,
+            _ => true,
+        });
+
+        if pushdowns.transitions.len() < 1 {
+            let msg = format!("No Pushdown transitions defined");
+            return Err(pushdowns.ident.span().unstable().error(msg));
+        }
+
+        let invalid_pushdowns = pushdowns.transitions.iter().any(|e| match *e {
+            TransitionEntry::PushdownTR(_) => false,
+            _ => true,
+        });
+
+        if invalid_intos {
+            let msg = format!("Invalid Into transitions detected"); 
+            return Err(intos.ident.span().unstable().error(msg));
+        }
+
+        if invalid_pushdowns {
+            let msg = format!("Invalid Pushdown transitions detected"); 
+            return Err(pushdowns.ident.span().unstable().error(msg));
+        }
+
+        Ok(())
+    }
+
     pub fn build_ast_module(self, game_struct: &ItemStruct) -> Result<ItemMod, Diagnostic> {
         let TransitionParentContainer{ ident, into_transitions, pushdown_transitions, ..} = self;
         let call_site = Span::call_site();
-        let def_site = Span::def_site();
-
+        
         // All imports for transition code
         let site_imports = quote_spanned!{call_site=>            
             use std::marker::PhantomData;
@@ -62,6 +98,7 @@ impl TransitionParentContainer {
             });
 
             let sub_mod_tokens = quote_spanned!{sub_mod_site=>
+                #[allow(unused_imports)]
                 mod #sub_mod_name {
                     // Load external types
                     #site_imports
@@ -159,7 +196,6 @@ impl TransitionParentContainer {
                     }
                 }
             },
-            _ => unreachable!(),
         }
     }
 }

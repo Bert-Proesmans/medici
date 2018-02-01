@@ -25,6 +25,15 @@ impl Entity {
         }
     }
 
+    pub fn get_value(&self, key: &GameTags) -> Option<&u32> {
+        self.state.get(key)
+    }
+
+    pub fn set_value(&mut self, key: GameTags, value: u32) -> Option<u32> {
+        // TODO; Filter here keys which are not allowed to be set?
+        self.state.insert(key, value)
+    }
+
     pub fn add_proto<P>(&mut self) -> Result<(), ()>
     where
         P: EntityPrototype,

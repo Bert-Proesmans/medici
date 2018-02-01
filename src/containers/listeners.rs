@@ -1,11 +1,10 @@
 use std::clone::Clone;
-use std::marker::PhantomData;
 use std::convert::TryFrom;
 
 use medici_traits::prelude::*;
-
-use containers::games::Game;
-use hs_automaton::states::*;
+use automaton::prelude::*;
+use automaton::states::timing::EnumerationTiming;
+use automaton::states::triggerable::EnumerationTrigger;
 
 type FNTrigger<T, U> = fn(Game<Trigger<T, U>>) -> Result<Game<Trigger<T, U>>, Game<Finished>>;
 
@@ -16,7 +15,6 @@ where
     U: Triggerable,
 {
     handler: FNTrigger<T, U>,
-    phantom: PhantomData<(T, U)>,
 }
 
 impl<T, U> Clone for TriggerWrapper<T, U>
@@ -27,7 +25,6 @@ where
     fn clone(&self) -> Self {
         Self {
             handler: self.handler.clone(),
-            phantom: self.phantom.clone(),
         }
     }
 }
@@ -38,10 +35,7 @@ where
     U: Triggerable,
 {
     fn new(handler: FNTrigger<T, U>) -> Self {
-        Self {
-            handler: handler,
-            phantom: PhantomData,
-        }
+        Self { handler: handler }
     }
 
     pub fn get_handler(self) -> FNTrigger<T, U> {
@@ -91,7 +85,6 @@ where
                 let transmuted: FNTrigger<T, U> = ::std::mem::transmute(x.2);
                 Ok(TriggerWrapper {
                     handler: transmuted,
-                    phantom: PhantomData,
                 })
             }
         } else {
@@ -103,64 +96,70 @@ where
 #[derive(Debug)]
 pub struct ListenerService {
     // Contains all objects which should be invoked when certain requirements are met.
-    pre_actions: Vec<ListenerEntry>,
-    peri_actions: Vec<ListenerEntry>,
-    post_actions: Vec<ListenerEntry>,
-    pure_triggers: Vec<ListenerEntry>, // Non action related trigger listeners?
+    pre_listener: Vec<ListenerEntry>,
+    peri_listener: Vec<ListenerEntry>,
+    post_listener: Vec<ListenerEntry>,
 }
 
 impl ListenerService {
     pub fn new() -> Self {
         Self {
-            pre_actions: Vec::new(),
-            peri_actions: Vec::new(),
-            post_actions: Vec::new(),
-            pure_triggers: Vec::new(),
+            pre_listener: vec![],
+            peri_listener: vec![],
+            post_listener: vec![],
         }
     }
 }
 
-// TODO; Use Medici-Macros and move actual implementation BACK into 'impl ListenerService'!
-// The intention is to use the blanket_impl!{} macro to easily copy ONE implementation
-// multiple times with certain identifiers replaced.
-macro_rules! add_entry {
-    ($method_name:ident ; $container:ident) => {
-        pub fn $method_name<T, U>(&mut self, handler: FNTrigger<T, U>) -> Result<(), String>
-        where
-            T: Timing + IntoEnum<EnumerationTiming>,
-            U: Triggerable + IntoEnum<EnumerationTrigger>,
-        {
-            let wrapper = TriggerWrapper::<T, U>::new(handler);
-            self.$container.push(wrapper.into());
-            Ok(())
-        }
-    }
-}
-
-macro_rules! retrieve_entry {
-    ($method_name:ident ; $container:ident) => {
-        pub fn $method_name<T, U>(&self) -> impl Iterator<Item = &ListenerEntry>
-        where
-            T: Timing + IntoEnum<EnumerationTiming>,
-            U: Triggerable + IntoEnum<EnumerationTrigger>,
-        {
-            self.$container
-                .iter()
-                .filter(|l| l.0 == T::into_enum())
-                .filter(|l| l.1 == U::into_enum())
-        }
-    }
-}
-
-#[allow(dead_code)]
 impl ListenerService {
-    add_entry!(add_pre_action; pre_actions);
-    add_entry!(add_peri_action; peri_actions);
-    add_entry!(add_post_action; post_actions);
-    add_entry!(add_pure_trigger; pure_triggers);
+    /* 
+        Action dependant listeners.
+        These triggers have the purpose to directly interact with 
+        performed actions.
+     */
 
-    retrieve_entry!(retrieve_pre_actions; pre_actions);
-    retrieve_entry!(retrieve_peri_actions; peri_actions);
-    retrieve_entry!(retrieve_post_actions; post_actions);
-    retrieve_entry!(retrieve_pure_triggers; pure_triggers);
+    fn get_container<AT>(&self) -> &Vec<ListenerEntry>
+    where
+        AT: Timing + IntoEnum<EnumerationTiming>,
+    {
+        match AT::into_enum() {
+            EnumerationTiming::Pre => &self.pre_listener,
+            EnumerationTiming::Peri => &self.peri_listener,
+            EnumerationTiming::Post => &self.post_listener,
+        }
+    }
+
+    fn get_container_mut<AT>(&mut self) -> &mut Vec<ListenerEntry>
+    where
+        AT: Timing + IntoEnum<EnumerationTiming>,
+    {
+        match AT::into_enum() {
+            EnumerationTiming::Pre => &mut self.pre_listener,
+            EnumerationTiming::Peri => &mut self.peri_listener,
+            EnumerationTiming::Post => &mut self.post_listener,
+        }
+    }
+
+    pub fn add_trigger<T, U>(&mut self, handler: FNTrigger<T, U>) -> Result<(), String>
+    where
+        T: Timing + IntoEnum<EnumerationTiming>,
+        U: Triggerable + IntoEnum<EnumerationTrigger>,
+    {
+        let wrapper = TriggerWrapper::<T, U>::new(handler);
+        let container = self.get_container_mut::<T>();
+        container.push(wrapper.into());
+        Ok(())
+    }
+
+    pub fn retrieve_triggers<T, U>(&self) -> impl Iterator<Item = &ListenerEntry>
+    where
+        T: Timing + IntoEnum<EnumerationTiming>,
+        U: Triggerable + IntoEnum<EnumerationTrigger>,
+    {
+        let container = self.get_container::<T>();
+        container
+            .iter()
+            // .filter(|l| l.0 == T::into_enum()) // Unnecessary if triggers are stored seperately
+            .filter(|l| l.1 == U::into_enum())
+    }
 }

@@ -1,12 +1,16 @@
 use std::collections::HashMap;
 use value_from_type_macros::value_from_type;
-use medici_macros::{build_automaton, WaitState, GlobalState, ActionState};
+
+use medici_macros::{build_automaton, ActionState, GlobalState, WaitState};
 use medici_traits::prelude::*;
-use medici_traits::entities::{E_ID_KEY, EntityPrototype};
+use medici_traits::entities::{EntityPrototype, E_ID_KEY};
+use medici_traits::automata::pushdown_automaton::{PullupFrom, PushdownFrom};
+
 use containers::entities::EntityService;
-// use containers::listeners::ListenerService;
+use containers::listeners::ListenerService;
 use containers::tapes::TapeService;
 
+// TODO; Make the fields on these structs private?
 build_automaton!{
     // Game object layout
 
@@ -14,10 +18,10 @@ build_automaton!{
     struct Game<X: Global> {
         // State MUST BE THE FIRST PARAMETER, defining X.
         // X represents on of the global states.
-        state: X,
-        // listeners: ListenerService,
-        entities: EntityService,
-        storage: TapeService,
+        pub state: X,
+        pub listeners: ListenerService,
+        pub entities: EntityService,
+        pub storage: TapeService,
     }
 
     #[derive(Debug)]
@@ -26,7 +30,7 @@ build_automaton!{
         pub id: EntityId,
         // GameTags is an enum, defined below
         pub state: HashMap<GameTags, u32>,
-        
+
         /* other stuff */
         // This points towards the generated enum from the prototypes module, see below.
         pub prototypes: Vec<prototypes::EnumerationPrototype>,
@@ -40,21 +44,26 @@ build_automaton!{
             struct Wait<W: Waitable>(W);
             // Actionable inherits from Triggerable
             #[derive(Debug, GlobalState)]
-            struct Action<T: Timing, U: Actionable>(T, U);
+            struct Action<U: Actionable>(U);
             #[derive(Debug, GlobalState)]
             struct Finished();
 
             #[derive(Debug, GlobalState)]
-            struct Effect<T: Timing, U: Triggerable>(T, U);
+            struct Effect<U: Actionable>(U);
             #[derive(Debug, GlobalState)]
             struct Trigger<T: Timing, U: Triggerable>(T, U);
             #[derive(Debug, GlobalState)]
-            struct Death<T: Timing, U: Actionable>(T, U);
+            struct Death<T: Timing, U: Triggerable>(T, U);
 
             // Custom states can be defined here.
+            #[derive(Debug, GlobalState)]
+            struct RecurseEffect<T: Timing, U: Triggerable>(T, U);
         }
 
         Waitable {
+            #[derive(Debug, WaitState)]
+            struct Start();
+
             #[derive(Debug, WaitState)]
             struct Input();
         }
@@ -66,12 +75,14 @@ build_automaton!{
             use medici_traits::timing::default::EnumerationTiming;
         }
 
-        Actionable {
+        Triggerable {
+            #![value_from_type(EnumerationTrigger)]
+
+            // EndTurn is Actionable, but we HAVE TO merge actionables and triggerables
+            // together into one module to be able to build EnumerationTrigger from it.
             #[derive(Debug, ActionState)]
             struct EndTurn();
         }
-
-        Triggerable {}
     }
 
     /* Possible state machine transitions. */
@@ -83,29 +94,34 @@ build_automaton!{
         // Game<X> is implicit and can be ommited, since it would make
         // the syntax more difficult to read.
         into_transitions {
-            Wait<Input> -> Action<Pre, EndTurn>,
-            Death<Post, EndTurn> -> Wait<Input>,
+            Wait<Start> -> Wait<Input>,
 
-            Action<Pre, EndTurn> -> Death<Pre, EndTurn>,
-            Death<Pre, EndTurn> -> Action<Peri, EndTurn>,
-            Action<Peri, EndTurn> -> Death<Peri, EndTurn>,
-            Death<Peri, EndTurn> -> Action<Post, EndTurn>,
-            Action<Post, EndTurn> -> Death<Post, EndTurn>,
+            // Actions
+            Wait<Input> -> Action<EndTurn>,
+            Action<EndTurn> -> Wait<Input>,
+
+            // End turn effect machine
+            Effect<EndTurn> -> Trigger<Pre, EndTurn>,
+            Trigger<Pre, EndTurn> -> Death<Pre, EndTurn>,
+            Trigger<Peri, EndTurn> -> Death<Peri, EndTurn>,
+            Trigger<Post, EndTurn> -> Death<Post, EndTurn>,
+            Death<Pre, EndTurn> -> Trigger<Peri, EndTurn>,
+            Death<Peri, EndTurn> -> Trigger<Post, EndTurn>,
+            Death<Post, EndTurn> -> Effect<EndTurn>,
         }
 
         pushdown_transitions {
-            Action<Pre, EndTurn> <-> Effect<Pre, EndTurn>,
-            Effect<Pre, EndTurn> <-> Trigger<Pre, EndTurn>,
+            Action<EndTurn> <-> Effect<EndTurn>,
             Trigger<Pre, EndTurn> <-> Trigger<Peri, EndTurn>,
             Trigger<Peri, EndTurn> <-> Trigger<Post, EndTurn>,
         }
     }
 
-    // Behaviours for our entities. Each entry will become a tuple struct 
+    // Behaviours for our entities. Each entry will become a tuple struct
     // and it's body will be the implementation of that struct.
     prototypes {
         #![value_from_type(EnumerationPrototype)]
-        
+
         // Example of Game prototype:
         //      Game<'a>(&'a Entity);
         Game {
@@ -115,15 +131,83 @@ build_automaton!{
     }
 }
 
-// This enumeration holds all tags which can describe properties of 
-// entities.
-#[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
-pub enum GameTags {
-    EntityId = E_ID_KEY,
+/* DBG IMPLS */
+// TODO; Move these definitions into the proc macro!
+
+////////////////////////////
+use self::states::global::{Death, RecurseEffect, Trigger};
+
+impl<T, U> PushdownFrom<Game<Trigger<T, U>>> for Game<RecurseEffect<T, U>>
+where
+    T: Timing,
+    U: Triggerable,
+{
+    fn pushdown_from(x: Game<Trigger<T, U>>) -> Self {
+        Game {
+            state: PhantomData,
+            listeners: x.listeners,
+            entities: x.entities,
+            storage: x.storage,
+        }
+    }
 }
 
-/* DBG IMPLS */
+impl<T, U> PullupFrom<Game<RecurseEffect<T, U>>> for Game<Trigger<T, U>>
+where
+    T: Timing,
+    U: Triggerable,
+{
+    fn pullup_from(x: Game<RecurseEffect<T, U>>) -> Self {
+        Game {
+            state: PhantomData,
+            listeners: x.listeners,
+            entities: x.entities,
+            storage: x.storage,
+        }
+    }
+}
+
+impl<T, U> PushdownFrom<Game<Death<T, U>>> for Game<RecurseEffect<T, U>>
+where
+    T: Timing,
+    U: Triggerable,
+{
+    fn pushdown_from(x: Game<Death<T, U>>) -> Self {
+        Game {
+            state: PhantomData,
+            listeners: x.listeners,
+            entities: x.entities,
+            storage: x.storage,
+        }
+    }
+}
+
+impl<T, U> PullupFrom<Game<RecurseEffect<T, U>>> for Game<Death<T, U>>
+where
+    T: Timing,
+    U: Triggerable,
+{
+    fn pullup_from(x: Game<RecurseEffect<T, U>>) -> Self {
+        Game {
+            state: PhantomData,
+            listeners: x.listeners,
+            entities: x.entities,
+            storage: x.storage,
+        }
+    }
+}
+
+////////////////////////////
+
 impl<'a> EntityPrototype for prototypes::Game<'a> {}
+impl<'a> From<&'a Entity> for prototypes::Game<'a> {
+    fn from(e: &'a Entity) -> Self {
+        prototypes::Game(&e)
+    }
+}
+
+////////////////////////////
+
 // impl<W: Waitable> Global for self::states::global::Wait<W> {}
 // impl<T: Timing, U: Actionable> Global for self::states::global::Action<T, U> {}
 // impl Global for self::states::global::Finished {}
@@ -136,34 +220,40 @@ impl<'a> EntityPrototype for prototypes::Game<'a> {}
 // impl Actionable for self::states::actionable::EndTurn {}
 // impl Triggerable for self::states::actionable::EndTurn {}
 
+// This enumeration holds all tags which can describe properties of
+// entities.
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
+pub enum GameTags {
+    EntityId = E_ID_KEY,
+}
+
 #[cfg(test)]
 mod tests {
     use std::marker::PhantomData;
-    use medici_traits::prelude::*;
+    // use medici_traits::prelude::*;
     use medici_traits::automata::{PullupInto, PushdownInto};
 
     use super::*;
     use super::states::global::*;
     use super::states::waitable::*;
-    use super::states::timing::*;
-    use super::states::actionable::*;
+    // use super::states::timing::*;
+    use super::states::triggerable::*;
     use super::prototypes::Game as GamePrototype;
 
     #[test]
     fn game_transitions() {
         let game: Game<Wait<Input>> = Game {
             state: PhantomData,
+            listeners: ListenerService::new(),
             entities: EntityService::new(),
             storage: TapeService::new(),
         };
 
-        let game: Game<Action<Pre, EndTurn>> = game.into();
-        let game: Game<Effect<Pre, EndTurn>> = game.pushdown();
-        let game: Game<Action<Pre, EndTurn>> = game.pullup();
+        let game: Game<Action<EndTurn>> = game.into();
+        let game: Game<Effect<EndTurn>> = game.pushdown();
+        let _game: Game<Action<EndTurn>> = game.pullup();
     }
 
     #[test]
-    fn prototypes() {
-        
-    }
+    fn prototypes() {}
 }

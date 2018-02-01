@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use medici_traits::entities::{EntityId, GAME_E_ID};
-
 use automaton::prelude::*;
 
 // TODO; Move card structure INTO automaton!
@@ -49,16 +48,16 @@ impl EntityService {
         self.entities.get_mut(&e.into())
     }
 
-    // pub fn update_raw_value<E: Into<EntityId>>(
-    //     &mut self,
-    //     e_id: E,
-    //     tag: u32,
-    //     value: u32,
-    // ) -> Result<Option<u32>, ()> {
-    //     let e_id = e_id.into();
-    //     self.entities
-    //         .get_mut(&e_id)
-    //         .map(|e| e.data_mut().set_value(tag, value))
-    //         .ok_or(())
-    // }
+    pub fn update_raw_value<E: Into<EntityId>>(
+        &mut self,
+        e_id: E,
+        tag: GameTags,
+        value: u32,
+    ) -> Result<Option<u32>, ()> {
+        let e_id = e_id.into();
+        self.entities
+            .get_mut(&e_id)
+            .map(|e| e.set_value(tag, value))
+            .ok_or(())
+    }
 }

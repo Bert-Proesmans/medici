@@ -49,7 +49,7 @@ impl ProtoTypeParentContainer {
             let proto_site = proto_ident.span().resolved_at(call_site);
             quote_spanned!{proto_site=>
                 #[derive(Debug)]
-                pub struct #proto_ident<'a>(&'a Entity);
+                pub struct #proto_ident<'a>(pub &'a Entity);
                 impl<'a> #proto_ident<'a> {
                     #( #proto_impl )*
                 }

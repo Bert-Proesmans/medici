@@ -1,7 +1,7 @@
 use proc_macro::Diagnostic;
 use proc_macro2::Span;
-use quote::Tokens;
-use syn::{Ident, Attribute};
+use quote::{Tokens, ToTokens};
+use syn::{Ident, Attribute, ItemStruct};
 use syn::synom::Synom;
 use syn::token::Brace;
 use syn::punctuated::Punctuated;
@@ -37,23 +37,53 @@ impl Synom for ProtoTypeParentContainer {
 }
 
 impl ProtoTypeParentContainer {
-    pub fn build_output(self) -> Result<Tokens, Diagnostic> {
+    pub fn build_output(self, entity_struct: &ItemStruct) -> Result<Tokens, Diagnostic> {
         let ProtoTypeParentContainer {attrs, ident, contents, ..} = self;
         let call_site = Span::call_site();
+        let def_site = Span::def_site();
+        let entity_struct_name = entity_struct.ident;
 
         let proto_iter = contents.into_iter().map(|p| {
             let ProtoTypeContainer {
-                ident: proto_ident, content: proto_impl , ..
+                ident: proto_ident, ..
             } = p;
 
+            let proto_mut = format!("{:}Mut", proto_ident.as_ref());
+            let proto_ident_mut = Ident::new(&proto_mut, proto_ident.span());
+
             let proto_site = proto_ident.span().resolved_at(call_site);
-            quote_spanned!{proto_site=>
+            let mut def_tokens = quote_spanned!{proto_site=>
+                // TODO; limit visibility of first variable
                 #[derive(Debug)]
                 pub struct #proto_ident<'a>(pub &'a Entity);
-                impl<'a> #proto_ident<'a> {
-                    #( #proto_impl )*
+                #[derive(Debug)]
+                pub struct #proto_ident_mut<'a>(pub &'a mut Entity);
+
+                // Transition methods for the defined entity structure
+                impl<'a> From<&'a #entity_struct_name> for #proto_ident<'a> {
+                    fn from(e: &'a #entity_struct_name) -> Self {
+                        #proto_ident(e)
+                    }
                 }
-            }
+
+                impl<'a> From<&'a mut #entity_struct_name> for #proto_ident_mut<'a> {
+                    fn from(e: &'a mut #entity_struct_name) -> Self {
+                        #proto_ident_mut(e)
+                    }
+                }
+            };
+
+            let proto_site = proto_ident.span().resolved_at(def_site);
+            let impl_tokens = quote_spanned!{proto_site=>
+                extern crate medici_traits;
+                use medici_traits::entities::EntityPrototype;
+
+                impl<'a> EntityPrototype for #proto_ident<'a> {}
+                impl<'a> EntityPrototype for #proto_ident_mut<'a> {}
+            };
+
+            impl_tokens.to_tokens(&mut def_tokens);
+            def_tokens
         });
 
         let top_mod_site = ident.span().resolved_at(call_site);

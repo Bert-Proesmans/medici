@@ -6,7 +6,7 @@ use medici::automaton::implementations::effects::actions::end_turn;
 
 fn main() {
     // Enable backtraces without messing with env.
-    std::env::set_var("RUST_BACKTRACE", "1");
+    // std::env::set_var("RUST_BACKTRACE", "1");
 
     println!("Starting - Running MAIN");
     let mut game = Game::new();
@@ -17,9 +17,9 @@ fn main() {
 
     // Do stuff
     println!("Ending turn P1");
-    let first_turn = end_turn(game).expect("Game finished");
+    let first_turn = end_turn(game).expect("Game unexpectedly finished");
     println!("Ending turn P2");
-    let _second_turn = end_turn(first_turn).expect("Game finished");
+    let _second_turn = end_turn(first_turn).expect("Game unexpectedly finished");
 
     println!("FINISHED");
 }

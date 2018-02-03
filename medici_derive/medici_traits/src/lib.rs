@@ -17,10 +17,6 @@ pub mod prelude {
     // Immediate re-export for usability
     pub use value_from_type_traits::IntoEnum;
 
-    pub trait NoArgBuilder {
-        fn new() -> Self;
-    }
-
     pub use global::Global;
     pub use action::{Actionable, Triggerable};
     pub use waiting::Waitable;

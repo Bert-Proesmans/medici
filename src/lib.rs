@@ -4,9 +4,9 @@
 #![feature(try_from)]
 
 #[macro_use]
-extern crate maplit;
-#[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate maplit;
 
 extern crate medici_macros;
 extern crate medici_traits;
@@ -41,8 +41,8 @@ mod tests {
         game.listeners.add_trigger(turn_end_trigger).unwrap();
 
         // Do stuff
-        let first_turn = end_turn(game).expect("Game finished");
-        let _second_turn = end_turn(first_turn).expect("Game finished");
+        let first_turn = end_turn(game).expect("Game unexpectedly finished");
+        let _second_turn = end_turn(first_turn).expect("Game unexpectedly finished");
 
         println!("OK - Finished");
     }
@@ -55,8 +55,8 @@ mod tests {
         new_game.listeners.add_trigger(turn_end_trigger).unwrap();
 
         // Do stuff
-        let first_turn = end_turn(new_game).expect("Game finished");
-        let _second_turn = end_turn(first_turn).expect("Game finished");
+        let first_turn = end_turn(new_game).expect("Game unexpectedly finished");
+        let _second_turn = end_turn(first_turn).expect("Game unexpectedly finished");
     }
 
     #[test]

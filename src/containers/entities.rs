@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::default::Default;
 
 use medici_traits::entities::{EntityId, GAME_E_ID};
 use automaton::prelude::*;
@@ -13,6 +14,17 @@ pub struct EntityService {
     entities: HashMap<EntityId, Entity>,
     last_entity_id: EntityId,
     zones: u32, // TODO
+}
+
+// DBG
+impl Default for EntityService {
+    fn default() -> Self {
+        EntityService {
+            entities: hashmap!{},
+            last_entity_id: 0,
+            zones: 0,
+        }
+    }
 }
 
 impl EntityService {

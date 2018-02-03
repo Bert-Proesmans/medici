@@ -5,7 +5,7 @@ use value_from_type_macros::value_from_type;
 
 use medici_macros::{build_automaton, ActionState, GlobalState, WaitState};
 use medici_traits::prelude::*;
-use medici_traits::entities::{EntityPrototype, E_ID_KEY};
+use medici_traits::entities::E_ID_KEY;
 use medici_traits::automata::pushdown_automaton::{PullupFrom, PushdownFrom};
 
 use containers::entities::EntityService;
@@ -16,7 +16,7 @@ use containers::tapes::TapeService;
 build_automaton!{
     // Game object layout
 
-    #[derive(Debug)]
+    #[derive(Debug, Default)]
     struct Game<X: Global> {
         // State MUST BE THE FIRST PARAMETER, defining X.
         // X represents on of the global states.
@@ -55,7 +55,7 @@ build_automaton!{
             // Actionable inherits from Triggerable
             #[derive(Debug, GlobalState)]
             struct Action<U: Actionable>(U);
-            #[derive(Debug, GlobalState)]
+            #[derive(Debug, GlobalState, Default)]
             struct Finished();
 
             #[derive(Debug, GlobalState)]
@@ -134,10 +134,11 @@ build_automaton!{
 
         // Example of Game prototype:
         //      Game<'a>(&'a Entity);
-        Game {
-            // This is the implementation of the GamePrototype.
-            // The relevant Entity can be accessed by using self.0.
-        },
+        //      GameMut<'a>(&'a mut Entity);
+        //
+        // You can implement these prototypes in the implementations module.
+        // The relevant Entity can be accessed by using self.0.
+        Game,
     }
 }
 
@@ -209,32 +210,18 @@ where
 
 ////////////////////////////
 
-impl<'a> EntityPrototype for prototypes::Game<'a> {}
-impl<'a> From<&'a Entity> for prototypes::Game<'a> {
-    fn from(e: &'a Entity) -> Self {
-        prototypes::Game(&e)
-    }
-}
-
-////////////////////////////
-
-// impl<W: Waitable> Global for self::states::global::Wait<W> {}
-// impl<T: Timing, U: Actionable> Global for self::states::global::Action<T, U> {}
-// impl Global for self::states::global::Finished {}
-// impl<T: Timing, U: Triggerable> Global for self::states::global::Effect<T, U> {}
-// impl<T: Timing, U: Triggerable> Global for self::states::global::Trigger<T, U> {}
-// impl<T: Timing, U: Actionable> Global for self::states::global::Death<T, U> {}
-
-// impl Waitable for self::states::waitable::Input {}
-
-// impl Actionable for self::states::actionable::EndTurn {}
-// impl Triggerable for self::states::actionable::EndTurn {}
-
 // This enumeration holds all tags which can describe properties of
 // entities.
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub enum GameTags {
     EntityId = E_ID_KEY,
+
+    CurrentPlayerOrd = 1, // 1-indexed
+
+    /////////////////////////////
+    // Non public tags (>5000) //
+    /////////////////////////////
+    MaxPlayers = 5000,
 }
 
 #[cfg(test)]

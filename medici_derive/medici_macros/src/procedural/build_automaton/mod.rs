@@ -89,7 +89,7 @@ pub fn impl_build_automaton(
     let transition_module = transitions.build_ast_module(&game_struct)?;    
     transition_module.to_tokens(&mut return_tokens);
 
-    let prototype_module = prototypes.build_output()?;
+    let prototype_module = prototypes.build_output(&entity_struct)?;
     prototype_module.to_tokens(&mut return_tokens);
 
     return Ok(return_tokens.into());

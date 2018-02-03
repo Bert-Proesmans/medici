@@ -1,6 +1,7 @@
 #![plugin(interpolate_idents)]
 #![feature(proc_macro)]
 #![feature(plugin)]
+#![recursion_limit="128"]
 
 extern crate proc_macro;
 extern crate proc_macro2;

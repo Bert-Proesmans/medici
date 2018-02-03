@@ -1,5 +1,7 @@
 use std::clone::Clone;
 use std::convert::TryFrom;
+use std::default::Default;
+
 
 use medici_traits::prelude::*;
 use automaton::prelude::*;
@@ -99,6 +101,17 @@ pub struct ListenerService {
     pre_listener: Vec<ListenerEntry>,
     peri_listener: Vec<ListenerEntry>,
     post_listener: Vec<ListenerEntry>,
+}
+
+// DBG
+impl Default for ListenerService {
+    fn default() -> Self {
+        ListenerService {
+            pre_listener: vec![],
+            peri_listener: vec![],
+            post_listener: vec![],
+        }
+    }
 }
 
 impl ListenerService {

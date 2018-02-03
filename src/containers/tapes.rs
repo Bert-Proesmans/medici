@@ -1,5 +1,7 @@
 use std::default::Default;
 
+use automaton::prelude::*;
+
 #[derive(Debug)]
 pub struct TapeService {
     // This contains all global data which can be accessed by all states.
@@ -13,7 +15,7 @@ impl Default for TapeService {
 }
 
 impl TapeService {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(c: &SetupConfig) -> Result<Self, ()> {
+        Ok(Self {})
     }
 }

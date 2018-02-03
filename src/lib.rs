@@ -20,6 +20,8 @@ pub mod automaton;
 
 #[cfg(test)]
 mod tests {
+    use std::default::Default;
+
     use medici_traits::entities::GAME_E_ID;
 
     use automaton::prelude::*;
@@ -30,7 +32,8 @@ mod tests {
 
     #[test]
     fn entry() {
-        let mut game = Game::new();
+        let config: SetupConfig = Default::default();
+        let mut game = Game::new(config).expect("Error creating new game!");
 
         {
             let game_entity = game.entities.entity(GAME_E_ID).unwrap();
@@ -39,6 +42,9 @@ mod tests {
 
         // Add trigger
         game.listeners.add_trigger(turn_end_trigger).unwrap();
+
+        // Start game
+        let game: Game<Wait<Input>> = game.into();
 
         // Do stuff
         let first_turn = end_turn(game).expect("Game unexpectedly finished");
@@ -49,10 +55,14 @@ mod tests {
 
     #[test]
     fn listeners() {
-        let mut new_game = Game::new();
+        let config: SetupConfig = Default::default();
+        let mut new_game = Game::new(config).expect("Error creating new game!");
 
         // Add trigger
         new_game.listeners.add_trigger(turn_end_trigger).unwrap();
+
+        // Start game
+        let new_game: Game<Wait<Input>> = new_game.into();
 
         // Do stuff
         let first_turn = end_turn(new_game).expect("Game unexpectedly finished");
@@ -68,6 +78,13 @@ mod tests {
             .expect("Error in proto assignment!");
         game_entity
             .as_proto::<GameProto>()
+            .expect("Error in proto retrieval!");
+
+        game_entity
+            .add_proto::<GameProtoMut>()
+            .expect("Error in proto assignment!");
+        game_entity
+            .as_proto_mut::<GameProtoMut>()
             .expect("Error in proto retrieval!");
     }
 }

@@ -227,6 +227,8 @@ pub enum GameTags {
 #[cfg(test)]
 mod tests {
     use std::marker::PhantomData;
+    use std::default::Default;
+
     // use medici_traits::prelude::*;
     use medici_traits::automata::{PullupInto, PushdownInto};
 
@@ -239,12 +241,8 @@ mod tests {
 
     #[test]
     fn game_transitions() {
-        let game: Game<Wait<Input>> = Game {
-            state: PhantomData,
-            listeners: ListenerService::new(),
-            entities: EntityService::new(),
-            storage: TapeService::new(),
-        };
+        let game = Game::new(Default::default()).expect("Error creating new game!");
+        let game: Game<Wait<Input>> = game.into();
 
         let game: Game<Action<EndTurn>> = game.into();
         let game: Game<Effect<EndTurn>> = game.pushdown();

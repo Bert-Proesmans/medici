@@ -2,7 +2,6 @@ use std::clone::Clone;
 use std::convert::TryFrom;
 use std::default::Default;
 
-
 use medici_traits::prelude::*;
 use automaton::prelude::*;
 use automaton::states::timing::EnumerationTiming;
@@ -115,12 +114,12 @@ impl Default for ListenerService {
 }
 
 impl ListenerService {
-    pub fn new() -> Self {
-        Self {
+    pub fn new(c: &SetupConfig) -> Result<Self, ()> {
+        Ok(Self {
             pre_listener: vec![],
             peri_listener: vec![],
             post_listener: vec![],
-        }
+        })
     }
 }
 

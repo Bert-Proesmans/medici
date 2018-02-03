@@ -2,9 +2,10 @@ use std::collections::HashMap;
 use std::default::Default;
 
 use medici_traits::entities::{EntityId, GAME_E_ID};
-use automaton::prelude::*;
 
 use containers::cards::CardContainer;
+
+use automaton::prelude::*;
 
 #[derive(Debug)]
 pub struct EntityService {
@@ -28,19 +29,34 @@ impl Default for EntityService {
 }
 
 impl EntityService {
-    pub fn new() -> Self {
-        // Build game entity
+    pub fn new(c: &SetupConfig) -> Result<Self, ()> {        
+        let mut e_service = Self {
+            entities: hashmap!{},
+            last_entity_id: 0,
+            zones: 0,
+        };
+
+        e_service = e_service.build_game(c)?;
+        e_service = e_service.build_players(c)?;
+
+        Ok(e_service)
+    }
+
+    fn build_game(mut self, c: &SetupConfig) -> Result<Self, ()> {
         let game_card = CardContainer::game_card();
         let mut game_entity = Entity::new(GAME_E_ID, game_card);
-        game_entity.add_proto::<GameProto>().unwrap();
+        game_entity.add_proto::<GameProto>()
+                    // TODO
+                    .map_err(|_| ());
 
-        Self {
-            entities: hashmap!{
-                GAME_E_ID => game_entity
-            },
-            last_entity_id: GAME_E_ID,
-            zones: 0,
-        }
+        self.entities.insert(GAME_E_ID, game_entity);
+        self.last_entity_id = GAME_E_ID;
+        Ok(self)
+    }
+
+    fn build_players(mut self, c: &SetupConfig) -> Result<Self, ()> {
+        // TODO
+        Ok(self)
     }
 
     pub fn new_entity(&mut self, card: &'static Card) -> &mut Entity {

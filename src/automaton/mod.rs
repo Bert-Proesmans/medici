@@ -1,27 +1,8 @@
 mod config;
+mod setup_config;
 pub mod implementations;
 pub mod card_sets;
 pub mod runtime;
-
-mod setup {
-    use std::marker::PhantomData;
-    use containers::listeners::ListenerService;
-    use containers::entities::EntityService;
-    use containers::tapes::TapeService;
-
-    use super::prelude::*;
-
-    impl Game<Wait<Input>> {
-        pub fn new() -> Self {
-            Game {
-                state: PhantomData,
-                entities: EntityService::new(),
-                storage: TapeService::new(),
-                listeners: ListenerService::new(),
-            }
-        }
-    }
-}
 
 /* Broker overlay between configured automaton and medici implementations. */
 
@@ -32,8 +13,9 @@ pub mod prelude {
     // when building transition methods!
 
     pub use super::config::{Card, Entity, Game, GameTags};
+    pub use super::setup_config::SetupConfig;
     pub use super::config::states::global::{Action, Death, Effect, Finished, Trigger, Wait};
-    pub use super::config::states::waitable::Input;
+    pub use super::config::states::waitable::{Input, Start};
     pub use super::config::states::timing::{Peri, Post, Pre};
     pub use super::config::states::triggerable::EndTurn;
     // pub use super::config::states::triggerable::*;

@@ -3,11 +3,8 @@ use std::convert::From;
 use medici_traits::prelude::*;
 use medici_traits::entities::EntityPrototype;
 
-use automaton::prelude::{Entity, GameTags};
+use automaton::prelude::{Entity, GameTags, Card};
 use automaton::prototypes::EnumerationPrototype;
-
-// TODO; Move card structure INTO automaton!
-use containers::cards::Card;
 
 impl<'a> From<&'a Entity> for EntityId {
     fn from(e: &'a Entity) -> EntityId {
@@ -16,7 +13,7 @@ impl<'a> From<&'a Entity> for EntityId {
 }
 
 impl Entity {
-    pub fn new(e_id: EntityId, card: Card) -> Self {
+    pub fn new(e_id: EntityId, card: &'static Card) -> Self {
         Entity {
             id: e_id,
             state: hashmap!{GameTags::EntityId => e_id},

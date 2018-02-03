@@ -1,8 +1,9 @@
 mod config;
 pub mod implementations;
+pub mod card_sets;
 pub mod runtime;
 
-mod temp {
+mod setup {
     use std::marker::PhantomData;
     use containers::listeners::ListenerService;
     use containers::entities::EntityService;
@@ -30,7 +31,7 @@ pub mod prelude {
     // because all states are leaked into that module because of access limitations
     // when building transition methods!
 
-    pub use super::config::{Entity, Game, GameTags};
+    pub use super::config::{Entity, Game, GameTags, Card};
     pub use super::config::states::global::{Action, Death, Effect, Finished, Trigger, Wait};
     pub use super::config::states::waitable::Input;
     pub use super::config::states::timing::{Peri, Post, Pre};

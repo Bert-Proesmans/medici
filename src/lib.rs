@@ -5,6 +5,8 @@
 
 #[macro_use]
 extern crate maplit;
+#[macro_use]
+extern crate lazy_static;
 
 extern crate medici_macros;
 extern crate medici_traits;
@@ -23,6 +25,8 @@ mod tests {
     use automaton::prelude::*;
     use automaton::implementations::effects::triggers::turn_end_trigger;
     use automaton::implementations::effects::actions::end_turn;
+
+    use containers::cards::CardContainer;
 
     #[test]
     fn entry() {
@@ -57,7 +61,8 @@ mod tests {
 
     #[test]
     fn entities() {
-        let mut game_entity = Entity::new(GAME_E_ID, 0);
+        let game_card = CardContainer::game_card();
+        let mut game_entity = Entity::new(GAME_E_ID, game_card);
         game_entity
             .add_proto::<GameProto>()
             .expect("Error in proto assignment!");

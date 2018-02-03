@@ -11,6 +11,7 @@ pub mod action;
 pub mod timing;
 pub mod waiting;
 pub mod global;
+pub mod cards;
 
 pub mod prelude {
     // Immediate re-export for usability
@@ -25,4 +26,5 @@ pub mod prelude {
     pub use waiting::Waitable;
     pub use timing::Timing;
     pub use entities::EntityId;
+    pub use cards::CardId;
 }

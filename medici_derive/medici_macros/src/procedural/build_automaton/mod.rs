@@ -23,6 +23,7 @@ use self::prototype_parent_container::ProtoTypeParentContainer;
 struct Automaton {
     game_struct: ItemStruct,
     entity_struct: ItemStruct,
+    card_struct: ItemStruct,
     states: StateParentContainer,
     transitions: TransitionParentContainer,
     prototypes: ProtoTypeParentContainer,
@@ -32,6 +33,7 @@ impl Synom for Automaton {
     named!(parse -> Self, do_parse!(
         game_struct: syn!(ItemStruct) >>
         entity_struct: syn!(ItemStruct) >>
+        card_struct: syn!(ItemStruct) >>
         states: syn!(StateParentContainer) >>
         transitions: syn!(TransitionParentContainer) >>
         prototypes: syn!(ProtoTypeParentContainer) >>
@@ -39,6 +41,7 @@ impl Synom for Automaton {
             Automaton {
                 game_struct,
                 entity_struct,
+                card_struct,
                 states,
                 transitions,
                 prototypes,
@@ -61,8 +64,8 @@ pub fn impl_build_automaton(
     })?;
 
     // Deconstruct subject and build state machine.
-    let Automaton {game_struct, mut entity_struct, states, 
-        transitions, prototypes} = subject;
+    let Automaton {game_struct, mut entity_struct, mut card_struct,
+        states, transitions, prototypes} = subject;
 
     validate_game_struct(&game_struct)?;
     // No validation for the entity_structure
@@ -74,8 +77,11 @@ pub fn impl_build_automaton(
     let game_struct = write_game_struct(game_struct, &mut return_tokens)?;
 
     let pub_vis: Visibility = parse_quote!{pub};
-    entity_struct.vis = pub_vis;
-    entity_struct.to_tokens(&mut return_tokens);    
+    entity_struct.vis = pub_vis.clone();
+    entity_struct.to_tokens(&mut return_tokens); 
+
+    card_struct.vis = pub_vis.clone();
+    card_struct.to_tokens(&mut return_tokens);   
     
     let state_module = states.build_output()?; 
     state_module.to_tokens(&mut return_tokens);

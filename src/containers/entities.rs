@@ -3,8 +3,7 @@ use std::collections::HashMap;
 use medici_traits::entities::{EntityId, GAME_E_ID};
 use automaton::prelude::*;
 
-// TODO; Move card structure INTO automaton!
-use containers::cards::{Card, GAME_CARD};
+use containers::cards::CardContainer;
 
 #[derive(Debug)]
 pub struct EntityService {
@@ -19,7 +18,8 @@ pub struct EntityService {
 impl EntityService {
     pub fn new() -> Self {
         // Build game entity
-        let mut game_entity = Entity::new(GAME_E_ID, GAME_CARD);
+        let game_card = CardContainer::game_card();
+        let mut game_entity = Entity::new(GAME_E_ID, game_card);
         game_entity.add_proto::<GameProto>().unwrap();
 
         Self {
@@ -31,7 +31,7 @@ impl EntityService {
         }
     }
 
-    pub fn new_entity(&mut self, card: Card) -> &mut Entity {
+    pub fn new_entity(&mut self, card: &'static Card) -> &mut Entity {
         let next_e_id = self.last_entity_id + 1;
         let new_entity = Entity::new(next_e_id, card);
         self.entities.insert(next_e_id, new_entity);

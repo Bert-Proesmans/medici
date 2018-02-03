@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::vec::Vec;
+
 use value_from_type_macros::value_from_type;
 
 use medici_macros::{build_automaton, ActionState, GlobalState, WaitState};
@@ -34,7 +36,15 @@ build_automaton!{
         /* other stuff */
         // This points towards the generated enum from the prototypes module, see below.
         pub prototypes: Vec<prototypes::EnumerationPrototype>,
-        pub card: u32 // TODO
+        pub card: &'static Card,
+    }
+
+    #[derive(Debug)]
+    struct Card {
+        pub uid: CardId,
+        pub name: &'static str,
+
+        pub data: HashMap<GameTags, u32>,
     }
 
     states {

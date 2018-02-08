@@ -3,9 +3,10 @@ use std::vec::Vec;
 
 use value_from_type_macros::value_from_type;
 
-use medici_macros::{build_automaton, ActionState, GlobalState, WaitState};
+use medici_macros::{build_automaton, State, ActionState, GlobalState, WaitState};
 use medici_traits::prelude::*;
 use medici_traits::entities::E_ID_KEY;
+use medici_traits::automata::State;
 use medici_traits::automata::pushdown_automaton::{PullupFrom, PushdownFrom};
 
 use containers::entities::EntityService;
@@ -17,10 +18,11 @@ build_automaton!{
     // Game object layout
 
     #[derive(Debug, Default)]
-    struct Game<X: Global> {
+    struct Game<X: Global + State> {
         // State MUST BE THE FIRST PARAMETER, defining X.
         // X represents on of the global states.
         pub state: X,
+        pub transaction: X::Transaction,
         pub listeners: ListenerService,
         pub entities: EntityService,
         pub storage: TapeService,
@@ -51,22 +53,33 @@ build_automaton!{
         // Each group represents a submodule (the names are converted to snake_case as well)
         Global {
             #[derive(Debug, GlobalState)]
+            #[State(Game, transactions::Epsilon)]
             struct Wait<W: Waitable>(W);
+            
             // Actionable inherits from Triggerable
             #[derive(Debug, GlobalState)]
+            #[State(Game, transactions::Epsilon)]
             struct Action<U: Actionable>(U);
-            #[derive(Debug, GlobalState, Default)]
+
+            #[derive(Debug, Default, GlobalState)]
+            #[State(Game, transactions::Epsilon)]
             struct Finished();
 
             #[derive(Debug, GlobalState)]
+            #[State(Game, transactions::Epsilon)]
             struct Effect<U: Actionable>(U);
+
             #[derive(Debug, GlobalState)]
+            #[State(Game, transactions::Epsilon)]
             struct Trigger<T: Timing, U: Triggerable>(T, U);
+
             #[derive(Debug, GlobalState)]
+            #[State(Game, transactions::Epsilon)]
             struct Death<T: Timing, U: Triggerable>(T, U);
 
             // Custom states can be defined here.
             #[derive(Debug, GlobalState)]
+            #[State(Game, transactions::Epsilon)]
             struct RecurseEffect<T: Timing, U: Triggerable>(T, U);
         }
 
@@ -93,6 +106,12 @@ build_automaton!{
             #[derive(Debug, ActionState)]
             struct EndTurn();
         }
+    }
+
+    transactions {
+        // No transaction details are expected
+        #[derive(Debug, Default)]
+        struct Epsilon();
     }
 
     /* Possible state machine transitions. */
@@ -147,6 +166,7 @@ build_automaton!{
 
 ////////////////////////////
 use self::states::global::{Death, RecurseEffect, Trigger};
+use self::transactions::Epsilon;
 
 impl<T, U> PushdownFrom<Game<Trigger<T, U>>> for Game<RecurseEffect<T, U>>
 where
@@ -156,6 +176,7 @@ where
     fn pushdown_from(x: Game<Trigger<T, U>>) -> Self {
         Game {
             state: PhantomData,
+            transaction: Epsilon(), // TODO
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,
@@ -171,6 +192,7 @@ where
     fn pullup_from(x: Game<RecurseEffect<T, U>>) -> Self {
         Game {
             state: PhantomData,
+            transaction: Epsilon(), // TODO
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,
@@ -186,6 +208,7 @@ where
     fn pushdown_from(x: Game<Death<T, U>>) -> Self {
         Game {
             state: PhantomData,
+            transaction: Epsilon(), // TODO
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,
@@ -201,6 +224,7 @@ where
     fn pullup_from(x: Game<RecurseEffect<T, U>>) -> Self {
         Game {
             state: PhantomData,
+            transaction: Epsilon(), // TODO
             listeners: x.listeners,
             entities: x.entities,
             storage: x.storage,
@@ -230,7 +254,8 @@ mod tests {
     use std::default::Default;
 
     // use medici_traits::prelude::*;
-    use medici_traits::automata::{PullupInto, PushdownInto};
+    use medici_traits::automata::deterministic_automaton::TransitionInto;
+    use medici_traits::automata::pushdown_automaton::{PullupInto, PushdownInto};
 
     use super::*;
     use super::states::global::*;
@@ -242,9 +267,9 @@ mod tests {
     #[test]
     fn game_transitions() {
         let game = Game::new(Default::default()).expect("Error creating new game!");
-        let game: Game<Wait<Input>> = game.into();
+        let game: Game<Wait<Input>> = game.transition(Epsilon());
 
-        let game: Game<Action<EndTurn>> = game.into();
+        let game: Game<Action<EndTurn>> = game.transition(Epsilon());
         let game: Game<Effect<EndTurn>> = game.pushdown();
         let _game: Game<Action<EndTurn>> = game.pullup();
     }

@@ -21,6 +21,7 @@ pub mod prelude {
     // pub use super::config::states::triggerable::*;
     // Don't confuse this type with the Game structure!
     pub use super::config::prototypes::{Game as GameProto, GameMut as GameProtoMut};
+    pub use super::config::transactions::Epsilon;
 }
 
 pub mod states {

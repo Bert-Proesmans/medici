@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use medici_traits::entities::GAME_E_ID;
 
 use automaton::prelude::*;

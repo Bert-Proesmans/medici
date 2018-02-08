@@ -85,7 +85,9 @@ impl TransitionParentContainer {
             use std::marker::PhantomData;
             use std::convert::From;
 
-            use medici_traits::automata;
+            use medici_traits::automata::State;
+            use medici_traits::automata::deterministic_automaton::TransitionFrom;
+            use medici_traits::automata::pushdown_automaton::{PushdownFrom, PullupFrom};
         };
 
         let collector = [into_transitions, pushdown_transitions];
@@ -138,6 +140,8 @@ impl TransitionParentContainer {
         let game_fields = game_struct.fields.iter();
         let field_access = game_fields.filter_map(|f| {
             let ref_ident = f.ident.as_ref().unwrap();
+            // TODO; Filter on transaction as well!
+            // See below for part two of this TODO.
             if ref_ident == "state" {
                 return None
             } else {
@@ -145,6 +149,7 @@ impl TransitionParentContainer {
             }
         });
         let (field_left, field_right): (Vec<&Ident>, Vec<&Ident>) = field_access.unzip();
+
         match *data {
             TransitionEntry::PushdownTR(ref e) => {
                 let left = &e.left;
@@ -156,7 +161,7 @@ impl TransitionParentContainer {
                 
                 let mut tokens = Tokens::new();
                 let x = quote_spanned!{transition_site=>
-                    impl automata::PushdownFrom<#game_ident<#left>> for #game_ident<#right> {
+                    impl PushdownFrom<#game_ident<#left>> for #game_ident<#right> {
                         fn pushdown_from(x: #game_ident<#left>) -> Self {
                             Self {
                                 state: PhantomData,
@@ -168,7 +173,7 @@ impl TransitionParentContainer {
                 x.to_tokens(&mut tokens);
 
                 let x = quote_spanned!{transition_site=>
-                    impl automata::PullupFrom<#game_ident<#right>> for #game_ident<#left> {
+                    impl PullupFrom<#game_ident<#right>> for #game_ident<#left> {
                         fn pullup_from(x: #game_ident<#right>) -> Self {
                             Self {
                                 state: PhantomData,
@@ -185,11 +190,17 @@ impl TransitionParentContainer {
                 let left = &e.left;
                 let right = &e.right;
                 let transition_site = left.span().resolved_at(call_site);
+
+                // TODO; Remove this hack when the above TODO is resolved
+                let field_left = field_left.into_iter().filter(|i| i.as_ref() != "transaction");
+                let field_right = field_right.into_iter().filter(|i| i.as_ref() != "transaction");
+                
                 quote_spanned!{transition_site=>
-                    impl From<#game_ident<#left>> for #game_ident<#right> {
-                        fn from(x: #game_ident<#left>) -> Self {
+                    impl TransitionFrom<#game_ident<#left>> for #game_ident<#right> {
+                        fn transition_from(x: #game_ident<#left>, transaction: <Self as State>::Transaction) -> Self {
                             Self {
                                 state: PhantomData,
+                                transaction: transaction,
                                 #( #field_left: x.#field_right ),*
                             }
                         }

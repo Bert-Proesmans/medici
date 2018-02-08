@@ -1,7 +1,7 @@
 use std::convert::TryInto;
 use std::iter::IntoIterator;
 
-// use medici_traits::automata::pushdown_automaton::{PullupInto, PushdownInto};
+use medici_traits::automata::deterministic_automaton::TransitionInto;
 use medici_traits::prelude::*;
 
 use automaton::prelude::*;
@@ -22,36 +22,36 @@ pub fn exec_action_listeners<U>(x: Game<Effect<U>>) -> Result<Game<Effect<U>>, G
 where
     U: Actionable + IntoEnum<EnumerationTrigger>,
 
-    Game<Effect<U>>: Into<Game<Trigger<Pre, U>>>,
-    Game<Trigger<Pre, U>>: Into<Game<Death<Pre, U>>>,
-    Game<Trigger<Peri, U>>: Into<Game<Death<Peri, U>>>,
-    Game<Trigger<Post, U>>: Into<Game<Death<Post, U>>>,
+    Game<Effect<U>>: TransitionInto<Game<Trigger<Pre, U>>>,
+    Game<Trigger<Pre, U>>: TransitionInto<Game<Death<Pre, U>>>,
+    Game<Trigger<Peri, U>>: TransitionInto<Game<Death<Peri, U>>>,
+    Game<Trigger<Post, U>>: TransitionInto<Game<Death<Post, U>>>,
 
-    Game<Death<Pre, U>>: Into<Game<Trigger<Peri, U>>>,
-    Game<Death<Peri, U>>: Into<Game<Trigger<Post, U>>>,
-    Game<Death<Post, U>>: Into<Game<Effect<U>>>,
+    Game<Death<Pre, U>>: TransitionInto<Game<Trigger<Peri, U>>>,
+    Game<Death<Peri, U>>: TransitionInto<Game<Trigger<Post, U>>>,
+    Game<Death<Post, U>>: TransitionInto<Game<Effect<U>>>,
 {
     // PRE
-    let mut pre_trigger: Game<Trigger<Pre, U>> = x.into();
+    let mut pre_trigger: Game<Trigger<Pre, U>> = x.transition(Epsilon());
     let listeners = fetch_listeners(&pre_trigger);
     pre_trigger = exec_trigger_step(pre_trigger, listeners)?;
-    let x: Game<Death<Pre, U>> = pre_trigger.into();
+    let x: Game<Death<Pre, U>> = pre_trigger.transition(Epsilon());
 
     // PERI
-    let mut peri_trigger: Game<Trigger<Peri, U>> = x.into();
+    let mut peri_trigger: Game<Trigger<Peri, U>> = x.transition(Epsilon());
     let listeners = fetch_listeners(&peri_trigger);
     peri_trigger = exec_trigger_step(peri_trigger, listeners)?;
-    let x: Game<Death<Peri, U>> = peri_trigger.into();
+    let x: Game<Death<Peri, U>> = peri_trigger.transition(Epsilon());
 
     // POST
-    let mut post_trigger: Game<Trigger<Post, U>> = x.into();
+    let mut post_trigger: Game<Trigger<Post, U>> = x.transition(Epsilon());
     let listeners = fetch_listeners(&post_trigger);
     post_trigger = exec_trigger_step(post_trigger, listeners)?;
-    let mut x: Game<Death<Post, U>> = post_trigger.into();
+    let mut x: Game<Death<Post, U>> = post_trigger.transition(Epsilon());
 
     // Note: Death phase is only executed at the end of the action effects!
     x = exec_death_phase(x)?;
-    Ok(x.into())
+    Ok(x.transition(Epsilon()))
 }
 
 pub fn exec_trigger_step<T, U, I>(

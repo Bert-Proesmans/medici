@@ -16,6 +16,8 @@ extern crate heck;
 mod derived;
 #[macro_use]
 mod procedural;
+#[macro_use]
+mod attribute;
 
 macro_rules! derive_impl {
     (# [ $m_name:ident ] X => $m_func:path) => {
@@ -33,6 +35,26 @@ macro_rules! derive_impl {
                     }
                 }
     		}
+        }
+    }
+}
+
+macro_rules! attr_impl {
+    (# [ $m_name:ident () ] X => $m_func:path) => {
+        interpolate_idents! {
+            #[proc_macro_attribute]
+            #[allow(non_snake_case)]
+            pub fn $m_name(args: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+                let proc_name = stringify!($m_name);
+                println!("[BUILD] Running proc (ATTRIBUTE) macro: {:}", proc_name);
+                match $m_func(args, input) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        e.emit();
+                        proc_macro::TokenStream::empty()
+                    }
+                }
+            }
         }
     }
 }
@@ -71,3 +93,7 @@ derive_impl!(#[WaitState] X => derived::impl_derive_wait);
 ////////////////////////////////////////////////////////////////////////
 
 proc_impl!(build_automaton!() => procedural::impl_build_automaton);
+
+////////////////////////////////////////////////////////////////////////
+
+attr_impl!(#[State()] X => attribute::impl_attr_state);

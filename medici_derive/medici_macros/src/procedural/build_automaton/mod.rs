@@ -4,6 +4,7 @@ mod transition_container;
 mod transition_parent_container;
 mod prototype_container;
 mod prototype_parent_container;
+mod transaction_container;
 
 use quote::{Tokens, ToTokens};
 use proc_macro::{self, Diagnostic};
@@ -18,6 +19,7 @@ use self::transition_container::{TransitionContainer, TransitionEntry};
 use self::transition_parent_container::TransitionParentContainer;
 // use self::prototype_container::ProtoTypeContainer;
 use self::prototype_parent_container::ProtoTypeParentContainer;
+use self::transaction_container::TransactionContainer;
 
 
 struct Automaton {
@@ -25,6 +27,7 @@ struct Automaton {
     entity_struct: ItemStruct,
     card_struct: ItemStruct,
     states: StateParentContainer,
+    transactions: TransactionContainer,
     transitions: TransitionParentContainer,
     prototypes: ProtoTypeParentContainer,
 }
@@ -35,6 +38,7 @@ impl Synom for Automaton {
         entity_struct: syn!(ItemStruct) >>
         card_struct: syn!(ItemStruct) >>
         states: syn!(StateParentContainer) >>
+        transactions: syn!(TransactionContainer) >>
         transitions: syn!(TransitionParentContainer) >>
         prototypes: syn!(ProtoTypeParentContainer) >>
         ({
@@ -43,6 +47,7 @@ impl Synom for Automaton {
                 entity_struct,
                 card_struct,
                 states,
+                transactions,
                 transitions,
                 prototypes,
             }
@@ -64,13 +69,16 @@ pub fn impl_build_automaton(
     })?;
 
     // Deconstruct subject and build state machine.
-    let Automaton {game_struct, mut entity_struct, mut card_struct,
-        states, transitions, prototypes} = subject;
+    let Automaton {
+        game_struct, mut entity_struct, mut card_struct,
+        states, transitions, prototypes, transactions,
+    } = subject;
 
     validate_game_struct(&game_struct)?;
     // No validation for the entity_structure
     states.validate()?;
     transitions.validate()?;
+    transactions.validate()?;
     
     let mut return_tokens = Tokens::new();
     // Note: This method also performs transformations on the game structure!
@@ -86,6 +94,9 @@ pub fn impl_build_automaton(
     let state_module = states.build_output()?; 
     state_module.to_tokens(&mut return_tokens);
 
+    let transaction_module = transactions.build_output()?;
+    transaction_module.to_tokens(&mut return_tokens);
+
     let transition_module = transitions.build_ast_module(&game_struct)?;    
     transition_module.to_tokens(&mut return_tokens);
 
@@ -97,6 +108,8 @@ pub fn impl_build_automaton(
 
 fn validate_game_struct(game_struct: &ItemStruct) -> Result<(), Diagnostic> {
     let mut field_iter = game_struct.fields.iter();
+    
+    /* Test struct field: STATE */
     let first_field = field_iter.nth(0).ok_or_else(|| {
         let msg = format!("State field is missing from game struct!");
         game_struct.span().unstable().error(msg)
@@ -112,6 +125,28 @@ fn validate_game_struct(game_struct: &ItemStruct) -> Result<(), Diagnostic> {
         let msg = format!("Game struct must have named fields!");
         return Err(first_field.span().unstable().error(msg));
     }
+
+    /* Test struct field: TRANSACTION */
+    // Note; The iterator is mutated internally, so the 0-th element after getting the 
+    // 0-the element above will result in the 1st field.
+    // This basically is the same as calling iterator::next() twice!
+    let second_field = field_iter.nth(0).ok_or_else(|| {
+        let msg = format!("Transaction field is missing from game struct!");
+        game_struct.span().unstable().error(msg)
+    })?;
+
+    let transaction_field_match_ident = "transaction";
+    if let Some(ident) = second_field.ident {
+        if ident.as_ref() != transaction_field_match_ident {
+            let msg = format!("Expected second field to be named `{:}`", transaction_field_match_ident);
+            return Err(second_field.span().unstable().error(msg));
+        }
+    } 
+    // We already tested for named/unnamed through the first field.
+    // else {
+    //     let msg = format!("Game struct must have named fields!");
+    //     return Err(second_field.span().unstable().error(msg));
+    // }
 
     let state_match_path: Path = parse_quote!{X};
     if let Type::Path(ref p) = first_field.ty {

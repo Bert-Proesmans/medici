@@ -1,6 +1,9 @@
 extern crate medici;
+extern crate medici_traits;
 
 use std::default::Default;
+
+use medici_traits::automata::deterministic_automaton::TransitionInto;
 
 use medici::automaton::prelude::*;
 use medici::automaton::implementations::effects::triggers::turn_end_trigger;
@@ -19,7 +22,7 @@ fn main() {
     println!("Listener added");
 
     // Start the game
-    let game: Game<Wait<Input>> = game.into();
+    let game: Game<Wait<Input>> = game.transition(Epsilon());
 
     // Do stuff
     println!("Ending turn P1");

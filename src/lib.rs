@@ -22,6 +22,7 @@ pub mod automaton;
 mod tests {
     use std::default::Default;
 
+    use medici_traits::automata::deterministic_automaton::TransitionInto;
     use medici_traits::entities::GAME_E_ID;
 
     use automaton::prelude::*;
@@ -44,7 +45,7 @@ mod tests {
         game.listeners.add_trigger(turn_end_trigger).unwrap();
 
         // Start game
-        let game: Game<Wait<Input>> = game.into();
+        let game: Game<Wait<Input>> = game.transition(Epsilon());
 
         // Do stuff
         let first_turn = end_turn(game).expect("Game unexpectedly finished");
@@ -62,7 +63,7 @@ mod tests {
         new_game.listeners.add_trigger(turn_end_trigger).unwrap();
 
         // Start game
-        let new_game: Game<Wait<Input>> = new_game.into();
+        let new_game: Game<Wait<Input>> = new_game.transition(Epsilon());
 
         // Do stuff
         let first_turn = end_turn(new_game).expect("Game unexpectedly finished");

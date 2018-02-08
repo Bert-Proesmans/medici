@@ -1,8 +1,16 @@
-pub trait PullupFrom<T>: Sized {
+use std::marker::Sized;
+
+pub trait PullupFrom<T> : Sized + super::State
+where
+    T: Sized,
+{
     fn pullup_from(_: T) -> Self;
 }
 
-pub trait PullupInto<T> {
+pub trait PullupInto<T> : Sized
+where
+    T: Sized + super::State,
+{
     fn pullup(self) -> T;
 }
 
@@ -15,11 +23,17 @@ where
     }
 }
 
-pub trait PushdownFrom<T>: Sized {
+pub trait PushdownFrom<T> : Sized + super::State
+where
+    T: Sized,
+{
     fn pushdown_from(_: T) -> Self;
 }
 
-pub trait PushdownInto<T> {
+pub trait PushdownInto<T> : Sized
+where
+    T: Sized + super::State,
+{
     fn pushdown(self) -> T;
 }
 

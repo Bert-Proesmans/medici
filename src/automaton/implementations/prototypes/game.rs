@@ -1,5 +1,5 @@
 use automaton::prelude::*;
-use automaton::prototypes::{Game, GameMut};
+use automaton::prototypes::GameMut;
 
 impl<'a> GameMut<'a> {
     pub fn set_next_player(&mut self) -> Result<(), String> {

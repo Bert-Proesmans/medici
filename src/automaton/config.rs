@@ -147,7 +147,7 @@ build_automaton!{
     }
 
     // Behaviours for our entities. Each entry will become a tuple struct
-    // and it's body will be the implementation of that struct.
+    // for readonly and read/write (postfix 'mut') access.
     prototypes {
         #![value_from_type(EnumerationPrototype)]
 

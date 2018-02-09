@@ -1,7 +1,7 @@
 # Medici
 
 Ever searched for a "Game engine", but the results didn't satisfy your needs?  
-Tried to update your search query with "Simulator engine" resulting in the same feeling?
+Tried to update your search query with "Simulator engine" resulting in the same feeling?  
 So have I, and decided to build Medici.
 
 Medici is as much as a simulation engine as a game engine, but not following the same definitions
@@ -35,18 +35,19 @@ Building your game with Medici will result in more loose coupling within your ga
 
 Medici is still in rapid development, but the outline is following;  
 
-The actual simulation happens state-machine-wise, each transition is a change made to the system either
-through user action or a chained action (triggered). Each state fetches and executes listeners for 
-occurred changes.  
-The most important structure is the `Game` container containing all data generated during simulation.
-The type of this container represents the current state of the simulation.  
-You model the state machine by calling the procedural macro `build_automaton`, filling in all information
-it requires.  
+The actual simulation happens state-machine-wise, each transition is a change made 
+to the system either through user action or a chained action (triggered).  
+Each state fetches and executes listeners for occurred changes.  
+The most important structure is the `Game` container containing all data generated 
+during simulation. The type of this container represents the current state of 
+the simulation.  
+You model the state machine by calling the procedural macro `build_automaton`, 
+filling in all information it requires.  
 Now actual game coding can begin, implementing actions and behaviours.
 
 ## Examples
 
-> This framework is still in rapid development and examples might become outdated.
+> This framework is still in rapid development and examples might become outdated.  
 > Expect fundamental changes when Error propagation and default methods 
 > (like `exec_action_listeners()`) are figured out.
 
@@ -54,10 +55,13 @@ Now actual game coding can begin, implementing actions and behaviours.
 
 > Reference: [src/automaton/config.rs]
 
-The macro `build_automaton` builds everything for you, if all necessary information is provided.
-The traits you normally use are exported by the `medici_traits` crate, so make sure you import it's prelude!
-The intention is to create your simulator configuration in a seperate file, exporting important
-pieces to your other code.
+The macro `build_automaton` builds everything for you, if all necessary information 
+is provided.  
+The intention is to create your simulator configuration in a seperate file, exporting
+important pieces to your other code.
+The traits you normally use are exported by the `medici_traits` crate, so make 
+sure you import its prelude!  
+
 
 ```rust
 #![feature(proc_macro)]
@@ -93,22 +97,22 @@ build_automaton!{
 			#[derive(GlobalState)]
 			// Implement necessary State trait for Wait, providing a path to the Game 
 			// structure and a path to the Transaction type (see below).
-            #[State(Game, transactions::Epsilon)]
-            // Implement the actual state, which can contain one a sub-state and/or 
-            // additionall state information.
-            // Wait represents a paused simulator, W indicates the necessary action to 
-            // continue.
-            struct Wait<W: Waitable>(W);
+	        #[State(Game, transactions::Epsilon)]
+	        // Implement the actual state, which can contain one a sub-state and/or 
+	        // additionall state information.
+	        // Wait represents a paused simulator, W indicates the necessary action to 
+	        // continue.
+	        struct Wait<W: Waitable>(W);
 
-            #[derive(Debug, GlobalState)]
-            #[State(Game, transactions::Epsilon)]
-            struct Trigger<T: Timing, U: Triggerable>(T, U);
+	        #[derive(Debug, GlobalState)]
+	        #[State(Game, transactions::Epsilon)]
+	        struct Trigger<T: Timing, U: Triggerable>(T, U);
 		}
 
 		Waitable {
-            #[derive(Debug, WaitState)]
-            struct Input();
-        }
+	        #[derive(Debug, WaitState)]
+	        struct Input();
+	    }
 
 		[..]
 	}
@@ -157,12 +161,12 @@ build_automaton!{
 
 This example shows how to bootstrap the EndTurn action.
 
-According to our automaton configuration the simulator pauses on `Game<Wait<Input>>`.
+According to our automaton configuration the simulator pauses on `Game<Wait<Input>>`.  
 To initiate our action we have to transition into `Game<Action<EndTurn>>`, after which we 
 trigger all listeners for that specific state.  
 Note that methods consuming a simulation state ALWAYS return the same state when no errors
-are encountered. Errors have not been properly worked out at this moment so `Game<Finished>`
-is returned.
+are encountered.  
+Errors have not been properly worked out at this moment so `Game<Finished>` is returned.
 
 ```rust
 use medici_traits::automata::deterministic_automaton::TransitionInto;
@@ -193,7 +197,7 @@ use cases.
 * Usability design
 
 	- The macro `build_automaton` is a big mess currently and effort must be put into
-	reducing the time to comprehend what it's components do.
+	reducing the time to comprehend what its components do.
 	- A lot of code can be seen as boilerplate, like `exec_action_listeners`. The main
 	blocker here is that most boilerplate code actually needs to know the actual Game
 	structure and other components built through `build_automaton`.  

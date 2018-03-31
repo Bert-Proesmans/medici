@@ -19,7 +19,7 @@ impl TransitionFrom<Machine<Wait<Start>>> for Machine<Wait<Input>> {
             state: PhantomData,
             transaction: t,
             // Following properties MUST stay in sync with `Machine` !
-            storage: old.storage,
+            transaction_storage: old.transaction_storage,
         }
     }
 }
@@ -31,7 +31,7 @@ impl TransitionFrom<Machine<Wait<Input>>> for Machine<Finished> {
             state: PhantomData,
             transaction: t,
             // Following properties MUST stay in sync with `Machine` !
-            storage: old.storage,
+            transaction_storage: old.transaction_storage,
         }
     }
 }
@@ -53,7 +53,7 @@ impl PushdownFrom<Machine<Wait<Input>>, TransactionItem> for Machine<Action<Prin
             state: PhantomData,
             transaction: t,
             // Following properties MUST stay in sync with `Machine` !
-            storage: old.storage,
+            transaction_storage: old.transaction_storage,
         }
     }
 }
@@ -75,7 +75,7 @@ impl PullupFrom<Machine<Action<Print>>, TransactionItem> for Machine<Wait<Input>
             state: PhantomData,
             transaction: old_transaction,
             // Following properties MUST stay in sync with `Machine` !
-            storage: old.storage,
+            transaction_storage: old.transaction_storage,
         })
     }
 }
@@ -97,7 +97,7 @@ impl PushdownFrom<Machine<Action<Print>>, TransactionItem> for Machine<Action<Lo
             state: PhantomData,
             transaction: t,
             // Following properties MUST stay in sync with `Machine` !
-            storage: old.storage,
+            transaction_storage: old.transaction_storage,
         }
     }
 }
@@ -119,7 +119,7 @@ impl PullupFrom<Machine<Action<Load>>, TransactionItem> for Machine<Action<Print
             state: PhantomData,
             transaction: old_transaction,
             // Following properties MUST stay in sync with `Machine` !
-            storage: old.storage,
+            transaction_storage: old.transaction_storage,
         })
     }
 }

@@ -39,7 +39,7 @@ where
     /* Optionals */
     /// Stack storage service to allow PushDown and Pullup behaviour to be
     /// implemented.
-    storage: StackStorage<TransactionItem>,
+    transaction_storage: StackStorage<TransactionItem>,
 }
 
 impl Machine<Wait<Start>> 
@@ -49,7 +49,7 @@ impl Machine<Wait<Start>>
         Self {
             state: PhantomData,
             transaction: Epsilon,
-            storage: StackStorage::new(),
+            transaction_storage: StackStorage::new(),
         }
     }
 }
@@ -66,10 +66,10 @@ where
     X: TopLevelMarker + State,
 {
     fn get(&self) -> &StackStorage<TransactionItem> {
-        &self.storage
+        &self.transaction_storage
     }
 
     fn get_mut(&mut self) -> &mut StackStorage<TransactionItem> {
-        &mut self.storage
+        &mut self.transaction_storage
     }
 }

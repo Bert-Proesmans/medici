@@ -2,7 +2,7 @@
 
 pub mod helper;
 
-use marker::Service;
+use marker::{Service, Timing, Trigger};
 
 /// Type that's generally used to identify and order [`Entity`] objects.
 ///
@@ -23,6 +23,16 @@ pub trait State {
     /// Type of structure which must be provided when transitioning into the state
     /// represented by the enclosing type.
     type Transaction;
+}
+
+/// Trait generalizing over any state that's used to pass into trigger callbacks
+/// when trigger conditions are met.
+pub trait TriggerState: State {
+    /// Encoded type value representing the timing (related to triggers) of the
+    /// current state.
+    type Timing: Timing;
+    /// Encoded type value representing the trigger of the current state.
+    type Trigger: Trigger;
 }
 
 /// Trait representing an object which properties can be altered dynamically (at runtime).

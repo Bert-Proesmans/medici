@@ -1,7 +1,7 @@
 //! Types which encode the states to be used by a state machine.
 
 use medici_core::function::State;
-use medici_core::marker::{ActionableMarker, TopLevelMarker, WaitableMarker};
+use medici_core::marker::{ActionableMarker, TopLevelMarker, TriggerableMarker, WaitableMarker};
 use medici_core::transaction::Epsilon;
 
 use super::transaction::PrintTransaction;
@@ -72,6 +72,7 @@ impl State for Load {
 }
 
 impl ActionableMarker for Load {}
+impl TriggerableMarker for Load {}
 
 /// Action condition state indicating printing is in progress.
 #[derive(Debug, Clone)]
@@ -82,6 +83,7 @@ impl State for Print {
 }
 
 impl ActionableMarker for Print {}
+impl TriggerableMarker for Print {}
 
 ///////////////////////
 // Toplevel FINISHED //

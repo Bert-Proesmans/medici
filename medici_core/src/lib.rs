@@ -15,6 +15,7 @@
 
 #[macro_use]
 extern crate failure;
+extern crate value_from_type_traits;
 
 pub mod error;
 pub mod function;

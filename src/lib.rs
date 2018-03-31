@@ -10,11 +10,6 @@
 // Linters for code residing in documentation.
 #![doc(test(attr(allow(unused_variables), deny(warnings))))]
 
-// #![feature(proc_macro)]
-// #![feature(attr_literals)] // Used for 'from_generic_derive' macro
-// #![feature(conservative_impl_trait)] // Used for 'fn() -> impl Iterator<Item=X>'
-// #![feature(try_from)]
-
 //! Crate used to show off the power of the Medici framework.
 
 #[macro_use]

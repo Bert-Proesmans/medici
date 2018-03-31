@@ -2,6 +2,7 @@
 
 use std::cmp::PartialEq;
 use std::marker::PhantomData;
+use std::convert::TryFrom;
 
 use failure::Error;
 use value_from_type_traits::IntoEnum;

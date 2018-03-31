@@ -1,22 +1,36 @@
-#![feature(proc_macro)]
-#![feature(attr_literals)] // Used for 'from_generic_derive' macro
-#![feature(conservative_impl_trait)] // Used for 'fn() -> impl Iterator<Item=X>'
-#![feature(try_from)]
+// Linters.
+#![allow(dead_code, unused_mut, unused_variables, let_and_return, useless_format)]
+// Prevent successful compilation when documentation is missing.
+#![deny(missing_docs)]
+// Unstable features.
+#![feature(associated_type_defaults, try_from, never_type)]
+// Clippy linting when building debug versions.
+#![cfg_attr(test, feature(plugin))]
+#![cfg_attr(test, plugin(clippy))]
+// Linters for code residing in documentation.
+#![doc(test(attr(allow(unused_variables), deny(warnings))))]
 
+// #![feature(proc_macro)]
+// #![feature(attr_literals)] // Used for 'from_generic_derive' macro
+// #![feature(conservative_impl_trait)] // Used for 'fn() -> impl Iterator<Item=X>'
+// #![feature(try_from)]
+
+//! Crate used to show off the power of the Medici framework.
+
+#[macro_use]
+extern crate failure;
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
 extern crate maplit;
 
-extern crate medici_macros;
-extern crate medici_traits;
+// Medici opinionated framework.
+extern crate medici_core;
 
-extern crate value_from_type_macros;
-extern crate value_from_type_traits;
+pub mod state_machine;
 
-mod containers;
-// Contains our custom state machine.
-pub mod automaton;
+// Note: Keep tests during structural upgrade. These will be used
+// to verify everything works as expected.
 
 #[cfg(test)]
 mod tests {
@@ -25,9 +39,9 @@ mod tests {
     use medici_traits::automata::deterministic_automaton::TransitionInto;
     use medici_traits::entities::GAME_E_ID;
 
-    use automaton::prelude::*;
-    use automaton::implementations::effects::triggers::turn_end_trigger;
     use automaton::implementations::effects::actions::end_turn;
+    use automaton::implementations::effects::triggers::turn_end_trigger;
+    use automaton::prelude::*;
 
     use containers::cards::CardContainer;
 

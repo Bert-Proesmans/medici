@@ -1,0 +1,10 @@
+[package]
+name = "medici_core"
+version = "0.1.0"
+authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
+
+[dependencies]
+failure = "0.1.1"
+
+[dev-dependencies]
+clippy = { version = "*" }

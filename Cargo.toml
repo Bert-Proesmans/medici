@@ -6,17 +6,16 @@ authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 [workspace]
 # Only exclude the sub-root workspace declarations here. This method prevents 
 # Cargo from complaining about multiple defined root workspaces.
-exclude = [
-	"medici_derive",
-	"value_from_type_derive",
-]
+# exclude = [
+# 	"medici_derive",
+# 	"value_from_type_derive",
+# ]
 
 [dependencies]
-medici_macros = {path = "medici_derive/medici_macros"}
-medici_traits = {path = "medici_derive/medici_traits"}
-
-value_from_type_macros = "1.0.1"
-value_from_type_traits = "1.0.1"
-
+medici_core = {path = "medici_core"}
+failure = "0.1.1"
 maplit = "1.0.1"
 lazy_static = "1.0.0"
+
+[dev-dependencies]
+clippy = { version = "*" }

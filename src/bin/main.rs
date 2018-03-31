@@ -33,8 +33,7 @@ fn main() {
     println!("{:?}", finished_state);
 }
 
-
-fn old_main() {
+fn _old_main() {
     // Enable backtraces without messing with env.
     // std::env::set_var("RUST_BACKTRACE", "1");
 

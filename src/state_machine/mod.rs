@@ -11,8 +11,8 @@ use medici_core::function::{ServiceCompliance, State, StateContainer};
 use medici_core::marker::TopLevelMarker;
 use medici_core::service::storage::StackStorage;
 
-use self::transaction::*;
 use self::state::*;
+use self::transaction::*;
 
 /// The state machine.
 ///
@@ -42,8 +42,7 @@ where
     transaction_storage: StackStorage<TransactionItem>,
 }
 
-impl Machine<Wait<Start>> 
-{
+impl Machine<Wait<Start>> {
     /// Creates a new state machine ready to be started.
     pub fn new() -> Self {
         Self {

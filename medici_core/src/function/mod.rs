@@ -4,6 +4,12 @@ pub mod helper;
 
 use marker::Service;
 
+/// Type that's generally used to identify and order [`Entity`] objects.
+///
+/// Throughout medici-core it's assumed this type is an alias for a numeric
+/// type!
+pub type EntityId = usize;
+
 /// Trait generalizing over any structure that could act as a container of states.
 ///
 /// This container of states could be reworded as 'the state machine' itself.
@@ -17,6 +23,24 @@ pub trait State {
     /// Type of structure which must be provided when transitioning into the state
     /// represented by the enclosing type.
     type Transaction;
+}
+
+/// Trait representing an object which properties can be altered dynamically (at runtime).
+///
+/// # Note
+/// This trait MUST ALWAYS be object safe!
+pub trait Entity {
+    /// Type used to identify an Entity.
+    type ID;
+
+    /// Returns the unique identifier of this specific entity.
+    fn id(&self) -> Self::ID;
+}
+
+/// Trait used to create a new [`Entity`] object.
+pub trait EntityBuilder<E: Entity> {
+    /// Build a new [`Entity`] with the provided identifier.
+    fn new_with_id(id: E::ID) -> E;
 }
 
 /// Trait for implementing a certain service on the state machine.

@@ -1,9 +1,7 @@
-//! Types with each different functionality to store data.
-
-use super::error::StackPopError;
 use marker::{Service, TransactionContainer};
+use service::error::StackPopError;
 
-/// Structure wrapping a Vector type to provide a simple Stack interface.
+/// Structure wrapping a [`Vec`] to provide a simple Stack interface.
 #[derive(Debug, Clone)]
 pub struct StackStorage<A>
 where
@@ -25,9 +23,7 @@ where
 {
     /// Creates a new object for storage.
     pub fn new() -> Self {
-        Self {
-            tape: vec![],
-        }
+        Self { tape: vec![] }
     }
 
     /// Add the provided value onto the top of the Stack.

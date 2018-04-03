@@ -1,9 +1,9 @@
 // Linters.
-#![allow(dead_code, unused_mut, unused_variables, let_and_return, useless_format)]
+#![allow(unknown_lints, dead_code, unused_mut, unused_variables, let_and_return, useless_format)]
 // Prevent successful compilation when documentation is missing.
 #![deny(missing_docs)]
 // Unstable features.
-#![feature(associated_type_defaults, try_from, never_type)]
+#![feature(associated_type_defaults, try_from, never_type, proc_macro)]
 // Clippy linting when building debug versions.
 #![cfg_attr(test, feature(plugin))]
 #![cfg_attr(test, plugin(clippy))]
@@ -12,12 +12,11 @@
 
 //! Crate used to show off the power of the Medici framework.
 
-#[macro_use]
 extern crate failure;
-#[macro_use]
 extern crate lazy_static;
-#[macro_use]
 extern crate maplit;
+extern crate value_from_type_macros;
+extern crate value_from_type_traits;
 
 // Medici opinionated framework.
 extern crate medici_core;

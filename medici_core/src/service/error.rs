@@ -1,5 +1,7 @@
 //! Types for simplifying error handling syntax.
 
+use failure::Fail;
+
 use function::EntityId;
 
 /// Specific error thrown when the [`StackStorage`] has no items left

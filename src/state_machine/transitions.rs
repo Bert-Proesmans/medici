@@ -9,6 +9,7 @@ use medici_core::service::storage::StackStorage;
 use medici_core::stm::{PullupFrom, PushdownFrom, TransitionFrom};
 
 use super::Machine;
+use super::state::leaves::triggerable::*;
 use super::state::*;
 use super::transaction::TransactionItem;
 
@@ -20,6 +21,7 @@ impl TransitionFrom<Machine<Wait<Start>>> for Machine<Wait<Input>> {
             transaction: t,
             // Following properties MUST stay in sync with `Machine` !
             transaction_storage: old.transaction_storage,
+            triggers: old.triggers,
         }
     }
 }
@@ -32,6 +34,7 @@ impl TransitionFrom<Machine<Wait<Input>>> for Machine<Finished> {
             transaction: t,
             // Following properties MUST stay in sync with `Machine` !
             transaction_storage: old.transaction_storage,
+            triggers: old.triggers,
         }
     }
 }
@@ -54,6 +57,7 @@ impl PushdownFrom<Machine<Wait<Input>>, TransactionItem> for Machine<Action<Prin
             transaction: t,
             // Following properties MUST stay in sync with `Machine` !
             transaction_storage: old.transaction_storage,
+            triggers: old.triggers,
         }
     }
 }
@@ -76,6 +80,7 @@ impl PullupFrom<Machine<Action<Print>>, TransactionItem> for Machine<Wait<Input>
             transaction: old_transaction,
             // Following properties MUST stay in sync with `Machine` !
             transaction_storage: old.transaction_storage,
+            triggers: old.triggers,
         })
     }
 }
@@ -98,6 +103,7 @@ impl PushdownFrom<Machine<Action<Print>>, TransactionItem> for Machine<Action<Lo
             transaction: t,
             // Following properties MUST stay in sync with `Machine` !
             transaction_storage: old.transaction_storage,
+            triggers: old.triggers,
         }
     }
 }
@@ -120,6 +126,7 @@ impl PullupFrom<Machine<Action<Load>>, TransactionItem> for Machine<Action<Print
             transaction: old_transaction,
             // Following properties MUST stay in sync with `Machine` !
             transaction_storage: old.transaction_storage,
+            triggers: old.triggers,
         })
     }
 }

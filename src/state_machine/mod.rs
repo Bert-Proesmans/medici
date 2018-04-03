@@ -10,9 +10,11 @@ use std::marker::PhantomData;
 use medici_core::function::{ServiceCompliance, State, StateContainer};
 use medici_core::marker::TopLevelMarker;
 use medici_core::service::storage::StackStorage;
+use medici_core::service::trigger::TriggerService;
 
-use self::state::*;
-use self::transaction::*;
+use self::state::leaves::triggerable::{Start, TriggerItem};
+use self::state::{TimingItem, Wait};
+use self::transaction::{Epsilon, TransactionItem};
 
 /// The state machine.
 ///
@@ -40,6 +42,8 @@ where
     /// Stack storage service to allow PushDown and Pullup behaviour to be
     /// implemented.
     transaction_storage: StackStorage<TransactionItem>,
+    /// Trigger handler.
+    triggers: TriggerService<TimingItem, TriggerItem>,
 }
 
 impl Machine<Wait<Start>> {
@@ -49,6 +53,7 @@ impl Machine<Wait<Start>> {
             state: PhantomData,
             transaction: Epsilon,
             transaction_storage: StackStorage::new(),
+            triggers: TriggerService::new(),
         }
     }
 }
@@ -70,5 +75,18 @@ where
 
     fn get_mut(&mut self) -> &mut StackStorage<TransactionItem> {
         &mut self.transaction_storage
+    }
+}
+
+impl<X> ServiceCompliance<TriggerService<TimingItem, TriggerItem>> for Machine<X>
+where
+    X: TopLevelMarker + State,
+{
+    fn get(&self) -> &TriggerService<TimingItem, TriggerItem> {
+        &self.triggers
+    }
+
+    fn get_mut(&mut self) -> &mut TriggerService<TimingItem, TriggerItem> {
+        &mut self.triggers
     }
 }

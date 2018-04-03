@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use marker::{TimingEnumerator, TriggerEnumerator};
 
 /// Structure serializng/generalizing a trigger.
@@ -6,24 +8,42 @@ use marker::{TimingEnumerator, TriggerEnumerator};
 /// method which has to be executed when the trigger conditions are valid.
 /// This type also makes triggers portable so they can be freely moved
 /// and copied through parts of the machine.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct TriggerEntry<ETM, ETR>
 where
     ETM: TimingEnumerator + Copy,
     ETR: TriggerEnumerator + Copy,
 {
-    /// (Sized) Timing value belonging to the callback, see cb.
+    /// (Sized) Timing value belonging to the callback, see func_pointer.
     pub timing: ETM,
-    /// (Sized) Trigger value belonging to the callback, see cb.
+    /// (Sized) Trigger value belonging to the callback, see func_pointer.
     pub trigger: ETR,
     /// The callback pointer which must be transmuted and executed
     /// when the conditions of the running state machine match the
     /// ones contained within this structure.
-    pub cb: *const (),
+    pub func_pointer: *const (),
+
+    // This field prevents TriggerEntry from being constructed by framework
+    // users.
+    pub(crate) _private: PhantomData<()>,
+}
+
+unsafe impl<ETM, ETR> Send for TriggerEntry<ETM, ETR>
+where
+    ETM: TimingEnumerator + Copy + Send,
+    ETR: TriggerEnumerator + Copy + Send,
+{
+}
+
+unsafe impl<ETM, ETR> Sync for TriggerEntry<ETM, ETR>
+where
+    ETM: TimingEnumerator + Copy + Sync,
+    ETR: TriggerEnumerator + Copy + Sync,
+{
 }
 
 /// Structure used to store a portable format of trigger entries, see [`TriggerEntry`].
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TriggerStorage<ETM, ETR>
 where
     ETM: TimingEnumerator + Copy,
@@ -36,4 +56,15 @@ where
     ///
     /// TODO; Find out if splitting this up is useful + find out how.
     pub triggers: Vec<TriggerEntry<ETM, ETR>>,
+}
+
+impl<ETM, ETR> TriggerStorage<ETM, ETR>
+where
+    ETM: TimingEnumerator + Copy,
+    ETR: TriggerEnumerator + Copy,
+{
+    /// Builds a new object for storage.
+    pub fn new() -> Self {
+        Self { triggers: vec![] }
+    }
 }

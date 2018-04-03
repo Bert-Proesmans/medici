@@ -3,6 +3,7 @@ extern crate medici_core;
 
 use medici_core::stm::*;
 
+use medici::state_machine::state::leaves::triggerable::*;
 use medici::state_machine::{Machine, state::*, transaction::*};
 
 fn main() {

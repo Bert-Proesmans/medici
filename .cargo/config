@@ -1,0 +1,3 @@
+[build]
+# Necessary to keep unstable Span behaviour of proc-macro2
+rustflags = "--cfg procmacro2_semver_exempt"

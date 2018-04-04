@@ -20,10 +20,11 @@
 // eg:
 // `use value_from_type_macros::value_from_type;`
 
-extern crate failure;
-
 extern crate value_from_type_macros;
 extern crate value_from_type_traits;
+
+extern crate failure;
+#[macro_use] extern crate maplit;
 
 pub mod error;
 pub mod function;

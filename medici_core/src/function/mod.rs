@@ -4,12 +4,6 @@ pub mod helper;
 
 use marker::{Service, Timing, Trigger};
 
-/// Type that's generally used to identify and order [`Entity`] objects.
-///
-/// Throughout medici-core it's assumed this type is an alias for a numeric
-/// type!
-pub type EntityId = usize;
-
 /// Trait generalizing over any structure that could act as a container of states.
 ///
 /// This container of states could be reworded as 'the state machine' itself.
@@ -35,6 +29,12 @@ pub trait TriggerState: State {
     type Trigger: Trigger;
 }
 
+/// Type that's generally used to identify and order [`Entity`] objects.
+///
+/// Throughout medici-core it's assumed this type is an alias for a numeric
+/// type!
+pub type EntityId = usize;
+
 /// Trait representing an object which properties can be altered dynamically (at runtime).
 ///
 /// # Note
@@ -48,6 +48,7 @@ pub trait Entity {
 }
 
 /// Trait used to create a new [`Entity`] object.
+/// (Not object safe)
 pub trait EntityBuilder<E: Entity> {
     /// Build a new [`Entity`] with the provided identifier.
     fn new_with_id(id: E::ID) -> E;

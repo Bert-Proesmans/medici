@@ -9,8 +9,9 @@ use std::marker::PhantomData;
 
 use medici_core::function::{ServiceCompliance, State, StateContainer};
 use medici_core::marker::TopLevelMarker;
-use medici_core::service::storage::StackStorage;
+use medici_core::service::storage::{StackStorage, EntityStorage};
 use medici_core::service::trigger::TriggerService;
+use medici_core::prefab::entity::Entity;
 
 use self::state::leaves::triggerable::{Start, TriggerItem};
 use self::state::{TimingItem, Wait};
@@ -42,6 +43,8 @@ where
     /// Stack storage service to allow PushDown and Pullup behaviour to be
     /// implemented.
     transaction_storage: StackStorage<TransactionItem>,
+    /// Entities handler.
+    entity_storage:  EntityStorage<Entity>,
     /// Trigger handler.
     triggers: TriggerService<TimingItem, TriggerItem>,
 }
@@ -52,7 +55,9 @@ impl Machine<Wait<Start>> {
         Self {
             state: PhantomData,
             transaction: Epsilon,
+            //
             transaction_storage: StackStorage::new(),
+            entity_storage: EntityStorage::new(usize::max_value()),
             triggers: TriggerService::new(),
         }
     }

@@ -4,19 +4,16 @@ use marker::{Timing, TimingEnumerator};
 
 /// Type representing a timing relationship. Pre X means before X is executed.
 #[derive(Debug, Clone, Copy)]
-// #[transitive(doc = "See [`Pre`]")]
 pub struct Pre();
 impl Timing for Pre {}
 
 /// Type representing a timing relationship. Peri X means during/while X is executed.
 #[derive(Debug, Clone, Copy)]
-// #[transitive(doc = "See [`Peri`]")]
 pub struct Peri();
 impl Timing for Peri {}
 
 /// Type representing a timing relationship. Pre X means after X is executed.
 #[derive(Debug, Clone, Copy)]
-// #[transitive(doc = "See [`Post`]")]
 pub struct Post();
 impl Timing for Post {}
 

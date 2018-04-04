@@ -4,11 +4,12 @@ use function::{Entity, EntityBuilder, EntityId};
 use marker::Service;
 use service::error::{EntityError, OverflowError};
 
+#[derive(Debug, Clone)]
 /// Structure wrapping a [`Vec`] to provide a container for (all) entities
 /// within the state machine.
 pub struct EntityStorage<E>
 where
-    E: Entity + EntityBuilder<E>,
+    E: Entity + EntityBuilder<E> + Clone,
     E::ID: Into<usize> + TryFrom<usize> + Into<EntityId> + Copy,
 {
     entities: Vec<E>,
@@ -17,14 +18,14 @@ where
 
 impl<E> Service for EntityStorage<E>
 where
-    E: Entity + EntityBuilder<E>,
+    E: Entity + EntityBuilder<E> + Clone,
     E::ID: Into<usize> + TryFrom<usize> + Into<EntityId> + Copy,
 {
 }
 
 impl<E> EntityStorage<E>
 where
-    E: Entity + EntityBuilder<E>,
+    E: Entity + EntityBuilder<E> + Clone,
     E::ID: Into<usize> + TryFrom<usize> + Into<EntityId> + Copy,
 {
     /// Creates a new object for storage.

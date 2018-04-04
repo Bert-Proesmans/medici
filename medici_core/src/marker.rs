@@ -34,6 +34,15 @@ pub trait TriggerEnumerator {}
 /// will be executed.
 pub trait Trigger {}
 
+/// Types which enumerate all known [`Prototype`]s.
+pub trait ProtoEnumerator {}
+
+/// Types which attribute functionality to [`Entity`]s within the machine.
+pub trait Prototype {}
+
+/// Types which attribute functionality to [`Entity`]s within the machine.
+pub trait PrototypeMut: Prototype {}
+
 /// (State) Types which are directly contained by the state machine.
 ///
 /// Note: States can be nested!

@@ -8,3 +8,10 @@ use value_from_type_macros::value_from_type;
 
 /// Module containing ready-to-use types useful for encoding state machines.
 pub mod timing;
+
+/// Module containing standard prototypes.
+/// 
+/// The defined prototypes can be implemented in derived crates.
+pub mod prototype;
+
+pub mod entity;

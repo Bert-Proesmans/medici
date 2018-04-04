@@ -95,3 +95,16 @@ where
         &mut self.triggers
     }
 }
+
+impl<X> ServiceCompliance<EntityStorage<Entity>> for Machine<X>
+where
+    X: TopLevelMarker + State,
+{
+    fn get(&self) -> &EntityStorage<Entity> {
+        &self.entity_storage
+    }
+
+    fn get_mut(&mut self) -> &mut EntityStorage<Entity> {
+        &mut self.entity_storage
+    }
+}

@@ -5,8 +5,7 @@ authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 
 [dependencies]
 failure = "0.1.1"
-# value_from_type_macros = "1.0.3"
-value_from_type_macros = {path = "D:\\Git\\value-from-type-derive\\value_from_type_macros"}
+value_from_type_macros = "1.0.3"
 value_from_type_traits = "1.0.2"
 
 [dev-dependencies]

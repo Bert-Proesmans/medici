@@ -1,5 +1,3 @@
-//! Docs
-#![allow(missing_docs)]
 #![value_from_type(TimingItem)]
 
 use marker::{Timing, TimingEnumerator};

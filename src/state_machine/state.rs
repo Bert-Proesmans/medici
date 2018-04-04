@@ -11,12 +11,11 @@ pub mod leaves {
 
     use value_from_type_macros::value_from_type;
 
+    /// All types which can be used to activate triggers awaiting activation.
+    ///
+    /// A matching [`TriggerItem`] is on of the requirements to activate pending triggers.
     #[value_from_type(TriggerItem)]
     pub mod triggerable {
-        //! All types which can be used to activate triggers awaiting activation.
-        //!
-        //! A matching [`TriggerItem`] is on of the requirements to activate pending triggers.
-
         use medici_core::function::State;
         use medici_core::marker::{ActionableMarker, TriggerEnumerator, TriggerableMarker,
                                   WaitableMarker};

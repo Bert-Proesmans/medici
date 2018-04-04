@@ -3,6 +3,9 @@
 > Provided examples are outdated. Please look at the code
 > for usage examples.
 
+[![Build Status](https://travis-ci.org/Bert-Proesmans/medici.svg?branch=master)](https://travis-ci.org/Bert-Proesmans/medici)
+[![Docs](https://media.readthedocs.org/static/projects/badges/unknown.svg)](https://bert-proesmans.github.io/medici)
+
 Ever searched for a "Game engine", but the results didn't satisfy your needs?  
 Tried to update your search query with "Simulator engine" resulting in the same feeling?  
 So have I, and decided to build Medici.

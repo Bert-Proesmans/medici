@@ -1,8 +1,9 @@
 use std::convert::TryFrom;
+use std::fmt::{Debug, Display};
 
-use function::{Entity, EntityBuilder, EntityId};
+use function::{Entity, EntityBuilder};
 use marker::Service;
-use service::error::{EntityError, OverflowError};
+use service::error::{MissingEntityError, OverflowError};
 
 #[derive(Debug, Clone)]
 /// Structure wrapping a [`Vec`] to provide a container for (all) entities
@@ -10,7 +11,7 @@ use service::error::{EntityError, OverflowError};
 pub struct EntityStorage<E>
 where
     E: Entity + EntityBuilder<E> + Clone,
-    E::ID: Into<usize> + TryFrom<usize> + Into<EntityId> + Copy,
+    E::ID: Into<usize> + TryFrom<usize> + Copy,
 {
     entities: Vec<E>,
     maximum_items: usize,
@@ -19,14 +20,14 @@ where
 impl<E> Service for EntityStorage<E>
 where
     E: Entity + EntityBuilder<E> + Clone,
-    E::ID: Into<usize> + TryFrom<usize> + Into<EntityId> + Copy,
+    E::ID: Into<usize> + TryFrom<usize> + Copy,
 {
 }
 
 impl<E> EntityStorage<E>
 where
     E: Entity + EntityBuilder<E> + Clone,
-    E::ID: Into<usize> + TryFrom<usize> + Into<EntityId> + Copy,
+    E::ID: Into<usize> + TryFrom<usize> + Copy + Debug + Display,
 {
     /// Creates a new object for storage.
     pub fn new(maximum_items: usize) -> Self {
@@ -53,18 +54,18 @@ where
     }
 
     /// Retrieves a reference to the entity matching the id.
-    pub fn get(&self, id: E::ID) -> Result<&E, EntityError> {
+    pub fn get(&self, id: E::ID) -> Result<&E, MissingEntityError<E::ID>> {
         let idx_id = id.into();
         self.entities
             .get(idx_id)
-            .ok_or(EntityError::MissingEntityError(id.into()))
+            .ok_or(MissingEntityError(id))
     }
 
     /// Retrieves a mutable reference to the entity matching the id.
-    pub fn get_mut(&mut self, id: E::ID) -> Result<&mut E, EntityError> {
+    pub fn get_mut(&mut self, id: E::ID) -> Result<&mut E, MissingEntityError<E::ID>> {
         let idx_id = id.into();
         self.entities
             .get_mut(idx_id)
-            .ok_or(EntityError::MissingEntityError(id.into()))
+            .ok_or(MissingEntityError(id))
     }
 }

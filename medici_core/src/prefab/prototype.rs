@@ -1,5 +1,7 @@
 #![value_from_type(ProtoItem)]
 
+// TODO; Filter all []Mut prototype variants from ProtoItem.
+
 use function::Entity;
 use marker::{ProtoEnumerator, Prototype, PrototypeMut};
 
@@ -17,6 +19,33 @@ pub type Player<'a> = PlayerProto<'a, EntityPrefab>;
 /// Prototype for game behaviour specifically targetting the [`Entity`] defined
 /// within medici_core::prefab.
 pub type PlayerMut<'a> = PlayerProtoMut<'a, EntityPrefab>;
+
+//
+impl<'a> From<&'a EntityPrefab> for GameProto<'a, EntityPrefab> {
+	fn from(x: &'a EntityPrefab) -> Self {
+		GameProto(x)
+	}
+}
+
+impl<'a> From<&'a mut EntityPrefab> for GameProtoMut<'a, EntityPrefab> {
+	fn from(x: &'a mut EntityPrefab) -> Self {
+		GameProtoMut(x)
+	}
+}
+
+impl<'a> From<&'a EntityPrefab> for PlayerProto<'a, EntityPrefab> {
+	fn from(x: &'a EntityPrefab) -> Self {
+		PlayerProto(x)
+	}
+}
+
+impl<'a> From<&'a mut EntityPrefab> for PlayerProtoMut<'a, EntityPrefab> {
+	fn from(x: &'a mut EntityPrefab) -> Self {
+		PlayerProtoMut(x)
+	}
+}
+
+//
 
 #[derive(Debug)]
 /// Prototype for game related behaviour.

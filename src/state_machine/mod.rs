@@ -42,11 +42,11 @@ where
     /* Optionals */
     /// Stack storage service to allow PushDown and Pullup behaviour to be
     /// implemented.
-    transaction_storage: StackStorage<TransactionItem>,
+    pub transaction_storage: StackStorage<TransactionItem>,
     /// Entities handler.
-    entity_storage: EntityStorage<Entity>,
+    pub entity_storage: EntityStorage<Entity>,
     /// Trigger handler.
-    triggers: TriggerService<TimingItem, TriggerItem>,
+    pub triggers: TriggerService<TimingItem, TriggerItem>,
 }
 
 impl Machine<Wait<Start>> {

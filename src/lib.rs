@@ -21,6 +21,7 @@ extern crate value_from_type_traits;
 // Medici opinionated framework.
 extern crate medici_core;
 
+pub mod card_set;
 pub mod state_machine;
 
 // Note: Keep tests during structural upgrade. These will be used

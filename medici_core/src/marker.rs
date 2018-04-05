@@ -41,7 +41,7 @@ pub trait ProtoEnumerator {}
 pub trait Prototype {}
 
 /// Types which attribute functionality to [`Entity`]s within the machine.
-pub trait PrototypeMut: Prototype {}
+pub trait PrototypeMut {}
 
 /// (State) Types which are directly contained by the state machine.
 ///

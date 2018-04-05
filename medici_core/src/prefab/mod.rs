@@ -6,12 +6,18 @@
 
 use value_from_type_macros::value_from_type;
 
-/// Module containing ready-to-use types useful for encoding state machines.
+/// Module containing ready-to-use types which can be used to construct
+/// trigger constraints.
 pub mod timing;
 
+/// Module containing ready-to-use types which can be used to construct
+/// trigger constraints.
+pub mod trigger;
+
 /// Module containing standard prototypes.
-/// 
+///
 /// The defined prototypes can be implemented in derived crates.
 pub mod prototype;
 
+pub mod card;
 pub mod entity;

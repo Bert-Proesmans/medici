@@ -9,9 +9,9 @@ use std::marker::PhantomData;
 
 use medici_core::function::{ServiceCompliance, State, StateContainer};
 use medici_core::marker::TopLevelMarker;
-use medici_core::service::storage::{StackStorage, EntityStorage};
-use medici_core::service::trigger::TriggerService;
 use medici_core::prefab::entity::Entity;
+use medici_core::service::storage::{EntityStorage, StackStorage};
+use medici_core::service::trigger::TriggerService;
 
 use self::state::leaves::triggerable::{Start, TriggerItem};
 use self::state::{TimingItem, Wait};
@@ -44,7 +44,7 @@ where
     /// implemented.
     transaction_storage: StackStorage<TransactionItem>,
     /// Entities handler.
-    entity_storage:  EntityStorage<Entity>,
+    entity_storage: EntityStorage<Entity>,
     /// Trigger handler.
     triggers: TriggerService<TimingItem, TriggerItem>,
 }

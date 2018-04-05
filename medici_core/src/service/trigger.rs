@@ -8,7 +8,7 @@ use value_from_type_traits::IntoEnum;
 
 use function::{StateContainer, TriggerState};
 use marker::{Service, Timing, TimingEnumerator, Trigger, TriggerEnumerator};
-use service::storage::{TriggerEntry, TriggerStorage};
+use service::storage::{TriggerStorage, UnsafeTrigger};
 
 // Shortcut for a callback method prototype which consumes the machine
 // and returns it again.. or a generic error.
@@ -16,7 +16,7 @@ use service::storage::{TriggerEntry, TriggerStorage};
 // TODO; Transfrom Error into a real error type.
 type _FNTrigger<M> = fn(M) -> Result<M, Error>;
 
-/// Safe abstraction over TriggerEntry objects.
+/// Safe abstraction over UnsafeTrigger objects.
 #[derive(Debug)]
 pub struct TriggerWrapper<M, ETM, ETR>
 where
@@ -49,15 +49,15 @@ where
         }
     }
 
-    /// Build a safe wrapper from a [`TriggerEntry`] object.
+    /// Build a safe wrapper from a [`UnsafeTrigger`] object.
     ///
     /// # Safety
-    /// The exact [`StateContainer`] (state machine) is removed from the [`TriggerEntry`].
+    /// The exact [`StateContainer`] (state machine) is removed from the [`UnsafeTrigger`].
     /// A safe wrapper can thus be generated for ANY state machine which [`TriggerState`]-associated
     /// types Timing and Trigger match on the requested machine.
     ///
     /// See [`TriggerService`] for more information!
-    pub unsafe fn try_from_trigger_entry(x: TriggerEntry<ETM, ETR>) -> Result<Self, Error> {
+    pub unsafe fn try_from_trigger_entry(x: UnsafeTrigger<ETM, ETR>) -> Result<Self, Error> {
         let timing_key: ETM = <M::State as TriggerState>::Timing::into_enum();
         let trigger_key: ETR = <M::State as TriggerState>::Trigger::into_enum();
 
@@ -92,7 +92,7 @@ where
     }
 }
 
-impl<M, ETM, ETR> From<TriggerWrapper<M, ETM, ETR>> for TriggerEntry<ETM, ETR>
+impl<M, ETM, ETR> From<TriggerWrapper<M, ETM, ETR>> for UnsafeTrigger<ETM, ETR>
 where
     M: StateContainer,
     M::State: TriggerState,
@@ -204,14 +204,14 @@ where
     /// an immutable borrow onto that machine, which is also passed as parameter into
     /// this method.
     /// In general this additional immutable borrow should not matter.
-    /// Returning [`TriggerEntry`] references will limit accessibility into the machine and
+    /// Returning [`UnsafeTrigger`] references will limit accessibility into the machine and
     /// this service.
     ///
     /// The latter practically forces framework users to instantly make a copy of each returned
-    /// [`TriggerEntry`] reference. Ultimately we leave the choice of usage up to the framework
+    /// [`UnsafeTrigger`] reference. Ultimately we leave the choice of usage up to the framework
     /// user. The reason being that we want additional functional operations to be as lightweight
     /// as possible.
-    pub fn retrieve_triggers<M>(&self, m: &M) -> impl Iterator<Item = &TriggerEntry<ETM, ETR>>
+    pub fn retrieve_triggers<M>(&self, m: &M) -> impl Iterator<Item = &UnsafeTrigger<ETM, ETR>>
     where
         M: StateContainer,
         M::State: TriggerState,

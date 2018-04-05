@@ -24,7 +24,8 @@ extern crate value_from_type_macros;
 extern crate value_from_type_traits;
 
 extern crate failure;
-#[macro_use] extern crate maplit;
+#[macro_use]
+extern crate maplit;
 
 pub mod error;
 pub mod function;

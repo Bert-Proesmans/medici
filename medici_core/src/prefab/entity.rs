@@ -1,13 +1,13 @@
 //! Module containing standard entity structures.
 
-use std::fmt::Debug;
 use std::collections::{HashMap, HashSet};
+use std::fmt::Debug;
 use std::hash::Hash;
 
 use value_from_type_traits::IntoEnum;
 
 use function::{self, EntityBuilder, EntityId};
-use marker::{Prototype, ProtoEnumerator};
+use marker::{ProtoEnumerator, Prototype};
 use service::error::MissingProtoTypeError;
 
 use prefab::prototype::ProtoItem;
@@ -63,13 +63,13 @@ where
     }
 }
 
-impl<S, P> EntityStruct<S, P> 
+impl<S, P> EntityStruct<S, P>
 where
     S: Clone + Eq + Hash,
     P: ProtoEnumerator + Debug + Clone + Eq + Hash,
 {
     /// Attach new behaviour to this specific entity.
-    pub fn add_proto<PT>(&mut self) 
+    pub fn add_proto<PT>(&mut self)
     where
         PT: Prototype + IntoEnum<P>,
     {
@@ -78,7 +78,7 @@ where
     }
 
     /// Removes behaviour from this specific entity.
-    pub fn remove_proto<PT>(&mut self) 
+    pub fn remove_proto<PT>(&mut self)
     where
         PT: Prototype + IntoEnum<P> + From<Self>,
     {
@@ -87,7 +87,7 @@ where
     }
 
     /// Return this entity as the requested prototype.
-    pub fn as_proto<'a, PT>(&'a self) -> Result<PT, MissingProtoTypeError<EntityId, P>> 
+    pub fn as_proto<'a, PT>(&'a self) -> Result<PT, MissingProtoTypeError<EntityId, P>>
     where
         PT: Prototype + IntoEnum<P> + From<&'a Self>,
     {

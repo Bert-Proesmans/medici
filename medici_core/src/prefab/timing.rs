@@ -1,4 +1,6 @@
 #![value_from_type(TimingItem)]
+//! Module containing ready-to-use types which can be used to construct
+//! trigger constraints.
 
 use marker::{Timing, TimingEnumerator};
 

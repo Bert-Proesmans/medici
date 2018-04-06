@@ -31,14 +31,9 @@ pub mod state_machine;
 mod tests {
     use std::default::Default;
 
-    use medici_traits::automata::deterministic_automaton::TransitionInto;
-    use medici_traits::entities::GAME_E_ID;
-
-    use automaton::implementations::effects::actions::end_turn;
-    use automaton::implementations::effects::triggers::turn_end_trigger;
-    use automaton::prelude::*;
-
-    use containers::cards::CardContainer;
+    use state_machine::config::SetupConfig;
+    use state_machine::config::state::leaves::triggerable::*;
+    use state_machine::{Machine, state::*, transaction::*};
 
     #[test]
     fn entry() {

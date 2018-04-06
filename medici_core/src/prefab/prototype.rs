@@ -1,4 +1,7 @@
 #![value_from_type(ProtoItem)]
+//! Module containing standard prototypes.
+//!
+//! The defined prototypes can be implemented in derived crates.
 
 // TODO; Filter all []Mut prototype variants from ProtoItem.
 
@@ -22,27 +25,27 @@ pub type PlayerMut<'a> = PlayerProtoMut<'a, EntityPrefab>;
 
 //
 impl<'a> From<&'a EntityPrefab> for GameProto<'a, EntityPrefab> {
-	fn from(x: &'a EntityPrefab) -> Self {
-		GameProto(x)
-	}
+    fn from(x: &'a EntityPrefab) -> Self {
+        GameProto(x)
+    }
 }
 
 impl<'a> From<&'a mut EntityPrefab> for GameProtoMut<'a, EntityPrefab> {
-	fn from(x: &'a mut EntityPrefab) -> Self {
-		GameProtoMut(x)
-	}
+    fn from(x: &'a mut EntityPrefab) -> Self {
+        GameProtoMut(x)
+    }
 }
 
 impl<'a> From<&'a EntityPrefab> for PlayerProto<'a, EntityPrefab> {
-	fn from(x: &'a EntityPrefab) -> Self {
-		PlayerProto(x)
-	}
+    fn from(x: &'a EntityPrefab) -> Self {
+        PlayerProto(x)
+    }
 }
 
 impl<'a> From<&'a mut EntityPrefab> for PlayerProtoMut<'a, EntityPrefab> {
-	fn from(x: &'a mut EntityPrefab) -> Self {
-		PlayerProtoMut(x)
-	}
+    fn from(x: &'a mut EntityPrefab) -> Self {
+        PlayerProtoMut(x)
+    }
 }
 
 //

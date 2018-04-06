@@ -56,16 +56,12 @@ where
     /// Retrieves a reference to the entity matching the id.
     pub fn get(&self, id: E::ID) -> Result<&E, MissingEntityError<E::ID>> {
         let idx_id = id.into();
-        self.entities
-            .get(idx_id)
-            .ok_or(MissingEntityError(id))
+        self.entities.get(idx_id).ok_or(MissingEntityError(id))
     }
 
     /// Retrieves a mutable reference to the entity matching the id.
     pub fn get_mut(&mut self, id: E::ID) -> Result<&mut E, MissingEntityError<E::ID>> {
         let idx_id = id.into();
-        self.entities
-            .get_mut(idx_id)
-            .ok_or(MissingEntityError(id))
+        self.entities.get_mut(idx_id).ok_or(MissingEntityError(id))
     }
 }

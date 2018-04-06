@@ -1,6 +1,6 @@
 //! Types for simplifying error handling syntax.
 
-use std::fmt::{Display, Debug};
+use std::fmt::{Debug, Display};
 
 use failure::Fail;
 

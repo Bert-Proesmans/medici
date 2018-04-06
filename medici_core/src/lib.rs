@@ -33,4 +33,3 @@ pub mod marker;
 pub mod prefab;
 pub mod service;
 pub mod stm;
-pub mod transaction;

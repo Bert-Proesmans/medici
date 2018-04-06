@@ -1,5 +1,8 @@
 #![value_from_type(TriggerItem)]
 
+//! Module containing ready-to-use types which can be used to construct
+//! trigger constraints.
+
 use marker::{Trigger, TriggerEnumerator};
 
 /// Type representing the event when a game starts.

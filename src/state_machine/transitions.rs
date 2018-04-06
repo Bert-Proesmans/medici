@@ -8,10 +8,9 @@ use medici_core::function::{ServiceCompliance, State};
 use medici_core::service::storage::StackStorage;
 use medici_core::stm::{PullupFrom, PushdownFrom, TransitionFrom};
 
-use super::Machine;
-use super::state::leaves::triggerable::*;
-use super::state::*;
-use super::transaction::TransactionItem;
+use state_machine::prelude::*;
+use state_machine::state::prelude::*;
+use state_machine::transaction::TransactionItem;
 
 /* Machine<Wait<Start>> -> Machine<Wait<Input>> */
 impl TransitionFrom<Machine<Wait<Start>>> for Machine<Wait<Input>> {

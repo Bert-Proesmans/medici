@@ -8,7 +8,7 @@ use medici_core::marker::{Transaction, TransactionContainer};
 // Epsilon is re-exported here so implementers can do
 // 'use transaction::*' and have both the medici_core transactions
 // as well as newly defined transactions imported.
-pub use medici_core::transaction::Epsilon;
+pub use medici_core::prefab::transaction::Epsilon;
 
 /// Collection of known Transaction structures wrapped into a Sized
 /// item.

@@ -1,16 +1,20 @@
 extern crate medici;
 extern crate medici_core;
 
+use std::default::Default;
+
 use medici_core::stm::*;
 
-use medici::state_machine::state::leaves::triggerable::*;
-use medici::state_machine::{Machine, state::*, transaction::*};
+use medici::state_machine::prelude::*;
+use medici::state_machine::state::prelude::*;
+use medici::state_machine::transaction::*;
 
 fn main() {
     // DBG; This will enable Failure to print out full backtraces.
     // env::set_var("RUST_BACKTRACE", "1");
 
-    let wait_start_state = Machine::new();
+    let game_config = Default::default();
+    let wait_start_state = Machine::new(&game_config).expect("Game setup error");
 
     // DBG; The following syntax can/will be made simpler by implementing the TransitionInto-
     // counterpart of TransitionFrom.

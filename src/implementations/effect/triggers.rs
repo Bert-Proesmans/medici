@@ -1,6 +1,10 @@
 use medici_traits::entities::GAME_E_ID;
 
-use automaton::prelude::*;
+use medici_core::stm::*;
+
+use medici::state_machine::prelude::*;
+use medici::state_machine::state::prelude::*;
+use medici::state_machine::transaction::*;
 
 pub fn turn_end_trigger(
     mut x: Game<Trigger<Peri, EndTurn>>,

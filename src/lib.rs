@@ -5,8 +5,8 @@
 // Unstable features.
 #![feature(associated_type_defaults, try_from, never_type, proc_macro)]
 // Clippy linting when building debug versions.
-#![cfg_attr(test, feature(plugin))]
-#![cfg_attr(test, plugin(clippy))]
+//#![cfg_attr(test, feature(plugin))]
+//#![cfg_attr(test, plugin(clippy))]
 // Linters for code residing in documentation.
 #![doc(test(attr(allow(unused_variables), deny(warnings))))]
 
@@ -31,9 +31,11 @@ pub mod state_machine;
 mod tests {
     use std::default::Default;
 
-    use state_machine::config::SetupConfig;
-    use state_machine::config::state::leaves::triggerable::*;
-    use state_machine::{Machine, state::*, transaction::*};
+    use medici_core::stm::*;
+
+    use medici::state_machine::prelude::*;
+    use medici::state_machine::state::prelude::*;
+    use medici::state_machine::transaction::*;
 
     #[test]
     fn entry() {
@@ -46,10 +48,10 @@ mod tests {
         }
 
         // Add trigger
-        game.listeners.add_trigger(turn_end_trigger).unwrap();
+        game.triggers.add_trigger(turn_end_trigger).unwrap();
 
         // Start game
-        let game: Game<Wait<Input>> = game.transition(Epsilon());
+        let game: Game<Wait<Input>> = game.transition(Epsilon);
 
         // Do stuff
         let first_turn = end_turn(game).expect("Game unexpectedly finished");
@@ -58,6 +60,7 @@ mod tests {
         println!("OK - Finished");
     }
 
+    /*
     #[test]
     fn listeners() {
         let config: SetupConfig = Default::default();
@@ -92,4 +95,5 @@ mod tests {
             .as_proto_mut::<GameProtoMut>()
             .expect("Error in proto retrieval!");
     }
+    */
 }

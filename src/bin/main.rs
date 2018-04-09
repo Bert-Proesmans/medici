@@ -33,9 +33,12 @@ fn main() {
 
     let input_state: Machine<Wait<Input>> = action_state.pullup().expect("Transition Error");
 
+    // TODO: Fix
+    /*
     let finished_state: Machine<Finished> = input_state.transition(Epsilon);
 
     println!("{:?}", finished_state);
+    */
 }
 
 fn _old_main() {

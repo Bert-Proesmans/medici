@@ -7,10 +7,13 @@ use std::hash::Hash;
 use value_from_type_traits::IntoEnum;
 
 use function::{self, EntityBuilder, EntityId};
-use marker::{ProtoEnumerator, Prototype};
+use marker::{ProtoEnumerator, PrototypeMarker};
 use service::error::MissingProtoTypeError;
 
 use prefab::prototype::ProtoItem;
+
+/// The game entity should always have ID 0.
+pub const GAME_E_ID: EntityId = 0;
 
 /// Entity structure which makes use of structures defined by the
 /// medici_core::prefab module.
@@ -71,7 +74,7 @@ where
     /// Attach new behaviour to this specific entity.
     pub fn add_proto<PT>(&mut self)
     where
-        PT: Prototype + IntoEnum<P>,
+        PT: PrototypeMarker + IntoEnum<P>,
     {
         let proto_entry: P = PT::into_enum();
         self.prototypes.insert(proto_entry);
@@ -80,7 +83,7 @@ where
     /// Removes behaviour from this specific entity.
     pub fn remove_proto<PT>(&mut self)
     where
-        PT: Prototype + IntoEnum<P> + From<Self>,
+        PT: PrototypeMarker + IntoEnum<P> + From<Self>,
     {
         let proto_entry: P = PT::into_enum();
         self.prototypes.remove(&proto_entry);
@@ -89,7 +92,7 @@ where
     /// Return this entity as the requested prototype.
     pub fn as_proto<'a, PT>(&'a self) -> Result<PT, MissingProtoTypeError<EntityId, P>>
     where
-        PT: Prototype + IntoEnum<P> + From<&'a Self>,
+        PT: PrototypeMarker + IntoEnum<P> + From<&'a Self>,
     {
         let proto_entry: P = PT::into_enum();
         if self.prototypes.contains(&proto_entry) {

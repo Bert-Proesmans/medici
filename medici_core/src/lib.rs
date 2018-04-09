@@ -1,6 +1,6 @@
 // Linters.
 #![allow(unknown_lints, dead_code, unused_mut, unused_variables, let_and_return, useless_format,
-         unused_unsafe)]
+         unused_unsafe, unused_macros)]
 #![deny(missing_docs)]
 // Unstable features.
 #![feature(associated_type_defaults, try_from, never_type, proc_macro)]
@@ -20,16 +20,20 @@
 // eg:
 // `use value_from_type_macros::value_from_type;`
 
-extern crate value_from_type_macros;
-extern crate value_from_type_traits;
+// Note: Crates loaded with a public modifier are re-exported so defined macros can
+// access them!
 
-extern crate failure;
+extern crate value_from_type_macros;
+pub extern crate value_from_type_traits;
+
+pub extern crate failure;
 #[macro_use]
 extern crate maplit;
 
 pub mod error;
 pub mod function;
 pub mod marker;
+#[macro_use]
 pub mod prefab;
 pub mod service;
 pub mod stm;

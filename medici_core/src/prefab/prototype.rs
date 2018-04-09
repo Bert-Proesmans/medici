@@ -6,7 +6,7 @@
 // TODO; Filter all []Mut prototype variants from ProtoItem.
 
 use function::Entity;
-use marker::{ProtoEnumerator, Prototype, PrototypeMut};
+use marker::{ProtoEnumerator, PrototypeMarker, PrototypeMutMarker};
 
 use prefab::entity::Entity as EntityPrefab;
 
@@ -53,24 +53,24 @@ impl<'a> From<&'a mut EntityPrefab> for PlayerProtoMut<'a, EntityPrefab> {
 #[derive(Debug)]
 /// Prototype for game related behaviour.
 pub struct GameProto<'a, E: Entity + 'a>(pub &'a E);
-impl<'a, E: Entity + 'a> Prototype for GameProto<'a, E> {}
+impl<'a, E: Entity + 'a> PrototypeMarker for GameProto<'a, E> {}
 
 #[derive(Debug)]
 /// Prototype for game related behaviour.
 pub struct GameProtoMut<'a, E: Entity + 'a>(pub &'a mut E);
-impl<'a, E: Entity + 'a> Prototype for GameProtoMut<'a, E> {}
-impl<'a, E: Entity + 'a> PrototypeMut for GameProtoMut<'a, E> {}
+impl<'a, E: Entity + 'a> PrototypeMarker for GameProtoMut<'a, E> {}
+impl<'a, E: Entity + 'a> PrototypeMutMarker for GameProtoMut<'a, E> {}
 
 #[derive(Debug)]
 /// Prototype for player related behaviour.
 pub struct PlayerProto<'a, E: Entity + 'a>(pub &'a E);
-impl<'a, E: Entity + 'a> Prototype for PlayerProto<'a, E> {}
+impl<'a, E: Entity + 'a> PrototypeMarker for PlayerProto<'a, E> {}
 
 #[derive(Debug)]
 /// Prototype for player related behaviour.
 pub struct PlayerProtoMut<'a, E: Entity + 'a>(pub &'a mut E);
-impl<'a, E: Entity + 'a> Prototype for PlayerProtoMut<'a, E> {}
-impl<'a, E: Entity + 'a> PrototypeMut for PlayerProtoMut<'a, E> {}
+impl<'a, E: Entity + 'a> PrototypeMarker for PlayerProtoMut<'a, E> {}
+impl<'a, E: Entity + 'a> PrototypeMutMarker for PlayerProtoMut<'a, E> {}
 
 // value_from_type cannot automatically implement [`ProtoEnumerator`]
 // for the generated enum.

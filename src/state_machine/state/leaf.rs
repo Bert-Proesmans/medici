@@ -6,7 +6,7 @@
 use value_from_type_macros::value_from_type;
 
 use medici_core::function::State;
-use medici_core::marker::{ActionableMarker, TriggerEnumerator, TriggerableMarker, WaitableMarker};
+use medici_core::marker::{ActionableMarker, TriggerEnumerator, TriggerMarker, WaitableMarker};
 /// Export the prefab timing items.
 pub use medici_core::prefab::timing::{Peri, Post, Pre, TimingItem};
 use medici_core::prefab::transaction::Epsilon;
@@ -45,6 +45,15 @@ pub mod triggerable {
     }
     impl WaitableMarker for Input {}
 
+    /// Action condition state until the user has provided input.
+    #[derive(Debug, Clone)]
+    pub struct EndTurn();
+    impl State for EndTurn {
+        type Transaction = Epsilon;
+    }
+    impl ActionableMarker for EndTurn {}
+    impl TriggerMarker for EndTurn {}
+
     /// Action condition state indicating loading is in progress.
     #[derive(Debug, Clone)]
     pub struct Load();
@@ -52,7 +61,7 @@ pub mod triggerable {
         type Transaction = Epsilon;
     }
     impl ActionableMarker for Load {}
-    impl TriggerableMarker for Load {}
+    impl TriggerMarker for Load {}
 
     /// Action condition state indicating printing is in progress.
     #[derive(Debug, Clone)]
@@ -62,5 +71,5 @@ pub mod triggerable {
         type Transaction = PrintTransaction;
     }
     impl ActionableMarker for Print {}
-    impl TriggerableMarker for Print {}
+    impl TriggerMarker for Print {}
 }

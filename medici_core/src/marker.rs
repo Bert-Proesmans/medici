@@ -5,7 +5,7 @@
 //! Correct understanding of what each trait encompasses is necessary!
 
 /// Types used to transition between state machine States.
-pub trait Transaction {}
+pub trait TransactionMarker: Copy + 'static {}
 
 /// Types which generalize multiple transactions into 1 [`Sized`] structure
 /// so the transactions themselves can be safely stored in memory.
@@ -25,23 +25,23 @@ pub trait Service {}
 pub trait TimingEnumerator {}
 
 /// Types which reflect the timing when a [`Trigger`] should be executed.
-pub trait Timing {}
+pub trait TimingMarker {}
 
 /// Types which enumerate all possible triggers which the machine facilitates reacting to.
 pub trait TriggerEnumerator {}
 
 /// Types which reflect an event after which functionality awaiting these events
 /// will be executed.
-pub trait Trigger {}
+pub trait TriggerMarker {}
 
 /// Types which enumerate all known [`Prototype`]s.
 pub trait ProtoEnumerator {}
 
 /// Types which attribute functionality to [`Entity`]s within the machine.
-pub trait Prototype {}
+pub trait PrototypeMarker {}
 
 /// Types which attribute functionality to [`Entity`]s within the machine.
-pub trait PrototypeMut {}
+pub trait PrototypeMutMarker {}
 
 /// (State) Types which are directly contained by the state machine.
 ///
@@ -54,13 +54,15 @@ pub trait TopLevelMarker {}
 /// The semantics are limited to the set of input types a user can generate.
 pub trait WaitableMarker {}
 
+/*
 /// (State) Types which represent a condition for when the state machine itself
 /// should iterate and evaluate all registered [`Trigger`]s and execute them.
 pub trait TriggerableMarker {}
+*/
 
 /// (State) Types which represent actions a user want to perform that activate
 /// the machine to work out its effects.
 ///
 /// The semantics are limited to the set of choices a player is presented with
 /// according to the state of the machine.
-pub trait ActionableMarker: TriggerableMarker {}
+pub trait ActionableMarker: TriggerMarker {}

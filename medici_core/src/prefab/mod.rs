@@ -9,6 +9,8 @@ use value_from_type_macros::value_from_type;
 pub mod card;
 pub mod entity;
 pub mod prototype;
+#[macro_use]
+pub mod runtime;
 pub mod state;
 pub mod timing;
 pub mod transaction;

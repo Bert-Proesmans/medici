@@ -7,7 +7,7 @@ use failure::{format_err, Error};
 use value_from_type_traits::IntoEnum;
 
 use function::{StateContainer, TriggerState};
-use marker::{Service, Timing, TimingEnumerator, Trigger, TriggerEnumerator};
+use marker::{Service, TimingEnumerator, TimingMarker, TriggerEnumerator, TriggerMarker};
 use service::storage::{TriggerStorage, UnsafeTrigger};
 
 // Shortcut for a callback method prototype which consumes the machine
@@ -22,8 +22,8 @@ pub struct TriggerWrapper<M, ETM, ETR>
 where
     M: StateContainer,
     M::State: TriggerState,
-    <M::State as TriggerState>::Timing: Timing + IntoEnum<ETM>,
-    <M::State as TriggerState>::Trigger: Trigger + IntoEnum<ETR>,
+    <M::State as TriggerState>::Timing: TimingMarker + IntoEnum<ETM>,
+    <M::State as TriggerState>::Trigger: TriggerMarker + IntoEnum<ETR>,
     ETM: TimingEnumerator + PartialEq + Copy,
     ETR: TriggerEnumerator + PartialEq + Copy,
     // Additional constraint inference -> *const (): Send + Sync
@@ -37,8 +37,8 @@ impl<M, ETM, ETR> TriggerWrapper<M, ETM, ETR>
 where
     M: StateContainer,
     M::State: TriggerState,
-    <M::State as TriggerState>::Timing: Timing + IntoEnum<ETM>,
-    <M::State as TriggerState>::Trigger: Trigger + IntoEnum<ETR>,
+    <M::State as TriggerState>::Timing: TimingMarker + IntoEnum<ETM>,
+    <M::State as TriggerState>::Trigger: TriggerMarker + IntoEnum<ETR>,
     ETM: TimingEnumerator + PartialEq + Copy,
     ETR: TriggerEnumerator + PartialEq + Copy,
 {
@@ -96,8 +96,8 @@ impl<M, ETM, ETR> From<TriggerWrapper<M, ETM, ETR>> for UnsafeTrigger<ETM, ETR>
 where
     M: StateContainer,
     M::State: TriggerState,
-    <M::State as TriggerState>::Timing: Timing + IntoEnum<ETM>,
-    <M::State as TriggerState>::Trigger: Trigger + IntoEnum<ETR>,
+    <M::State as TriggerState>::Timing: TimingMarker + IntoEnum<ETM>,
+    <M::State as TriggerState>::Trigger: TriggerMarker + IntoEnum<ETR>,
     ETM: TimingEnumerator + PartialEq + Copy,
     ETR: TriggerEnumerator + PartialEq + Copy,
 {
@@ -187,8 +187,8 @@ where
     where
         M: StateContainer,
         M::State: TriggerState,
-        <M::State as TriggerState>::Timing: Timing + IntoEnum<ETM>,
-        <M::State as TriggerState>::Trigger: Trigger + IntoEnum<ETR>,
+        <M::State as TriggerState>::Timing: TimingMarker + IntoEnum<ETM>,
+        <M::State as TriggerState>::Trigger: TriggerMarker + IntoEnum<ETR>,
     {
         // Both the new method AND the Into trait will do the hard work for us!
         let safe_wrapper = TriggerWrapper::<M, ETM, ETR>::new(cb);
@@ -215,8 +215,8 @@ where
     where
         M: StateContainer,
         M::State: TriggerState,
-        <M::State as TriggerState>::Timing: Timing + IntoEnum<ETM>,
-        <M::State as TriggerState>::Trigger: Trigger + IntoEnum<ETR>,
+        <M::State as TriggerState>::Timing: TimingMarker + IntoEnum<ETM>,
+        <M::State as TriggerState>::Trigger: TriggerMarker + IntoEnum<ETR>,
     {
         let timing_key: ETM = <M::State as TriggerState>::Timing::into_enum();
         let trigger_key: ETR = <M::State as TriggerState>::Trigger::into_enum();

@@ -2,7 +2,8 @@
 
 pub mod helper;
 
-use marker::{Service, Timing, TimingEnumerator, Transaction, Trigger, TriggerEnumerator};
+use marker::{Service, TimingEnumerator, TimingMarker, TransactionMarker, TriggerEnumerator,
+             TriggerMarker};
 
 /// Trait generalizing over any structure that could act as a container of states.
 ///
@@ -10,23 +11,30 @@ use marker::{Service, Timing, TimingEnumerator, Transaction, Trigger, TriggerEnu
 pub trait StateContainer {
     /// Type of the current state held by the state machine.
     type State: State;
+    /// Type which enumerates all possible timings contained by the machine.
+    type TimingEnum: TimingEnumerator;
+    /// Type which enumerates all possible triggers contained by the machine.
+    type TriggerEnum: TriggerEnumerator;
 }
 
 /// Trait generalizing over any state that's present in the state machine.
 pub trait State {
     /// Type of structure which must be provided when transitioning into the state
     /// represented by the enclosing type.
-    type Transaction: Transaction;
+    type Transaction: TransactionMarker;
 }
+
+/// Trait generalizing over any state which is used to bootstrap an execution of triggers.
+pub trait EffectState: State {}
 
 /// Trait generalizing over any state that's used to pass into trigger callbacks
 /// when trigger conditions are met.
 pub trait TriggerState: State {
     /// Encoded type value representing the timing (related to triggers) of the
     /// current state.
-    type Timing: Timing;
+    type Timing: TimingMarker;
     /// Encoded type value representing the trigger of the current state.
-    type Trigger: Trigger;
+    type Trigger: TriggerMarker;
 }
 
 /// Type that's generally used to identify and order [`Entity`] objects.

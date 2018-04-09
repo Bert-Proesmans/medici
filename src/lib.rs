@@ -22,6 +22,7 @@ extern crate value_from_type_traits;
 extern crate medici_core;
 
 pub mod card_set;
+pub mod implementation;
 pub mod state_machine;
 
 // Note: Keep tests during structural upgrade. These will be used
@@ -31,31 +32,35 @@ pub mod state_machine;
 mod tests {
     use std::default::Default;
 
+    use medici_core::prefab::entity::GAME_E_ID;
     use medici_core::stm::*;
 
-    use medici::state_machine::prelude::*;
-    use medici::state_machine::state::prelude::*;
-    use medici::state_machine::transaction::*;
+    use super::implementation::trigger::turn_end_trigger;
+    use super::state_machine::prelude::*;
+    use super::state_machine::state::prelude::*;
+    use super::state_machine::transaction::*;
 
     #[test]
     fn entry() {
         let config: SetupConfig = Default::default();
-        let mut game = Game::new(config).expect("Error creating new game!");
+        let mut game = Machine::new(config).expect("Error creating new game!");
 
         {
-            let game_entity = game.entities.entity(GAME_E_ID).unwrap();
-            assert_eq!(GAME_E_ID, game_entity.into());
+            let game_entity = game.entities.get(GAME_E_ID).unwrap();
+            assert_eq!(GAME_E_ID, game_entity.id());
         }
 
         // Add trigger
         game.triggers.add_trigger(turn_end_trigger).unwrap();
 
         // Start game
-        let game: Game<Wait<Input>> = game.transition(Epsilon);
+        let game: Machine<Wait<Input>> = game.transition(Epsilon);
 
         // Do stuff
         let first_turn = end_turn(game).expect("Game unexpectedly finished");
+        // TODO; Check current player == 1
         let _second_turn = end_turn(first_turn).expect("Game unexpectedly finished");
+        // TODO; Check current player == 2
 
         println!("OK - Finished");
     }

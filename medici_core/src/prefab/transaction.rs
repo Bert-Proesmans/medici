@@ -1,7 +1,7 @@
 //! Types for provisioning the next state when performing a
 //! transition within the state machine.
 
-use marker::Transaction;
+use marker::TransactionMarker;
 
 /// Empty Transaction object.
 ///
@@ -11,4 +11,4 @@ use marker::Transaction;
 /// necessary to transition into a next state.
 #[derive(Debug, Clone, Copy)]
 pub struct Epsilon;
-impl Transaction for Epsilon {}
+impl TransactionMarker for Epsilon {}

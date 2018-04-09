@@ -2,7 +2,7 @@
 
 use error::MachineError;
 use function::{ServiceCompliance, State, StateContainer};
-use marker::{Transaction, TransactionContainer};
+use marker::{TransactionContainer, TransactionMarker};
 use service::storage::StackStorage;
 
 /// Types, state machines residing in a certain state, which transform one-sided
@@ -16,7 +16,7 @@ where
     T: StateContainer + 'static,
     Self: StateContainer + 'static,
     Self::State: State + 'static,
-    <Self::State as State>::Transaction: Transaction + Copy + 'static,
+    <Self::State as State>::Transaction: TransactionMarker + 'static,
 {
     /// Transition from the provided state into the implementing state.
     fn transition_from(_: T, _: <Self::State as State>::Transaction) -> Self;
@@ -28,7 +28,7 @@ where
     T: StateContainer + 'static,
     Self: StateContainer + 'static,
     T::State: State + 'static,
-    <T::State as State>::Transaction: Transaction + Copy + 'static,
+    <T::State as State>::Transaction: TransactionMarker + 'static,
 {
     /// Transition from Self into the desired state.
     fn transition(self, _: <T::State as State>::Transaction) -> T;
@@ -39,7 +39,7 @@ where
     S: StateContainer + 'static,
     T: TransitionFrom<S> + StateContainer,
     T::State: State + 'static,
-    <T::State as State>::Transaction: Transaction + Copy + 'static,
+    <T::State as State>::Transaction: TransactionMarker + 'static,
 {
     fn transition(self, t: <T::State as State>::Transaction) -> T {
         // self is of type S.
@@ -64,7 +64,7 @@ where
     T: StateContainer + 'static,
     Self: StateContainer + ServiceCompliance<StackStorage<TTC>> + 'static,
     Self::State: State + 'static,
-    <Self::State as State>::Transaction: Transaction + Copy + 'static,
+    <Self::State as State>::Transaction: TransactionMarker + 'static,
 {
     /// Transition from the provided state into the implementing state.
     fn pushdown_from(_: T, _: <Self::State as State>::Transaction) -> Self;
@@ -76,7 +76,7 @@ where
     TTC: TransactionContainer + 'static,
     T: StateContainer + 'static,
     T::State: State + 'static,
-    <T::State as State>::Transaction: Transaction + Copy + 'static,
+    <T::State as State>::Transaction: TransactionMarker + 'static,
     Self: StateContainer + 'static,
 {
     /// Transition from Self into the desired state.
@@ -89,7 +89,7 @@ where
     TTC: TransactionContainer + 'static,
     T: PushdownFrom<S, TTC> + StateContainer + 'static,
     T::State: State + 'static,
-    <T::State as State>::Transaction: Transaction + Copy + 'static,
+    <T::State as State>::Transaction: TransactionMarker + 'static,
 {
     fn pushdown(self, t: <T::State as State>::Transaction) -> T {
         // self is of type S.
@@ -114,7 +114,7 @@ where
     T: StateContainer + ServiceCompliance<StackStorage<TTC>> + 'static,
     Self: StateContainer + Sized + 'static,
     Self::State: State + 'static,
-    <Self::State as State>::Transaction: Transaction + 'static,
+    <Self::State as State>::Transaction: TransactionMarker + 'static,
 {
     /// Transition from the provided state into the implementing state.
     ///
@@ -131,7 +131,7 @@ where
     TTC: TransactionContainer + 'static,
     T: StateContainer + 'static,
     T::State: State + 'static,
-    <T::State as State>::Transaction: Transaction + 'static,
+    <T::State as State>::Transaction: TransactionMarker + 'static,
     Self: StateContainer + ServiceCompliance<StackStorage<TTC>> + Sized + 'static,
 {
     /// Transition from Self into the desired state.
@@ -144,7 +144,7 @@ where
     TTC: TransactionContainer + 'static,
     T: PullupFrom<S, TTC> + StateContainer + 'static,
     T::State: State + 'static,
-    <T::State as State>::Transaction: Transaction + Copy + 'static,
+    <T::State as State>::Transaction: TransactionMarker + 'static,
 {
     fn pullup(self) -> Result<T, MachineError> {
         // self if of type S.

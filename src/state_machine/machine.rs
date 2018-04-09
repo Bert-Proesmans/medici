@@ -37,9 +37,9 @@ where
     /* Optionals */
     /// Stack storage service to allow PushDown and Pullup behaviour to be
     /// implemented.
-    pub transaction_storage: StackStorage<TransactionItem>,
+    pub transactions: StackStorage<TransactionItem>,
     /// Entities handler.
-    pub entity_storage: EntityStorage<Entity>,
+    pub entities: EntityStorage<Entity>,
     /// Trigger handler.
     pub triggers: TriggerService<TimingItem, TriggerItem>,
 }
@@ -49,6 +49,8 @@ where
     X: TopLevelMarker + State,
 {
     type State = X;
+    type TimingEnum = TimingItem;
+    type TriggerEnum = TriggerItem;
 }
 
 impl<X> ServiceCompliance<StackStorage<TransactionItem>> for Machine<X>
@@ -56,11 +58,11 @@ where
     X: TopLevelMarker + State,
 {
     fn get(&self) -> &StackStorage<TransactionItem> {
-        &self.transaction_storage
+        &self.transactions
     }
 
     fn get_mut(&mut self) -> &mut StackStorage<TransactionItem> {
-        &mut self.transaction_storage
+        &mut self.transactions
     }
 }
 
@@ -82,10 +84,10 @@ where
     X: TopLevelMarker + State,
 {
     fn get(&self) -> &EntityStorage<Entity> {
-        &self.entity_storage
+        &self.entities
     }
 
     fn get_mut(&mut self) -> &mut EntityStorage<Entity> {
-        &mut self.entity_storage
+        &mut self.entities
     }
 }

@@ -59,8 +59,8 @@ impl Machine<Wait<Start>> {
             state: PhantomData,
             transaction: Epsilon,
             //
-            transaction_storage: StackStorage::new(),
-            entity_storage: EntityStorage::new(cfg.max_entities),
+            transactions: StackStorage::new(),
+            entities: EntityStorage::new(cfg.max_entities),
             triggers: TriggerService::new(),
         };
         game = game.setup_game(cfg)?;

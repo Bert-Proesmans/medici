@@ -11,6 +11,9 @@ use marker::{Service, TimingEnumerator, TimingMarker, TransactionMarker, Trigger
 pub trait StateContainer {
     /// Type of the current state held by the state machine.
     type State: State;
+    /// Type of transaction object necessary to transition into the
+    /// current state of the machine.
+    type Transaction: TransactionMarker = <Self::State as State>::Transaction;
     /// Type which enumerates all possible timings contained by the machine.
     type TimingEnum: TimingEnumerator;
     /// Type which enumerates all possible triggers contained by the machine.

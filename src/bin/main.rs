@@ -38,8 +38,7 @@ fn main() {
     let finished_state: Machine<Finished> = input_state.transition(Epsilon);
 
     println!("{:?}", finished_state);
-    */
-}
+    */}
 
 fn _old_main() {
     // Enable backtraces without messing with env.

@@ -22,7 +22,7 @@ impl<W> State for Wait<W>
 where
     W: WaitableMarker + State,
 {
-    type Transaction = W::Transaction;
+    type Transaction = <W as State>::Transaction;
 }
 
 impl<W> TopLevelMarker for Wait<W>
@@ -38,7 +38,7 @@ impl<A> State for Action<A>
 where
     A: ActionableMarker + State,
 {
-    type Transaction = A::Transaction;
+    type Transaction = <A as State>::Transaction;
 }
 
 impl<A> TopLevelMarker for Action<A>
@@ -66,7 +66,7 @@ impl<A> State for Effect<A>
 where
     A: ActionableMarker + State,
 {
-    type Transaction = A::Transaction;
+    type Transaction = <A as State>::Transaction;
 }
 
 impl<A> TopLevelMarker for Effect<A>
@@ -87,7 +87,7 @@ where
     TM: TimingMarker + State,
     TR: TriggerMarker + State,
 {
-    type Transaction = TR::Transaction;
+    type Transaction = <TR as State>::Transaction;
 }
 
 impl<TM, TR> EffectState for RecurseEffect<TM, TR>
@@ -116,7 +116,7 @@ where
     TM: TimingMarker + State,
     TR: TriggerMarker + State,
 {
-    type Transaction = TR::Transaction;
+    type Transaction = <TR as State>::Transaction;
 }
 
 impl<TM, TR> EffectState for DeathEffect<TM, TR>
@@ -147,7 +147,7 @@ where
     TM: TimingMarker + State,
     TR: TriggerMarker + State,
 {
-    type Transaction = TR::Transaction;
+    type Transaction = <TR as State>::Transaction;
 }
 
 impl<TM, TR> TriggerState for Trigger<TM, TR>

@@ -89,8 +89,7 @@ where
 
 /// Type used for indicating failure to meet specified constraints.
 #[derive(Debug, Fail)]
-#[fail(display = "Constraint violation detected! Expected `{:}`, provided `{:}`", expected,
-       factual)]
+#[fail(display = "Constraint violation detected! Expected `{:}`, provided `{:}`", expected, factual)]
 pub struct RuntimeConstraintError {
     /// Value defining the constraint.
     expected: String,

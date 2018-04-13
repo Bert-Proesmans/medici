@@ -3,74 +3,63 @@
 //!
 //! The defined prototypes can be implemented in derived crates.
 
-// TODO; Filter all []Mut prototype variants from ProtoItem.
-
 use function::Entity;
-use marker::{ProtoEnumerator, PrototypeMarker, PrototypeMutMarker};
+use marker::{ProtoEnumerator, PrototypeMarker};
 
 use prefab::entity::Entity as EntityPrefab;
 
 /// Prototype for game behaviour specifically targetting the [`Entity`] defined
 /// within medici_core::prefab.
 pub type Game<'a> = GameProto<'a, EntityPrefab>;
-/// Prototype for game behaviour specifically targetting the [`Entity`] defined
-/// within medici_core::prefab.
-pub type GameMut<'a> = GameProtoMut<'a, EntityPrefab>;
 /// Prototype for player behaviour specifically targetting the [`Entity`] defined
 /// within medici_core::prefab.
 pub type Player<'a> = PlayerProto<'a, EntityPrefab>;
-/// Prototype for game behaviour specifically targetting the [`Entity`] defined
-/// within medici_core::prefab.
-pub type PlayerMut<'a> = PlayerProtoMut<'a, EntityPrefab>;
 
 //
 impl<'a> From<&'a EntityPrefab> for GameProto<'a, EntityPrefab> {
     fn from(x: &'a EntityPrefab) -> Self {
-        GameProto(x)
+        GameProto(Either::Imut(x))
     }
 }
 
-impl<'a> From<&'a mut EntityPrefab> for GameProtoMut<'a, EntityPrefab> {
+impl<'a> From<&'a mut EntityPrefab> for GameProto<'a, EntityPrefab> {
     fn from(x: &'a mut EntityPrefab) -> Self {
-        GameProtoMut(x)
+        GameProto(Either::Mut(x))
     }
 }
 
 impl<'a> From<&'a EntityPrefab> for PlayerProto<'a, EntityPrefab> {
     fn from(x: &'a EntityPrefab) -> Self {
-        PlayerProto(x)
+        PlayerProto(Either::Imut(x))
     }
 }
 
-impl<'a> From<&'a mut EntityPrefab> for PlayerProtoMut<'a, EntityPrefab> {
+impl<'a> From<&'a mut EntityPrefab> for PlayerProto<'a, EntityPrefab> {
     fn from(x: &'a mut EntityPrefab) -> Self {
-        PlayerProtoMut(x)
+        PlayerProto(Either::Mut(x))
     }
 }
 
 //
 
 #[derive(Debug)]
+/// Enum which abtracts immutable and mutable access to entity objects.
+pub enum Either<'a, E: Entity + 'a> {
+    /// Stores immutable references to entities.
+    Imut(&'a E),
+    /// Store mutable references to entities.
+    Mut(&'a mut E),
+}
+
+#[derive(Debug)]
 /// Prototype for game related behaviour.
-pub struct GameProto<'a, E: Entity + 'a>(pub &'a E);
+pub struct GameProto<'a, E: Entity + 'a>(pub Either<'a, E>);
 impl<'a, E: Entity + 'a> PrototypeMarker for GameProto<'a, E> {}
 
 #[derive(Debug)]
-/// Prototype for game related behaviour.
-pub struct GameProtoMut<'a, E: Entity + 'a>(pub &'a mut E);
-impl<'a, E: Entity + 'a> PrototypeMarker for GameProtoMut<'a, E> {}
-impl<'a, E: Entity + 'a> PrototypeMutMarker for GameProtoMut<'a, E> {}
-
-#[derive(Debug)]
 /// Prototype for player related behaviour.
-pub struct PlayerProto<'a, E: Entity + 'a>(pub &'a E);
+pub struct PlayerProto<'a, E: Entity + 'a>(pub Either<'a, E>);
 impl<'a, E: Entity + 'a> PrototypeMarker for PlayerProto<'a, E> {}
-
-#[derive(Debug)]
-/// Prototype for player related behaviour.
-pub struct PlayerProtoMut<'a, E: Entity + 'a>(pub &'a mut E);
-impl<'a, E: Entity + 'a> PrototypeMarker for PlayerProtoMut<'a, E> {}
-impl<'a, E: Entity + 'a> PrototypeMutMarker for PlayerProtoMut<'a, E> {}
 
 // value_from_type cannot automatically implement [`ProtoEnumerator`]
 // for the generated enum.

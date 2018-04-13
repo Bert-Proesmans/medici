@@ -40,9 +40,6 @@ pub trait ProtoEnumerator {}
 /// Types which attribute functionality to [`Entity`]s within the machine.
 pub trait PrototypeMarker {}
 
-/// Types which attribute functionality to [`Entity`]s within the machine.
-pub trait PrototypeMutMarker {}
-
 /// (State) Types which are directly contained by the state machine.
 ///
 /// Note: States can be nested!

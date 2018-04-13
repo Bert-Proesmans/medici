@@ -4,7 +4,8 @@
 //! defined at medici::state_machine.
 
 pub mod effect;
+pub mod entity;
+pub mod prototype;
 pub mod runtime;
-// pub mod entity;
-// pub mod prototypes;
+pub mod setup;
 // pub mod game;

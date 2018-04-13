@@ -3,7 +3,7 @@
 // Prevent successful compilation when documentation is missing.
 #![deny(missing_docs)]
 // Unstable features.
-#![feature(associated_type_defaults, try_from, never_type, proc_macro)]
+#![feature(associated_type_defaults, try_from, never_type, proc_macro, nll)]
 // Clippy linting when building debug versions.
 //#![cfg_attr(test, feature(plugin))]
 //#![cfg_attr(test, plugin(clippy))]
@@ -36,8 +36,8 @@ mod tests {
     use medici_core::prefab::entity::GAME_E_ID;
     use medici_core::stm::*;
 
-    use super::implementation::effect::trigger::turn_end_trigger;
     use super::implementation::effect::action::end_turn;
+    use super::implementation::effect::trigger::turn_end_trigger;
     use super::state_machine::prelude::*;
     use super::state_machine::state::prelude::*;
     use super::state_machine::transaction::*;
@@ -49,6 +49,7 @@ mod tests {
 
         {
             let game_entity = game.entities.get(GAME_E_ID).unwrap();
+            assert_eq!(GAME_E_ID, 0);
             assert_eq!(GAME_E_ID, game_entity.id());
         }
 

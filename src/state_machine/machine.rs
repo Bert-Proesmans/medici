@@ -4,13 +4,14 @@ use std::marker::PhantomData;
 
 use medici_core::function::{ServiceCompliance, State, StateContainer};
 use medici_core::marker::TopLevelMarker;
-use medici_core::prefab::entity::Entity;
 use medici_core::service::storage::{EntityStorage, StackStorage};
 use medici_core::service::trigger::TriggerService;
 
-use state_machine::state::leaf::TimingItem;
 use state_machine::state::leaf::triggerable::TriggerItem;
+use state_machine::state::leaf::TimingItem;
 use state_machine::transaction::TransactionItem;
+
+use implementation::entity::Entity;
 
 /// The state machine.
 ///

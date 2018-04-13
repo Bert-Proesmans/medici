@@ -65,9 +65,11 @@ impl Machine<Wait<Start>> {
     }
 
     fn setup_players(mut self, cfg: &SetupConfig) -> Result<Self, SetupError> {
-        let players_to_setup = cfg.player_names.iter().filter(|e| e.is_some());
-        for player in players_to_setup {
-            let player_entity = self.entities.new_entity()?;
+        let players_names = cfg.player_names.iter().filter(|e| e.is_some()).map(|n| n.clone());
+        for player_name in players_names {
+            let mut player_entity = self.entities.new_entity()?;
+            // Add name of player to entity.
+            player_entity.human_readable = player_name;
             player_entity.add_proto::<PlayerProto>();
             // TODO; Other player setup
         }

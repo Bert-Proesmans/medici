@@ -16,7 +16,7 @@ pub struct SetupConfig {
     ///
     /// The index within this array corresponds to the PlayerID. Do not
     /// confuse with EntityID. PlayerID is a 1-indexed ordinal number.
-    pub player_names: [Option<&'static str>; MAX_PLAYERS],
+    pub player_names: [Option<String>; MAX_PLAYERS],
     /// Maximum amount of entities to be stored inside this machine.
     pub max_entities: usize,
 }
@@ -24,9 +24,9 @@ pub struct SetupConfig {
 impl Default for SetupConfig {
     fn default() -> Self {
         // This will set-up a game with only 2 players
-        let mut player_names = [None; MAX_PLAYERS];
-        player_names[0] = Some("Player 1");
-        player_names[1] = Some("Player 2");
+        let mut player_names: [_; MAX_PLAYERS] = Default::default();
+        player_names[0] = Some("Player 1".into());
+        player_names[1] = Some("Player 2".into());
         //
         SetupConfig {
             player_names,

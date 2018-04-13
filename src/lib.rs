@@ -32,10 +32,12 @@ pub mod state_machine;
 mod tests {
     use std::default::Default;
 
+    use medici_core::function::Entity;
     use medici_core::prefab::entity::GAME_E_ID;
     use medici_core::stm::*;
 
-    use super::implementation::trigger::turn_end_trigger;
+    use super::implementation::effect::trigger::turn_end_trigger;
+    use super::implementation::effect::action::end_turn;
     use super::state_machine::prelude::*;
     use super::state_machine::state::prelude::*;
     use super::state_machine::transaction::*;
@@ -43,7 +45,7 @@ mod tests {
     #[test]
     fn entry() {
         let config: SetupConfig = Default::default();
-        let mut game = Machine::new(config).expect("Error creating new game!");
+        let mut game = Machine::new(&config).expect("Error creating new game!");
 
         {
             let game_entity = game.entities.get(GAME_E_ID).unwrap();

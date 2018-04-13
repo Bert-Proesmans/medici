@@ -183,7 +183,7 @@ where
     }
 
     /// Add a new trigger to the store.
-    pub fn add_trigger<M>(&mut self, cb: _FNTrigger<M>)
+    pub fn add_trigger<M>(&mut self, cb: _FNTrigger<M>) -> Result<(), Error>
     where
         M: StateContainer,
         M::State: TriggerState,
@@ -194,6 +194,7 @@ where
         let safe_wrapper = TriggerWrapper::<M, ETM, ETR>::new(cb);
         // TODO; Abstract the triggers field of TriggerStorage!
         self.storage.triggers.push(safe_wrapper.into());
+        Ok(())
     }
 
     /// Retrieve all triggers matching the provided machine.

@@ -7,8 +7,8 @@
 // Unstable features.
 #![feature(associated_type_defaults, try_from, never_type, proc_macro)]
 // Clippy linting when building debug versions.
-#![cfg_attr(test, feature(plugin))]
-#![cfg_attr(test, plugin(clippy))]
+// #![cfg_attr(test, feature(plugin))]
+// #![cfg_attr(test, plugin(clippy))]
 // Linters for code residing in documentation.
 #![doc(test(attr(allow(unused_variables), deny(warnings))))]
 

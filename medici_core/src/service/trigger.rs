@@ -138,8 +138,7 @@ where
 /// This requires a lot of boilerplate code but macro's might be able to solve this?
 ///
 /// eg:
-/// ```rust
-///
+/// ```ignore
 /// #struct Post;
 /// #impl Timing for Post {}
 ///

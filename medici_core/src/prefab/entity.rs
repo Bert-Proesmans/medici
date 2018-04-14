@@ -8,7 +8,7 @@ use value_from_type_traits::IntoEnum;
 
 use function::{self, EntityBuilder, EntityId};
 use marker::{ProtoEnumerator, PrototypeMarker};
-use service::error::MissingProtoTypeError;
+use service::error::MissingPrototypeError;
 
 use prefab::prototype::ProtoItem;
 
@@ -76,7 +76,7 @@ where
 impl<S, P> EntityStruct<S, P>
 where
     S: Clone + Eq + Hash,
-    P: ProtoEnumerator + Debug + Clone + Eq + Hash,
+    P: ProtoEnumerator + Debug + Eq + Hash + Clone,
 {
     /// Retrieves the value of the requested property defined within this entity.
     /// 0 is returned as default value when the property key was not found!
@@ -115,28 +115,30 @@ where
     }
 
     /// Return this entity as the requested prototype.
-    pub fn as_proto<'a, PT>(&'a self) -> Result<PT, MissingProtoTypeError<EntityId, P>>
+    pub fn as_proto<'a, PT>(&'a self) -> Result<PT, MissingPrototypeError<EntityId, P>>
     where
         PT: PrototypeMarker + IntoEnum<P> + From<&'a Self>,
     {
-        let proto_entry: P = PT::into_enum();
-        if self.prototypes.contains(&proto_entry) {
+        let proto_item: P = PT::into_enum();
+        if self.prototypes.contains(&proto_item) {
             Ok(PT::from(self))
         } else {
-            Err(MissingProtoTypeError(self.id, proto_entry))
+            let id = self.id;
+            Err(MissingPrototypeError(id, proto_item))
         }
     }
 
     /// Return this entity as the requested prototype.
-    pub fn as_proto_mut<'a, PT>(&'a mut self) -> Result<PT, MissingProtoTypeError<EntityId, P>>
+    pub fn as_proto_mut<'a, PT>(&'a mut self) -> Result<PT, MissingPrototypeError<EntityId, P>>
     where
         PT: PrototypeMarker + IntoEnum<P> + From<&'a mut Self>,
     {
-        let proto_entry: P = PT::into_enum();
-        if self.prototypes.contains(&proto_entry) {
+        let proto_item: P = PT::into_enum();
+        if self.prototypes.contains(&proto_item) {
             Ok(PT::from(self))
         } else {
-            Err(MissingProtoTypeError(self.id, proto_entry))
+            let id = self.id;
+            Err(MissingPrototypeError(id, proto_item))
         }
     }
 }

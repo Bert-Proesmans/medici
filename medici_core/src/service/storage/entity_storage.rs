@@ -27,7 +27,7 @@ where
 impl<E> EntityStorage<E>
 where
     E: Entity + EntityBuilder<E> + Clone,
-    E::ID: Into<usize> + TryFrom<usize> + Copy + Debug + Display,
+    E::ID: Into<usize> + TryFrom<usize> + Debug + Display + Copy,
 {
     /// Creates a new object for storage.
     pub fn new(maximum_items: usize) -> Self {

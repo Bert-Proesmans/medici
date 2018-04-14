@@ -11,6 +11,7 @@ use state_machine::state::leaf::triggerable::Start;
 use state_machine::state::toplevel::Wait;
 use state_machine::transaction::Epsilon;
 
+use implementation::entity::EntityTags;
 use implementation::prototype::Game as GameProto;
 use implementation::prototype::Player as PlayerProto;
 
@@ -60,18 +61,28 @@ impl Machine<Wait<Start>> {
     fn setup_game(mut self, cfg: &SetupConfig) -> Result<Self, SetupError> {
         let game_entity = self.entities.new_entity()?;
         game_entity.add_proto::<GameProto>();
-        // TODO; Other game setup
+        // Count the amount of players provided by the config.
+        // MaxPlayers is used as tag name because the game starts with this amount.
+        // Within last-man-standing games the amount of 'alive' players is equal to or
+        // smaller than the MaxPlayers amount.
+        let num_players = cfg.player_names.iter().filter(|p| p.is_some()).count();
+        game_entity.set_value(EntityTags::MaxPlayers, num_players as u32);
+        // TODO; Other game setup steps
         Ok(self)
     }
 
     fn setup_players(mut self, cfg: &SetupConfig) -> Result<Self, SetupError> {
-        let players_names = cfg.player_names.iter().filter(|e| e.is_some()).map(|n| n.clone());
+        let players_names = cfg.player_names
+            .iter()
+            .filter(|e| e.is_some())
+            .map(|n| n.clone());
         for player_name in players_names {
             let mut player_entity = self.entities.new_entity()?;
             // Add name of player to entity.
             player_entity.human_readable = player_name;
             player_entity.add_proto::<PlayerProto>();
-            // TODO; Other player setup
+
+            // TODO; Other player setup steps
         }
         Ok(self)
     }

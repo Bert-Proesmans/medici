@@ -13,6 +13,7 @@
 //! Crate used to show off the power of the Medici framework.
 
 extern crate failure;
+extern crate failure_derive;
 extern crate lazy_static;
 extern crate maplit;
 extern crate value_from_type_macros;
@@ -32,15 +33,27 @@ pub mod state_machine;
 mod tests {
     use std::default::Default;
 
+    use failure::{Error, Fail};
+
     use medici_core::function::Entity;
     use medici_core::prefab::entity::GAME_E_ID;
-    use medici_core::stm::*;
+    use medici_core::service::error::MissingEntityError;
+    // use medici_core::stm::*;
 
-    use super::implementation::effect::action::end_turn;
-    use super::implementation::effect::trigger::turn_end_trigger;
+    use super::implementation::effect::action::{end_turn, start_game};
+    use super::implementation::effect::trigger::{start_game_trigger, turn_end_trigger};
+    use super::implementation::entity::EntityTags;
     use super::state_machine::prelude::*;
-    use super::state_machine::state::prelude::*;
-    use super::state_machine::transaction::*;
+    // use super::state_machine::state::prelude::*;
+    // use super::state_machine::transaction::*;
+
+    #[test]
+    fn failure_derive() {
+        let id: usize = 0;
+        let error = MissingEntityError(id);
+        let fail: &Fail = &MissingEntityError(id);
+        let err: Error = MissingEntityError(id).into();
+    }
 
     #[test]
     fn entry() {
@@ -53,19 +66,28 @@ mod tests {
             assert_eq!(GAME_E_ID, game_entity.id());
         }
 
-        // Add trigger
+        // Add triggers
+        game.triggers.add_trigger(start_game_trigger).unwrap();
         game.triggers.add_trigger(turn_end_trigger).unwrap();
 
         // Start game
-        let game: Machine<Wait<Input>> = game.transition(Epsilon);
+        let first_turn = start_game(game).expect("Game unexpectedly finished");
 
-        // Do stuff
-        let first_turn = end_turn(game).expect("Game unexpectedly finished");
-        // TODO; Check current player == 1
-        let _second_turn = end_turn(first_turn).expect("Game unexpectedly finished");
-        // TODO; Check current player == 2
+        // Check we're currently within the turn of player 1.
+        let game_entity = first_turn.entities.get(GAME_E_ID).unwrap();
+        assert_eq!(
+            game_entity.get_value_default(&EntityTags::CurrentPlayerOrd),
+            1
+        );
+        let second_turn = end_turn(first_turn).expect("Game unexpectedly finished");
 
-        println!("OK - Finished");
+        // Check we're currently within the turn of player 2.
+        let game_entity = second_turn.entities.get(GAME_E_ID).unwrap();
+        assert_eq!(
+            game_entity.get_value_default(&EntityTags::CurrentPlayerOrd),
+            2
+        );
+        let _third_turn = end_turn(second_turn).expect("Game unexpectedly finished");
     }
 
     /*

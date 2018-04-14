@@ -3,6 +3,8 @@
 //!
 //! The defined prototypes can be implemented in derived crates.
 
+use failure::{format_err, Error};
+
 use function::Entity;
 use marker::{ProtoEnumerator, PrototypeMarker};
 
@@ -49,6 +51,30 @@ pub enum Either<'a, E: Entity + 'a> {
     Imut(&'a E),
     /// Store mutable references to entities.
     Mut(&'a mut E),
+}
+
+// Note; No lifetime bounds necessary for the containing methods.
+// The listed generic constraints are enough information for the compiler
+// to infer correct lifetimes.
+impl<'a, E> Either<'a, E>
+where
+    E: Entity + 'a,
+{
+    /// Returns an immutable reference to the contained [`Entity`].
+    pub fn unwrap(&self) -> &E {
+        match self {
+            Either::Imut(e) => e,
+            Either::Mut(e) => e,
+        }
+    }
+
+    /// Returns a mutable reference to the contained [`Entity`].
+    pub fn unwrap_mut(&mut self) -> Result<&mut E, Error> {
+        match self {
+            Either::Mut(e) => Ok(e),
+            _ => Err(format_err!("Invalid access!")),
+        }
+    }
 }
 
 #[derive(Debug)]

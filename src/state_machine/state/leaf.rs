@@ -36,6 +36,8 @@ pub mod triggerable {
         type Transaction = Epsilon;
     }
     impl WaitableMarker for Start {}
+    impl TriggerMarker for Start {}
+    impl ActionableMarker for Start {}
 
     /// Wait condition state until the user has provided input.
     #[derive(Debug, Clone)]

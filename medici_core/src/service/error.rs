@@ -1,8 +1,9 @@
 //! Types for simplifying error handling syntax.
 
-use std::fmt::{Debug, Display};
+use std::fmt::{self, Debug, Display};
 
-use failure::Fail;
+use failure::Fail as FailTrait;
+use failure_derive::Fail;
 
 use marker::ProtoEnumerator;
 
@@ -18,12 +19,58 @@ pub struct StackPopError;
 #[fail(display = "A constraint amount is overflowed, maximum is {:}", _0)]
 pub struct OverflowError(pub usize);
 
-/// Specific error thrown when the requested entity-id is not known.
-#[derive(Debug, Fail)]
-#[fail(display = "The entity with id `{:}` was not found", _0)]
-pub struct MissingEntityError<ID: Display>(pub ID);
+/*
+ * Code below contains a workaround for a pending failure_derive bug.
+ * Check the toplevel module [`workaround`] for more information.
+ */
 
 /// Specific error thrown when the requested entity-id is not known.
-#[derive(Debug, Fail)]
-#[fail(display = "The entity with id `{:}` doesn't have the prototype `{:?}`", _0, _1)]
-pub struct MissingProtoTypeError<ID: Display, P: ProtoEnumerator + Debug>(pub ID, pub P);
+#[derive(Debug)]
+// #[fail(display = "The entity with id `{:}` was not found", _0)]
+pub struct MissingEntityError<ID>(pub ID)
+where
+    ID: Display + Debug;
+
+impl<ID> FailTrait for MissingEntityError<ID>
+where
+    ID: Display + Debug + Send + Sync + 'static,
+{
+}
+
+impl<ID> fmt::Display for MissingEntityError<ID>
+where
+    ID: Display + Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "The entity with id `{:}` was not found", self.0)
+    }
+}
+
+/// Specific error thrown when the requested entity-id is not known.
+#[derive(Debug)]
+// #[fail(display = "The entity with id `{:}` doesn't have the prototype `{:?}`", _0, _1)]
+pub struct MissingPrototypeError<ID, P>(pub ID, pub P)
+where
+    ID: Display + Debug,
+    P: ProtoEnumerator + Debug;
+
+impl<ID, P> FailTrait for MissingPrototypeError<ID, P>
+where
+    ID: Display + Debug + Send + Sync + 'static,
+    P: ProtoEnumerator + Debug + Send + Sync + 'static,
+{
+}
+
+impl<ID, P> fmt::Display for MissingPrototypeError<ID, P>
+where
+    ID: Display + Debug,
+    P: ProtoEnumerator + Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "The entity with id `{:}` doesn't have the prototype `{:?}`",
+            self.0, self.1
+        )
+    }
+}

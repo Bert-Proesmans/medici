@@ -1,7 +1,7 @@
 #![value_from_type(ProtoItem)]
 //! Module containing specialized prototypes for our machine.
 //!
-//! The prototypes MUST be defined within this file because we're using 
+//! The prototypes MUST be defined within this file because we're using
 //! the value_from_type macro to generate ProtoItem.
 
 use medici_core::function::Entity;

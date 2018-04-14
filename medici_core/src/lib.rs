@@ -29,6 +29,7 @@ extern crate value_from_type_macros;
 pub extern crate value_from_type_traits;
 
 pub extern crate failure;
+extern crate failure_derive;
 #[macro_use]
 extern crate maplit;
 
@@ -39,3 +40,4 @@ pub mod marker;
 pub mod prefab;
 pub mod service;
 pub mod stm;
+mod workaround;

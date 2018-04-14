@@ -8,6 +8,7 @@ value_from_type_macros = "1.0.3"
 value_from_type_traits = "1.0.2"
 
 failure = "0.1.1"
+failure_derive = "0.1.1"
 maplit = "1.0.1"
 
 # [patch.crates-io]

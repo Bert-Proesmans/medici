@@ -2,8 +2,12 @@ language: rust
 rust:
   - nightly
 cache: cargo
+# RUST_BACKTRACE is explicitly unset after building to not loiter the log
+# with value_from_type token output.
 script:
+  - export RUST_BACKTRACE="1"
   - cargo build --all
+  - export RUST_BACKTRACE="0"
   - cargo test --all
 after_success: |
   [ $TRAVIS_BRANCH = master ] &&

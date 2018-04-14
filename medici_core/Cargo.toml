@@ -15,4 +15,4 @@ maplit = "1.0.1"
 # value_from_type_macros = { path = "D:\\Git\\value-from-type-derive\\value_from_type_macros" }
 
 [dev-dependencies]
-clippy = { version = "*" }
+# clippy = { version = "*" }

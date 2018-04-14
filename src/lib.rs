@@ -89,41 +89,4 @@ mod tests {
         );
         let _third_turn = end_turn(second_turn).expect("Game unexpectedly finished");
     }
-
-    /*
-    #[test]
-    fn listeners() {
-        let config: SetupConfig = Default::default();
-        let mut new_game = Game::new(config).expect("Error creating new game!");
-
-        // Add trigger
-        new_game.listeners.add_trigger(turn_end_trigger).unwrap();
-
-        // Start game
-        let new_game: Game<Wait<Input>> = new_game.transition(Epsilon());
-
-        // Do stuff
-        let first_turn = end_turn(new_game).expect("Game unexpectedly finished");
-        let _second_turn = end_turn(first_turn).expect("Game unexpectedly finished");
-    }
-
-    #[test]
-    fn entities() {
-        let game_card = CardContainer::game_card();
-        let mut game_entity = Entity::new(GAME_E_ID, game_card);
-        game_entity
-            .add_proto::<GameProto>()
-            .expect("Error in proto assignment!");
-        game_entity
-            .as_proto::<GameProto>()
-            .expect("Error in proto retrieval!");
-
-        game_entity
-            .add_proto::<GameProtoMut>()
-            .expect("Error in proto assignment!");
-        game_entity
-            .as_proto_mut::<GameProtoMut>()
-            .expect("Error in proto retrieval!");
-    }
-    */
 }

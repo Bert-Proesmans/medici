@@ -43,7 +43,7 @@ where
     /// A mutable reference to the new entity is returned upon successful creation.
     pub fn new_entity(&mut self) -> Result<&mut E, OverflowError> {
         let next_eid = self.entities.len();
-        if next_eid > self.maximum_items {
+        if next_eid >= self.maximum_items {
             return Err(OverflowError(self.maximum_items));
         }
 

@@ -77,29 +77,22 @@ where
 
 #[derive(Debug, Clone)]
 /// Chained effect caused by an specific [`Actionable`].
-///
-/// # Note
-/// [`State`] is implemented using the transaction type of [`Trigger`].
-/// This is because we assume [`Timing`] will always have an irrelevant (epsilon) [`Transaction`].
-pub struct RecurseEffect<TM: marker::Timing, TR: marker::Triggerable>(TM, TR);
-impl<TM, TR> State for RecurseEffect<TM, TR>
+pub struct RecurseEffect<TR: marker::Triggerable>(TR);
+impl<TR> State for RecurseEffect<TR>
 where
-    TM: marker::Timing + State,
     TR: marker::Triggerable + State,
 {
     type Transaction = <TR as State>::Transaction;
 }
 
-impl<TM, TR> EffectState for RecurseEffect<TM, TR>
+impl<TR> EffectState for RecurseEffect<TR>
 where
-    TM: marker::Timing + State,
     TR: marker::Triggerable + State,
 {
 }
 
-impl<TM, TR> marker::TopLevel for RecurseEffect<TM, TR>
+impl<TR> marker::TopLevel for RecurseEffect<TR>
 where
-    TM: marker::Timing + State,
     TR: marker::Triggerable + State,
 {
 }

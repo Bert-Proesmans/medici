@@ -18,7 +18,7 @@ where
 /// Unpack a wrapped transaction into an owned value.
 ///
 /// It's of course necessary to
-pub fn unpack_transaction<T, TC>(tc: TC) -> Result<T, TC::Error>
+pub fn unpack_transaction<T, TC>(tc: TC) -> Result<T, <TC as TryInto<T>>::Error>
 where
     T: marker::Transaction + 'static,
     TC: marker::TransactionContainer + TryInto<T> + 'static,

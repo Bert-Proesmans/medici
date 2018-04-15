@@ -96,6 +96,24 @@ mod test_checked {
                 PullupFrom::pullup_from(push).expect("Failed to pullup!");
             println!("PULLED UP\n{:?}\n", pull);
         }
+
+        #[test]
+        #[should_panic]
+        fn invalid_transition() {
+            // Build a new machine to reuse most parts for a custom (faulty) one.
+            let machine: Machine<Action<Start>, _> = Machine::new();
+            let machine: Machine<Effect<Start>, ()> = Machine {
+                state: PhantomData,
+                history: PhantomData,
+                transaction: Epsilon,
+                //
+                transactions: machine.transactions,
+                entities: machine.entities,
+                triggers: machine.triggers,
+            };
+            // This is an invalid pullup because the transition history is empty.
+            let pull: Machine<Action<Start>, _> = PullupFrom::pullup_from(machine).expect("Failed to pullup!");
+        }
     }
 }
 

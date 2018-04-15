@@ -1,4 +1,4 @@
-//! Traits enforcing state machine behaviour.
+//! (Type) Unchecked transitions for state machines.
 
 use error::MachineError;
 use function::{ServiceCompliance, State, StateContainer};

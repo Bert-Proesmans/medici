@@ -6,7 +6,7 @@
 
 use failure::Error;
 
-use medici_core::stm::*;
+use medici_core::stm::unchecked::*;
 
 use state_machine::prelude::*;
 use state_machine::state::prelude::*;

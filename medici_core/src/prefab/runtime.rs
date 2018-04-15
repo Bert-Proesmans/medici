@@ -90,7 +90,7 @@ macro_rules! build_exec_triggers {
         use $crate::prefab::state::{Effect, Trigger};
         // use $crate::prefab::timing::*;
         use $crate::service::trigger::TriggerService;
-        use $crate::stm::*;
+        use $crate::stm::unchecked::*;
 
         #[doc(hidden)]
         #[allow(non_camel_case)]

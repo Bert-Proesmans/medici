@@ -3,8 +3,6 @@
 use std::marker::PhantomData;
 
 use medici_core::error::SnapshottedErrorExt;
-use medici_core::function::State;
-use medici_core::stm::{PullupFrom, PushdownFrom, TransitionFrom};
 
 use state_machine::prelude::*;
 use state_machine::state::prelude::*;
@@ -12,8 +10,8 @@ use state_machine::state::prelude::*;
 /// Macro to easily implement [`TransitionFrom`] for state machine transitions.
 macro_rules! build_transition {
     ($from:ty => $into:ty) => {
-        impl TransitionFrom<$from> for $into {
-            fn transition_from(old: $from, t: <Self::State as State>::Transaction) -> Self {
+        impl $crate::medici_core::stm::unchecked::TransitionFrom<$from> for $into {
+            fn transition_from(old: $from, t: <Self::State as $crate::medici_core::function::State>::Transaction) -> Self {
                 Machine {
                     state: PhantomData,
                     transaction: t,
@@ -41,8 +39,8 @@ macro_rules! build_pushdown {
         build_pushdown!($from => $into; $crate::state_machine::transaction::TransactionItem);
     };
     ($from:ty => $into:ty; $t_type:ty) => {
-        impl PushdownFrom<$from, $t_type> for $into {
-            fn pushdown_from(mut old: $from, t: <Self::State as State>::Transaction) -> Self
+        impl $crate::medici_core::stm::unchecked::PushdownFrom<$from, $t_type> for $into {
+            fn pushdown_from(mut old: $from, t: <Self::State as $crate::medici_core::function::State>::Transaction) -> Self
             where
                 $from: $crate::medici_core::function::StateContainer,
             {
@@ -75,7 +73,7 @@ macro_rules! build_pullup {
         build_pullup!($from => $into; $crate::state_machine::transaction::TransactionItem);
     };
     ($from:ty => $into:ty; $t_type:ty) => {
-        impl PullupFrom<$from, $t_type> for $into {
+        impl $crate::medici_core::stm::unchecked::PullupFrom<$from, $t_type> for $into {
             fn pullup_from(mut old: $from) -> Result<Self, $crate::medici_core::error::MachineError>
             where
                 $from: $crate::medici_core::function::StateContainer,

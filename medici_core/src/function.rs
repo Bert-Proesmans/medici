@@ -1,5 +1,6 @@
 //! Contains the core functionality items for our system.
 
+use ctstack::CTStack;
 use marker;
 
 /// Trait generalizing over any structure that could act as a container of states.
@@ -15,6 +16,9 @@ pub trait StateContainer {
     type TimingEnum: marker::TimingEnumerator;
     /// Type which enumerates all possible triggers contained by the machine.
     type TriggerEnum: marker::TriggerEnumerator;
+    /// Type representing the stack of types where the container state was
+    /// transitioned in a pushdown manner.
+    type TransitionRecord: CTStack;
 }
 
 /// Trait generalizing over any state that's present in the state machine.

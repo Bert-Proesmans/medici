@@ -33,13 +33,16 @@ extern crate failure_derive;
 #[macro_use]
 extern crate maplit;
 
+mod workaround;
+
+#[macro_use]
+pub mod prefab;
+#[macro_use]
+pub mod ctstack;
+
 pub mod error;
 pub mod function;
 pub mod marker;
-pub mod transaction;
-#[macro_use]
-pub mod prefab;
 pub mod service;
 pub mod stm;
-pub mod ctstack;
-mod workaround;
+pub mod transaction;

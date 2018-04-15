@@ -6,7 +6,7 @@ use std::marker::PhantomData;
 use failure::{format_err, Error};
 use value_from_type_traits::IntoEnum;
 
-use function::{StateContainer, TriggerState, Service};
+use function::{Service, StateContainer, TriggerState};
 use marker;
 use service::storage::{TriggerStorage, UnsafeTrigger};
 

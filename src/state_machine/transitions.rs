@@ -7,11 +7,101 @@ use medici_core::error::SnapshottedErrorExt;
 use state_machine::prelude::*;
 use state_machine::state::prelude::*;
 
+/// DBG
+mod test_checked {
+    pub use std::marker::PhantomData;
+
+    pub use medici_core::ct;
+    pub use medici_core::ctstack::CTStack;
+    pub use medici_core::function::{State, ServiceCompliance};
+    pub use medici_core::service::storage::StackStorage;
+    pub use medici_core::stm::checked::{PushdownFrom, PullupFrom};
+    pub use medici_core::transaction::{unpack_transaction, pack_transaction};
+
+    pub use state_machine::machine::checked::Machine;
+    pub use state_machine::state::prelude::*;
+    pub use state_machine::transaction::{Epsilon, TransactionItem};
+
+    impl<CTS> PushdownFrom<Machine<Action<Start>, CTS>, CTS, TransactionItem>
+        for Machine<Effect<Start>, ct!(Effect<Start> => CTS)>
+    where
+        CTS: CTStack + 'static,
+    {
+        fn pushdown_from(
+            mut old: Machine<Action<Start>, CTS>,
+            t: <Self::State as State>::Transaction,
+        ) -> Self {
+            // Archive state of the old machine.
+                let old_transaction: TransactionItem = pack_transaction(old.transaction);
+                ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(&mut old)
+                    .push(old_transaction)
+                    .expect("Never type triggered!");
+
+                // Build new machine.
+                Machine {
+                    state: PhantomData,
+                    history: PhantomData,
+                    transaction: t,
+                    // Following properties MUST stay in sync with `Machine` !
+                    transactions: old.transactions,
+                    entities: old.entities,
+                    triggers: old.triggers,
+                }
+        }
+    }
+
+    impl<CTS> PullupFrom<Machine<Effect<Start>, CTS>, CTS, TransactionItem>
+        for Machine<Action<Start>, <CTS as CTStack>::Tail>
+    where
+        CTS: CTStack + 'static,
+    {
+        fn pullup_from(mut old: Machine<Effect<Start>, CTS>) -> Result<Self, String>
+        {
+            // Archive state of the old machine.
+            let old_transaction = ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(&mut old)
+                .pop()
+                .map_err(|e| String::from("Issue!"))
+                .and_then(|item| {
+                    unpack_transaction(item).map_err(|_| String::from("Issue!"))
+                })?;
+
+            // Build new machine.
+            Ok(Machine {
+                state: PhantomData,
+                history: PhantomData,
+                transaction: old_transaction,
+                // Following properties MUST stay in sync with `Machine` !
+                transactions: old.transactions,
+                entities: old.entities,
+                triggers: old.triggers,
+            })
+        }
+    }
+
+    #[cfg(test)]
+    mod test {
+        use super::*;
+
+        #[test]
+        fn checked_transitions() {
+            let machine: Machine<Action<Start>, _> = Machine::new();
+            println!("START\n{:?}\n", machine);
+            let push: Machine<Effect<Start>, _> = PushdownFrom::pushdown_from(machine, Epsilon);
+            println!("PUSHED DOWN\n{:?}\n", push);
+            let pull: Machine<Action<Start>, _> = PullupFrom::pullup_from(push).expect("Failed to pullup!");
+            println!("PULLED UP\n{:?}\n", pull);
+        }
+    }
+}
+
 /// Macro to easily implement [`TransitionFrom`] for state machine transitions.
 macro_rules! build_transition {
     ($from:ty => $into:ty) => {
         impl $crate::medici_core::stm::unchecked::TransitionFrom<$from> for $into {
-            fn transition_from(old: $from, t: <Self::State as $crate::medici_core::function::State>::Transaction) -> Self {
+            fn transition_from(
+                old: $from,
+                t: <Self::State as $crate::medici_core::function::State>::Transaction,
+            ) -> Self {
                 Machine {
                     state: PhantomData,
                     transaction: t,
@@ -40,7 +130,10 @@ macro_rules! build_pushdown {
     };
     ($from:ty => $into:ty; $t_type:ty) => {
         impl $crate::medici_core::stm::unchecked::PushdownFrom<$from, $t_type> for $into {
-            fn pushdown_from(mut old: $from, t: <Self::State as $crate::medici_core::function::State>::Transaction) -> Self
+            fn pushdown_from(
+                mut old: $from,
+                t: <Self::State as $crate::medici_core::function::State>::Transaction,
+            ) -> Self
             where
                 $from: $crate::medici_core::function::StateContainer,
             {

@@ -8,6 +8,11 @@ use marker;
 
 /// Type for starting a new CTStack.
 pub type EmptyStack = ();
+/// Type representing aq CTStack with any contents.
+///
+/// # Safety
+/// This is only valid when the implemented size is 0.
+pub type AnyStack = ();
 
 /// Usability macro for pushing a new type onto the CTStack.
 #[macro_export]

@@ -9,6 +9,7 @@ use std::default::Default;
 
 use failure::Error;
 
+use medici_core::ctstack::{AnyStack, CTStack};
 use medici_core::prefab::entity::GAME_E_ID;
 // use medici_core::stm::*;
 
@@ -19,9 +20,12 @@ use medici::state_machine::prelude::*;
 use medici::state_machine::state::prelude::*;
 // use medici::state_machine::transaction::*;
 
-fn pre_end_turn_trigger(
-    x: Machine<Trigger<Pre, EndTurn>>,
-) -> Result<Machine<Trigger<Pre, EndTurn>>, Error> {
+fn pre_end_turn_trigger<CTS>(
+    x: Machine<Trigger<Pre, EndTurn>, CTS>,
+) -> Result<Machine<Trigger<Pre, EndTurn>, CTS>, Error>
+where
+    CTS: CTStack,
+{
     let game_entity = x.entities.get(GAME_E_ID)?;
     let player_idx = game_entity
         .get_value(&EntityTags::CurrentPlayerOrd)
@@ -41,15 +45,15 @@ fn main() {
     // Add triggers
     wait_start_state
         .triggers
-        .add_trigger(start_game_trigger)
+        .add_trigger(start_game_trigger::<AnyStack>)
         .unwrap();
     wait_start_state
         .triggers
-        .add_trigger(turn_end_trigger)
+        .add_trigger(turn_end_trigger::<AnyStack>)
         .unwrap();
     wait_start_state
         .triggers
-        .add_trigger(pre_end_turn_trigger)
+        .add_trigger(pre_end_turn_trigger::<AnyStack>)
         .unwrap();
 
     // Start the game, which will start the turn of the first player.
@@ -63,27 +67,3 @@ fn main() {
 
     println!("{:?}", finished_state);
     */}
-
-fn _old_main() {
-    // Enable backtraces without messing with env.
-    // std::env::set_var("RUST_BACKTRACE", "1");
-
-    // println!("Starting - Running MAIN");
-    // let config: SetupConfig = Default::default();
-    // let mut game = Game::new(config).expect("Error creating new game!");
-
-    // // Add trigger
-    // game.listeners.add_trigger(turn_end_trigger).unwrap();
-    // println!("Listener added");
-
-    // // Start the game
-    // let game: Game<Wait<Input>> = game.transition(Epsilon());
-
-    // // Do stuff
-    // println!("Ending turn P1");
-    // let first_turn = end_turn(game).expect("Game unexpectedly finished");
-    // println!("Ending turn P2");
-    // let _second_turn = end_turn(first_turn).expect("Game unexpectedly finished");
-
-    // println!("FINISHED");
-}

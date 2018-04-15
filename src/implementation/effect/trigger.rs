@@ -2,6 +2,7 @@
 
 use failure::Error;
 
+use medici_core::ctstack::CTStack;
 use medici_core::prefab::entity::GAME_E_ID;
 
 use implementation::entity::EntityTags;
@@ -11,9 +12,12 @@ use state_machine::state::prelude::*;
 // use state_machine::transaction::*;
 
 /// Defines all activities which must happen when the game is started.
-pub fn start_game_trigger(
-    mut x: Machine<Trigger<Peri, Start>>,
-) -> Result<Machine<Trigger<Peri, Start>>, Error> {
+pub fn start_game_trigger<CTS>(
+    mut x: Machine<Trigger<Peri, Start>, CTS>,
+) -> Result<Machine<Trigger<Peri, Start>, CTS>, Error>
+where
+    CTS: CTStack + 'static,
+{
     println!("[START_GAME_TRIGGER] PERI - START");
     //
     // Set the current turn to be for player 1 (1), the first player.
@@ -24,9 +28,12 @@ pub fn start_game_trigger(
 }
 
 /// Defines a trigger which will be run when the turn of the current player ends.
-pub fn turn_end_trigger(
-    mut x: Machine<Trigger<Peri, EndTurn>>,
-) -> Result<Machine<Trigger<Peri, EndTurn>>, Error> {
+pub fn turn_end_trigger<CTS>(
+    mut x: Machine<Trigger<Peri, EndTurn>, CTS>,
+) -> Result<Machine<Trigger<Peri, EndTurn>, CTS>, Error>
+where
+    CTS: CTStack + 'static,
+{
     println!("[TURN_END_TRIGGER] PERI - END TURN");
     //
     let game_entity = x.entities.get_mut(GAME_E_ID)?;

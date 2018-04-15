@@ -76,7 +76,7 @@ where
 /// The constructed method will automatically transition into the trigger substates and execute the
 /// triggers which constraints match the system state.
 #[macro_export]
-macro_rules! build_exec_triggers {
+macro_rules! build_exec_triggers_checked {
     ($container_name:ident) => {
         // Since we're in macro space, we have no access to the std prelude!
         use std::result::Result;
@@ -84,31 +84,33 @@ macro_rules! build_exec_triggers {
         use $crate::value_from_type_traits::IntoEnum;
 
         use self::_shorten_syntax::*;
+        use $crate::ctstack::CTStack;
         use $crate::function::{ServiceCompliance, State, StateContainer, TriggerState};
         use $crate::marker;
         use $crate::prefab::runtime::{exec_trigger_stepped, fetch_triggers};
         use $crate::prefab::state::{Effect, Trigger};
         // use $crate::prefab::timing::*;
         use $crate::service::trigger::TriggerService;
-        use $crate::stm::unchecked::*;
+        use $crate::stm::checked::*;
 
         #[doc(hidden)]
         #[allow(non_camel_case)]
         mod _shorten_syntax {
             use super::*;
-            pub type M1<TR> = $container_name<Effect<TR>>;
-            pub type M2<TR> = $container_name<Trigger<Pre, TR>>;
-            pub type M3<TR> = $container_name<Trigger<Peri, TR>>;
-            pub type M4<TR> = $container_name<Trigger<Post, TR>>;
+            pub type M1<TR, CTS> = $container_name<Effect<TR>, CTS>;
+            pub type M2<TR, CTS> = $container_name<Trigger<Pre, TR>, CTS>;
+            pub type M3<TR, CTS> = $container_name<Trigger<Peri, TR>, CTS>;
+            pub type M4<TR, CTS> = $container_name<Trigger<Post, TR>, CTS>;
         }
 
         /// Takes the provided machine (in [`Effect`] state) and executes direct and indirect
         /// triggers.
-        pub fn exec_triggers<TR, TT, ETM, ETR>(
-            machine: M1<TR>,
+        pub fn exec_triggers<CTS, TR, TT, ETM, ETR>(
+            machine: M1<TR, CTS>,
             transaction: TT,
-        ) -> Result<M1<TR>, Error>
+        ) -> Result<M1<TR, CTS>, Error>
         where
+            CTS: CTStack + 'static,
             // Note: These type constraints suppose the transaction of Effect<TR> is the same
             // for each TriggerState variant over Timing.
             // eg: Effect<TR>::Transaction == Trigger<Pre, TR>::Transaction ==
@@ -118,41 +120,45 @@ macro_rules! build_exec_triggers {
             ETM: marker::TimingEnumerator + PartialEq + Copy,
             ETR: marker::TriggerEnumerator + PartialEq + Copy,
             //
-            M1<TR>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR> + TransitionInto<M2<TR>>,
-            <M1<TR> as StateContainer>::State: State<Transaction = TT>,
+            M1<TR, CTS>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
+                + TransitionInto<M2<TR, CTS>, CTS>,
+            <M1<TR, CTS> as StateContainer>::State: State<Transaction = TT>,
 
-            M2<TR>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
-                + TransitionInto<M3<TR>>
+            M2<TR, CTS>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
+                + TransitionInto<M3<TR, CTS>, CTS>
                 + ServiceCompliance<TriggerService<ETM, ETR>>,
-            <M2<TR> as StateContainer>::State: State<Transaction = TT> + TriggerState<Trigger = TR>,
-            <<M2<TR> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,
+            <M2<TR, CTS> as StateContainer>::State:
+                State<Transaction = TT> + TriggerState<Trigger = TR>,
+            <<M2<TR, CTS> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,
 
-            M3<TR>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
-                + TransitionInto<M4<TR>>
+            M3<TR, CTS>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
+                + TransitionInto<M4<TR, CTS>, CTS>
                 + ServiceCompliance<TriggerService<ETM, ETR>>,
-            <M3<TR> as StateContainer>::State: State<Transaction = TT> + TriggerState<Trigger = TR>,
-            <<M3<TR> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,
+            <M3<TR, CTS> as StateContainer>::State:
+                State<Transaction = TT> + TriggerState<Trigger = TR>,
+            <<M3<TR, CTS> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,
 
-            M4<TR>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
-                + TransitionInto<M1<TR>>
+            M4<TR, CTS>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
+                + TransitionInto<M1<TR, CTS>, CTS>
                 + ServiceCompliance<TriggerService<ETM, ETR>>,
-            <M4<TR> as StateContainer>::State: State<Transaction = TT> + TriggerState<Trigger = TR>,
-            <<M4<TR> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,
+            <M4<TR, CTS> as StateContainer>::State:
+                State<Transaction = TT> + TriggerState<Trigger = TR>,
+            <<M4<TR, CTS> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,
         {
             // Pre
-            let mut pre: M2<TR> = machine.transition(transaction);
+            let mut pre: M2<TR, CTS> = machine.transition(transaction);
             let listeners = fetch_triggers(&pre);
             // IMMUT REBIND
             let pre = unsafe { exec_trigger_stepped(pre, listeners)? };
 
             // Peri
-            let peri: M3<TR> = pre.transition(transaction);
+            let peri: M3<TR, CTS> = pre.transition(transaction);
             let listeners = fetch_triggers(&peri);
             // IMMUT REBIND
             let peri = unsafe { exec_trigger_stepped(peri, listeners)? };
 
             // Post
-            let post: M4<TR> = peri.transition(transaction);
+            let post: M4<TR, CTS> = peri.transition(transaction);
             let listeners = fetch_triggers(&post);
             // IMMUT REBIND
             let post = unsafe { exec_trigger_stepped(post, listeners)? };

@@ -2,6 +2,7 @@
 
 use std::marker::PhantomData;
 
+use medici_core::ctstack::EmptyStack;
 use medici_core::service::storage::{EntityStorage, StackStorage};
 use medici_core::service::trigger::TriggerService;
 
@@ -42,11 +43,12 @@ pub mod error {
 }
 use self::error::SetupError;
 
-impl Machine<Wait<Start>> {
+impl Machine<Wait<Start>, EmptyStack> {
     /// Creates a new state machine ready to be started.
     pub fn new(cfg: &SetupConfig) -> Result<Self, SetupError> {
         let mut game = Self {
             state: PhantomData,
+            history: PhantomData,
             transaction: Epsilon,
             //
             transactions: StackStorage::new(),

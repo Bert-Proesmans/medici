@@ -35,6 +35,7 @@ mod tests {
 
     use failure::{Error, Fail};
 
+    use medici_core::ctstack::AnyStack;
     use medici_core::function::Entity;
     use medici_core::prefab::entity::GAME_E_ID;
     use medici_core::service::error::MissingEntityError;
@@ -76,9 +77,16 @@ mod tests {
             assert_eq!(GAME_E_ID, game_entity.id());
         }
 
-        // Add triggers
-        game.triggers.add_trigger(start_game_trigger).unwrap();
-        game.triggers.add_trigger(turn_end_trigger).unwrap();
+        // Add triggers.
+        // These triggers are specialized to use AnyStack for the compile-time stack
+        // generic parameter. This is allowed because the size of any CTStack within
+        // our state machine is 0.
+        game.triggers
+            .add_trigger(start_game_trigger::<AnyStack>)
+            .unwrap();
+        game.triggers
+            .add_trigger(turn_end_trigger::<AnyStack>)
+            .unwrap();
 
         // Start game
         let first_turn = start_game(game).expect("Game unexpectedly finished");

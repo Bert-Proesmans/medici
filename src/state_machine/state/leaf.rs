@@ -56,22 +56,30 @@ pub mod triggerable {
     impl ActionableMarker for EndTurn {}
     impl TriggerMarker for EndTurn {}
 
-    /// Action condition state indicating loading is in progress.
+    /// Action condition state indicating a card will be played.
     #[derive(Debug, Clone)]
-    pub struct Load();
-    impl State for Load {
+    pub struct PlayCard();
+    impl State for PlayCard {
         type Transaction = Epsilon;
     }
-    impl ActionableMarker for Load {}
-    impl TriggerMarker for Load {}
+    impl ActionableMarker for PlayCard {}
+    impl TriggerMarker for PlayCard {}
 
-    /// Action condition state indicating printing is in progress.
+    /// Action condition state indicating an attack will commence.
     #[derive(Debug, Clone)]
-    pub struct Print();
-    impl State for Print {
+    pub struct Attack();
+    impl State for Attack {
+        type Transaction = Epsilon;
+    }
+    impl ActionableMarker for Attack {}
+    impl TriggerMarker for Attack {}
+
+    /// Trigger condition for taken damage.
+    #[derive(Debug, Clone)]
+    pub struct Damage();
+    impl State for Damage {
         // !-- See below *Transactions --!
         type Transaction = PrintTransaction;
     }
-    impl ActionableMarker for Print {}
-    impl TriggerMarker for Print {}
+    impl TriggerMarker for Damage {}
 }

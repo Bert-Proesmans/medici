@@ -1,7 +1,5 @@
 //! Contains the core functionality items for our system.
 
-pub mod helper;
-
 use marker::{Service, TimingEnumerator, TimingMarker, TransactionMarker, TriggerEnumerator,
              TriggerMarker};
 

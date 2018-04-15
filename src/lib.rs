@@ -55,6 +55,16 @@ mod tests {
         let err: Error = MissingEntityError(id).into();
     }
 
+    /*
+    #[test]
+    fn transition() {
+        let config: SetupConfig = Default::default();
+        let game: Machine![Wait<Start>] = Machine::new(&config).expect("Error creating new game!");
+        let game: Machine![Action<Start>] = game.transitio(Epsilon).expect("Game enexpectedly finished");
+        let game: Machine![Effect<Start>] = game.pushdown(Epsilon).expect("Game enexpectedly finished");
+    }
+    */
+
     #[test]
     fn entry() {
         let config: SetupConfig = Default::default();

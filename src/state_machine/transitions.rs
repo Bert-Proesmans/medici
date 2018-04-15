@@ -27,6 +27,14 @@ macro_rules! build_transition {
     };
 }
 
+/// Macro to implement both [`PushdownFrom`] and [`PullupFrom`] for two given types.
+macro_rules! push_it {
+    ($from:ty : = : $into:ty) => {
+        build_pushdown!($from => $into);
+        build_pullup!($into => $from);
+    };
+}
+
 /// Macro to easily implement [`PushdownFrom`] for state machine transitions.
 macro_rules! build_pushdown {
     ($from:ty => $into:ty) => {
@@ -40,7 +48,7 @@ macro_rules! build_pushdown {
             {
                 // Archive state of the old machine.
                 let old_transaction: $t_type =
-                    $crate::medici_core::function::helper::pack_transaction(old.transaction);
+                    $crate::medici_core::transaction::pack_transaction(old.transaction);
                 $crate::medici_core::function::ServiceCompliance::<
                     $crate::medici_core::service::storage::StackStorage<$t_type>,
                 >::get_mut(&mut old)
@@ -79,7 +87,7 @@ macro_rules! build_pullup {
                     .pop()
                     .context($crate::medici_core::error::ErrorKind::LogicError, &old)
                     .and_then(|item| {
-                        $crate::medici_core::function::helper::unpack_transaction(item)
+                        $crate::medici_core::transaction::unpack_transaction(item)
                             .context($crate::medici_core::error::ErrorKind::ConstraintError, &old)
                     })?;
 
@@ -103,18 +111,26 @@ build_transition!(Machine<Wait<Input>> => Machine<Action<EndTurn>>);
 build_transition!(Machine<Action<Start>> => Machine<Wait<Input>>);
 build_transition!(Machine<Action<EndTurn>> => Machine<Wait<Input>>);
 
-build_pushdown!(Machine<Action<Start>> => Machine<Effect<Start>>);
-build_pushdown!(Machine<Action<EndTurn>> => Machine<Effect<EndTurn>>);
+/* Actions */
+push_it!(Machine<Action<Start>> :=: Machine<Effect<Start>>);
+push_it!(Machine<Action<EndTurn>> :=: Machine<Effect<EndTurn>>);
 
+/* Trigger: Start */
 build_transition!(Machine<Effect<Start>> => Machine<Trigger<Pre, Start>>);
 build_transition!(Machine<Trigger<Pre, Start>> => Machine<Trigger<Peri, Start>>);
 build_transition!(Machine<Trigger<Peri, Start>> => Machine<Trigger<Post, Start>>);
 build_transition!(Machine<Trigger<Post, Start>> => Machine<Effect<Start>>);
 
+push_it!(Machine<Trigger<Pre, Start>> :=: Machine<RecurseEffect<Pre, Start>>);
+push_it!(Machine<Trigger<Peri, Start>> :=: Machine<RecurseEffect<Peri, Start>>);
+push_it!(Machine<Trigger<Post, Start>> :=: Machine<RecurseEffect<Post, Start>>);
+
+/* Trigger: EndTurn */
 build_transition!(Machine<Effect<EndTurn>> => Machine<Trigger<Pre, EndTurn>>);
 build_transition!(Machine<Trigger<Pre, EndTurn>> => Machine<Trigger<Peri, EndTurn>>);
 build_transition!(Machine<Trigger<Peri, EndTurn>> => Machine<Trigger<Post, EndTurn>>);
 build_transition!(Machine<Trigger<Post, EndTurn>> => Machine<Effect<EndTurn>>);
 
-build_pullup!(Machine<Effect<Start>> => Machine<Action<Start>>);
-build_pullup!(Machine<Effect<EndTurn>> => Machine<Action<EndTurn>>);
+push_it!(Machine<Trigger<Pre, EndTurn>> :=: Machine<RecurseEffect<Pre, EndTurn>>);
+push_it!(Machine<Trigger<Peri, EndTurn>> :=: Machine<RecurseEffect<Peri, EndTurn>>);
+push_it!(Machine<Trigger<Post, EndTurn>> :=: Machine<RecurseEffect<Post, EndTurn>>);

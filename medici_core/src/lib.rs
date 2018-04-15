@@ -36,6 +36,7 @@ extern crate maplit;
 pub mod error;
 pub mod function;
 pub mod marker;
+pub mod transaction;
 #[macro_use]
 pub mod prefab;
 pub mod service;

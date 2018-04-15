@@ -90,9 +90,9 @@ impl Machine<Wait<Start>> {
 
 #[cfg(test)]
 mod tests {
-    use std::default::Default;
-    use medici_core::prefab::entity::GAME_E_ID;
     use super::*;
+    use medici_core::prefab::entity::GAME_E_ID;
+    use std::default::Default;
 
     #[test]
     #[should_panic]
@@ -131,7 +131,7 @@ mod tests {
         // Check the name for each player entity
         for i in 0..NUM_PLAYERS {
             // Player id is 1-indexed
-            let player_idx = i+1;
+            let player_idx = i + 1;
             let player = machine.entities.get(player_idx).unwrap();
             assert_eq!(player.human_readable, config.player_names[i]);
         }

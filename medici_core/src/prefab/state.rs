@@ -80,7 +80,7 @@ where
 ///
 /// # Note
 /// [`State`] is implemented using the transaction type of [`Trigger`].
-/// This is because we assume [`Timing`] will always have an epsilon [`Transaction`].
+/// This is because we assume [`Timing`] will always have an irrelevant (epsilon) [`Transaction`].
 pub struct RecurseEffect<TM: TimingMarker, TR: TriggerMarker>(TM, TR);
 impl<TM, TR> State for RecurseEffect<TM, TR>
 where
@@ -109,7 +109,7 @@ where
 ///
 /// # Note
 /// [`State`] is implemented using the transaction type of [`Trigger`].
-/// This is because we assume [`Timing`] will always have an epsilon [`Transaction`].
+/// This is because we assume [`Timing`] will always have an irrelevant (epsilon) [`Transaction`].
 pub struct DeathEffect<TM: TimingMarker, TR: TriggerMarker>(TM, TR);
 impl<TM, TR> State for DeathEffect<TM, TR>
 where
@@ -140,7 +140,7 @@ where
 ///
 /// # Note
 /// [`State`] is implemented using the transaction type of [`Trigger`].
-/// This is because we assume [`Timing`] will always have an epsilon [`Transaction`].
+/// This is because we assume [`Timing`] will always have an irrelevant (epsilon) [`Transaction`].
 pub struct Trigger<TM: TimingMarker, TR: TriggerMarker>(TM, TR);
 impl<TM, TR> State for Trigger<TM, TR>
 where

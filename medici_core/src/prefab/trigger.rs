@@ -8,22 +8,22 @@ use marker;
 /// Type representing the event when a game starts.
 #[derive(Debug, Clone, Copy)]
 pub struct GameStart();
-impl marker::Trigger for GameStart {}
+impl marker::Triggerable for GameStart {}
 
 /// Type representing the event when a game ends.
 #[derive(Debug, Clone, Copy)]
 pub struct GameEnd();
-impl marker::Trigger for GameEnd {}
+impl marker::Triggerable for GameEnd {}
 
 /// Type representing the event when a player's turn starts.
 #[derive(Debug, Clone, Copy)]
 pub struct TurnStart();
-impl marker::Trigger for TurnStart {}
+impl marker::Triggerable for TurnStart {}
 
 /// Type representing the event when a player's turn ends.
 #[derive(Debug, Clone, Copy)]
 pub struct TurnEnd();
-impl marker::Trigger for TurnEnd {}
+impl marker::Triggerable for TurnEnd {}
 
 // value_from_type builds an enumeration of all structures defined within this module.
 // The first parameter of the macro will be the identifier of the generated

@@ -23,7 +23,7 @@ where
     M: StateContainer,
     M::State: TriggerState,
     <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
-    <M::State as TriggerState>::Trigger: marker::Trigger + IntoEnum<ETR>,
+    <M::State as TriggerState>::Trigger: marker::Triggerable + IntoEnum<ETR>,
     ETM: marker::TimingEnumerator + PartialEq + Copy,
     ETR: marker::TriggerEnumerator + PartialEq + Copy,
     // Additional constraint inference -> *const (): Send + Sync
@@ -38,7 +38,7 @@ where
     M: StateContainer,
     M::State: TriggerState,
     <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
-    <M::State as TriggerState>::Trigger: marker::Trigger + IntoEnum<ETR>,
+    <M::State as TriggerState>::Trigger: marker::Triggerable + IntoEnum<ETR>,
     ETM: marker::TimingEnumerator + PartialEq + Copy,
     ETR: marker::TriggerEnumerator + PartialEq + Copy,
 {
@@ -97,7 +97,7 @@ where
     M: StateContainer,
     M::State: TriggerState,
     <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
-    <M::State as TriggerState>::Trigger: marker::Trigger + IntoEnum<ETR>,
+    <M::State as TriggerState>::Trigger: marker::Triggerable + IntoEnum<ETR>,
     ETM: marker::TimingEnumerator + PartialEq + Copy,
     ETR: marker::TriggerEnumerator + PartialEq + Copy,
 {
@@ -187,7 +187,7 @@ where
         M: StateContainer,
         M::State: TriggerState,
         <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
-        <M::State as TriggerState>::Trigger: marker::Trigger + IntoEnum<ETR>,
+        <M::State as TriggerState>::Trigger: marker::Triggerable + IntoEnum<ETR>,
     {
         // Both the new method AND the Into trait will do the hard work for us!
         let safe_wrapper = TriggerWrapper::<M, ETM, ETR>::new(cb);
@@ -216,7 +216,7 @@ where
         M: StateContainer,
         M::State: TriggerState,
         <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
-        <M::State as TriggerState>::Trigger: marker::Trigger + IntoEnum<ETR>,
+        <M::State as TriggerState>::Trigger: marker::Triggerable + IntoEnum<ETR>,
     {
         let timing_key: ETM = <M::State as TriggerState>::Timing::into_enum();
         let trigger_key: ETR = <M::State as TriggerState>::Trigger::into_enum();

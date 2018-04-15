@@ -20,7 +20,7 @@ where
     M: StateContainer + ServiceCompliance<TriggerService<ETM, ETR>>,
     <M as StateContainer>::State: TriggerState,
     <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
-    <M::State as TriggerState>::Trigger: marker::Trigger + IntoEnum<ETR>,
+    <M::State as TriggerState>::Trigger: marker::Triggerable + IntoEnum<ETR>,
     ETM: marker::TimingEnumerator + PartialEq + Copy,
     ETR: marker::TriggerEnumerator + PartialEq + Copy,
 {
@@ -43,7 +43,7 @@ where
     M: StateContainer,
     M::State: TriggerState<Timing = TM, Trigger = TR>,
     TM: marker::Timing + IntoEnum<ETM>,
-    TR: marker::Trigger + IntoEnum<ETR>,
+    TR: marker::Triggerable + IntoEnum<ETR>,
     ETM: marker::TimingEnumerator + PartialEq + Copy,
     ETR: marker::TriggerEnumerator + PartialEq + Copy,
     I: IntoIterator<Item = UnsafeTrigger<ETM, ETR>>,

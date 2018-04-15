@@ -36,7 +36,7 @@ pub mod triggerable {
         type Transaction = Epsilon;
     }
     impl marker::Waitable for Start {}
-    impl marker::Trigger for Start {}
+    impl marker::Triggerable for Start {}
     impl marker::Actionable for Start {}
 
     /// Wait condition state until the user has provided input.
@@ -54,7 +54,7 @@ pub mod triggerable {
         type Transaction = Epsilon;
     }
     impl marker::Actionable for EndTurn {}
-    impl marker::Trigger for EndTurn {}
+    impl marker::Triggerable for EndTurn {}
 
     /// Action condition state indicating a card will be played.
     #[derive(Debug, Clone)]
@@ -63,7 +63,7 @@ pub mod triggerable {
         type Transaction = Epsilon;
     }
     impl marker::Actionable for PlayCard {}
-    impl marker::Trigger for PlayCard {}
+    impl marker::Triggerable for PlayCard {}
 
     /// Action condition state indicating an attack will commence.
     #[derive(Debug, Clone)]
@@ -72,7 +72,7 @@ pub mod triggerable {
         type Transaction = Epsilon;
     }
     impl marker::Actionable for Attack {}
-    impl marker::Trigger for Attack {}
+    impl marker::Triggerable for Attack {}
 
     /// Trigger condition for taken damage.
     #[derive(Debug, Clone)]
@@ -81,5 +81,5 @@ pub mod triggerable {
         // !-- See below *Transactions --!
         type Transaction = PrintTransaction;
     }
-    impl marker::Trigger for Damage {}
+    impl marker::Triggerable for Damage {}
 }

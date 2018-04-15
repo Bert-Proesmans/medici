@@ -24,15 +24,15 @@ pub trait Prototype {}
 /// a specific trigger.
 pub trait TimingEnumerator {}
 
-/// Types which reflect the timing when a [`Trigger`] should be executed.
+/// Types which reflect the timing when a [`Triggerable`] should be executed.
 pub trait Timing {}
 
 /// Types which enumerate all possible triggers which the machine facilitates reacting to.
 pub trait TriggerEnumerator {}
 
-/// Types which reflect an event after which functionality awaiting these events
+/// (State) Types which reflect an event after which functionality awaiting these events
 /// will be executed.
-pub trait Trigger {}
+pub trait Triggerable {}
 
 /// (State) Types which are directly contained by the state machine.
 ///
@@ -50,4 +50,4 @@ pub trait Waitable {}
 ///
 /// The semantics are limited to the set of choices a player is presented with
 /// according to the state of the machine.
-pub trait Actionable: Trigger {}
+pub trait Actionable: Triggerable {}

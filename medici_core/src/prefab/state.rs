@@ -81,11 +81,11 @@ where
 /// # Note
 /// [`State`] is implemented using the transaction type of [`Trigger`].
 /// This is because we assume [`Timing`] will always have an irrelevant (epsilon) [`Transaction`].
-pub struct RecurseEffect<TM: marker::Timing, TR: marker::Trigger>(TM, TR);
+pub struct RecurseEffect<TM: marker::Timing, TR: marker::Triggerable>(TM, TR);
 impl<TM, TR> State for RecurseEffect<TM, TR>
 where
     TM: marker::Timing + State,
-    TR: marker::Trigger + State,
+    TR: marker::Triggerable + State,
 {
     type Transaction = <TR as State>::Transaction;
 }
@@ -93,14 +93,14 @@ where
 impl<TM, TR> EffectState for RecurseEffect<TM, TR>
 where
     TM: marker::Timing + State,
-    TR: marker::Trigger + State,
+    TR: marker::Triggerable + State,
 {
 }
 
 impl<TM, TR> marker::TopLevel for RecurseEffect<TM, TR>
 where
     TM: marker::Timing + State,
-    TR: marker::Trigger + State,
+    TR: marker::Triggerable + State,
 {
 }
 
@@ -110,11 +110,11 @@ where
 /// # Note
 /// [`State`] is implemented using the transaction type of [`Trigger`].
 /// This is because we assume [`Timing`] will always have an irrelevant (epsilon) [`Transaction`].
-pub struct DeathEffect<TM: marker::Timing, TR: marker::Trigger>(TM, TR);
+pub struct DeathEffect<TM: marker::Timing, TR: marker::Triggerable>(TM, TR);
 impl<TM, TR> State for DeathEffect<TM, TR>
 where
     TM: marker::Timing + State,
-    TR: marker::Trigger + State,
+    TR: marker::Triggerable + State,
 {
     type Transaction = <TR as State>::Transaction;
 }
@@ -122,14 +122,14 @@ where
 impl<TM, TR> EffectState for DeathEffect<TM, TR>
 where
     TM: marker::Timing + State,
-    TR: marker::Trigger + State,
+    TR: marker::Triggerable + State,
 {
 }
 
 impl<TM, TR> marker::TopLevel for DeathEffect<TM, TR>
 where
     TM: marker::Timing + State,
-    TR: marker::Trigger + State,
+    TR: marker::Triggerable + State,
 {
 }
 
@@ -141,11 +141,11 @@ where
 /// # Note
 /// [`State`] is implemented using the transaction type of [`Trigger`].
 /// This is because we assume [`Timing`] will always have an irrelevant (epsilon) [`Transaction`].
-pub struct Trigger<TM: marker::Timing, TR: marker::Trigger>(TM, TR);
+pub struct Trigger<TM: marker::Timing, TR: marker::Triggerable>(TM, TR);
 impl<TM, TR> State for Trigger<TM, TR>
 where
     TM: marker::Timing + State,
-    TR: marker::Trigger + State,
+    TR: marker::Triggerable + State,
 {
     type Transaction = <TR as State>::Transaction;
 }
@@ -153,7 +153,7 @@ where
 impl<TM, TR> TriggerState for Trigger<TM, TR>
 where
     TM: marker::Timing + State,
-    TR: marker::Trigger + State,
+    TR: marker::Triggerable + State,
 {
     type Timing = TM;
     type Trigger = TR;
@@ -162,6 +162,6 @@ where
 impl<TM, TR> marker::TopLevel for Trigger<TM, TR>
 where
     TM: marker::Timing + State,
-    TR: marker::Trigger + State,
+    TR: marker::Triggerable + State,
 {
 }

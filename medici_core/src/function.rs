@@ -34,7 +34,7 @@ pub trait TriggerState: State {
     /// current state.
     type Timing: marker::Timing;
     /// Encoded type value representing the trigger of the current state.
-    type Trigger: marker::Trigger;
+    type Trigger: marker::Triggerable;
 }
 
 /// Types which attribute functionality to state machines.

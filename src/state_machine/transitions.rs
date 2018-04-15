@@ -9,44 +9,50 @@ use state_machine::state::prelude::*;
 
 /// DBG
 mod test_checked {
+    #![allow(non_camel_case_types)]
+
     pub use std::marker::PhantomData;
 
     pub use medici_core::ct;
     pub use medici_core::ctstack::CTStack;
-    pub use medici_core::function::{State, ServiceCompliance};
+    pub use medici_core::function::{ServiceCompliance, State};
     pub use medici_core::service::storage::StackStorage;
-    pub use medici_core::stm::checked::{PushdownFrom, PullupFrom};
-    pub use medici_core::transaction::{unpack_transaction, pack_transaction};
+    pub use medici_core::stm::checked::{PullupFrom, PushdownFrom};
+    pub use medici_core::transaction::{pack_transaction, unpack_transaction};
 
     pub use state_machine::machine::checked::Machine;
     pub use state_machine::state::prelude::*;
     pub use state_machine::transaction::{Epsilon, TransactionItem};
 
-    impl<CTS> PushdownFrom<Machine<Action<Start>, CTS>, CTS, TransactionItem>
-        for Machine<Effect<Start>, ct!(Effect<Start> => CTS)>
+    impl<CTS_OLD>
+        PushdownFrom<
+            Machine<Action<Start>, CTS_OLD>,
+            ct!(Effect<Start> => CTS_OLD),
+            TransactionItem,
+        > for Machine<Effect<Start>, ct!(Effect<Start> => CTS_OLD)>
     where
-        CTS: CTStack + 'static,
+        CTS_OLD: CTStack + 'static,
     {
         fn pushdown_from(
-            mut old: Machine<Action<Start>, CTS>,
+            mut old: Machine<Action<Start>, CTS_OLD>,
             t: <Self::State as State>::Transaction,
         ) -> Self {
             // Archive state of the old machine.
-                let old_transaction: TransactionItem = pack_transaction(old.transaction);
-                ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(&mut old)
-                    .push(old_transaction)
-                    .expect("Never type triggered!");
+            let old_transaction: TransactionItem = pack_transaction(old.transaction);
+            ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(&mut old)
+                .push(old_transaction)
+                .expect("Never type triggered!");
 
-                // Build new machine.
-                Machine {
-                    state: PhantomData,
-                    history: PhantomData,
-                    transaction: t,
-                    // Following properties MUST stay in sync with `Machine` !
-                    transactions: old.transactions,
-                    entities: old.entities,
-                    triggers: old.triggers,
-                }
+            // Build new machine.
+            Machine {
+                state: PhantomData,
+                history: PhantomData,
+                transaction: t,
+                // Following properties MUST stay in sync with `Machine` !
+                transactions: old.transactions,
+                entities: old.entities,
+                triggers: old.triggers,
+            }
         }
     }
 
@@ -55,15 +61,13 @@ mod test_checked {
     where
         CTS: CTStack + 'static,
     {
-        fn pullup_from(mut old: Machine<Effect<Start>, CTS>) -> Result<Self, String>
-        {
+        fn pullup_from(mut old: Machine<Effect<Start>, CTS>) -> Result<Self, String> {
             // Archive state of the old machine.
-            let old_transaction = ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(&mut old)
-                .pop()
+            let old_transaction = ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(
+                &mut old,
+            ).pop()
                 .map_err(|e| String::from("Issue!"))
-                .and_then(|item| {
-                    unpack_transaction(item).map_err(|_| String::from("Issue!"))
-                })?;
+                .and_then(|item| unpack_transaction(item).map_err(|_| String::from("Issue!")))?;
 
             // Build new machine.
             Ok(Machine {
@@ -88,7 +92,8 @@ mod test_checked {
             println!("START\n{:?}\n", machine);
             let push: Machine<Effect<Start>, _> = PushdownFrom::pushdown_from(machine, Epsilon);
             println!("PUSHED DOWN\n{:?}\n", push);
-            let pull: Machine<Action<Start>, _> = PullupFrom::pullup_from(push).expect("Failed to pullup!");
+            let pull: Machine<Action<Start>, _> =
+                PullupFrom::pullup_from(push).expect("Failed to pullup!");
             println!("PULLED UP\n{:?}\n", pull);
         }
     }

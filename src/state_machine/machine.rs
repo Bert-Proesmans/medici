@@ -145,8 +145,7 @@ pub mod checked {
         pub triggers: TriggerService<TimingItem, TriggerItem>,
     }
 
-    impl Machine<Action<Start>, EmptyStack>
-    {
+    impl Machine<Action<Start>, EmptyStack> {
         /// DBG
         pub fn new() -> Self {
             Machine {

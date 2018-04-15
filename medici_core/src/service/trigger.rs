@@ -6,8 +6,8 @@ use std::marker::PhantomData;
 use failure::{format_err, Error};
 use value_from_type_traits::IntoEnum;
 
-use function::{StateContainer, TriggerState};
-use marker::{Service, TimingEnumerator, TimingMarker, TriggerEnumerator, TriggerMarker};
+use function::{StateContainer, TriggerState, Service};
+use marker;
 use service::storage::{TriggerStorage, UnsafeTrigger};
 
 // Shortcut for a callback method prototype which consumes the machine
@@ -22,10 +22,10 @@ pub struct TriggerWrapper<M, ETM, ETR>
 where
     M: StateContainer,
     M::State: TriggerState,
-    <M::State as TriggerState>::Timing: TimingMarker + IntoEnum<ETM>,
-    <M::State as TriggerState>::Trigger: TriggerMarker + IntoEnum<ETR>,
-    ETM: TimingEnumerator + PartialEq + Copy,
-    ETR: TriggerEnumerator + PartialEq + Copy,
+    <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
+    <M::State as TriggerState>::Trigger: marker::Trigger + IntoEnum<ETR>,
+    ETM: marker::TimingEnumerator + PartialEq + Copy,
+    ETR: marker::TriggerEnumerator + PartialEq + Copy,
     // Additional constraint inference -> *const (): Send + Sync
     _FNTrigger<M>: Send + Sync,
 {
@@ -37,10 +37,10 @@ impl<M, ETM, ETR> TriggerWrapper<M, ETM, ETR>
 where
     M: StateContainer,
     M::State: TriggerState,
-    <M::State as TriggerState>::Timing: TimingMarker + IntoEnum<ETM>,
-    <M::State as TriggerState>::Trigger: TriggerMarker + IntoEnum<ETR>,
-    ETM: TimingEnumerator + PartialEq + Copy,
-    ETR: TriggerEnumerator + PartialEq + Copy,
+    <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
+    <M::State as TriggerState>::Trigger: marker::Trigger + IntoEnum<ETR>,
+    ETM: marker::TimingEnumerator + PartialEq + Copy,
+    ETR: marker::TriggerEnumerator + PartialEq + Copy,
 {
     fn new(cb: _FNTrigger<M>) -> Self {
         Self {
@@ -96,10 +96,10 @@ impl<M, ETM, ETR> From<TriggerWrapper<M, ETM, ETR>> for UnsafeTrigger<ETM, ETR>
 where
     M: StateContainer,
     M::State: TriggerState,
-    <M::State as TriggerState>::Timing: TimingMarker + IntoEnum<ETM>,
-    <M::State as TriggerState>::Trigger: TriggerMarker + IntoEnum<ETR>,
-    ETM: TimingEnumerator + PartialEq + Copy,
-    ETR: TriggerEnumerator + PartialEq + Copy,
+    <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
+    <M::State as TriggerState>::Trigger: marker::Trigger + IntoEnum<ETR>,
+    ETM: marker::TimingEnumerator + PartialEq + Copy,
+    ETR: marker::TriggerEnumerator + PartialEq + Copy,
 {
     fn from(x: TriggerWrapper<M, ETM, ETR>) -> Self {
         let timing_key: ETM = <M::State as TriggerState>::Timing::into_enum();
@@ -156,23 +156,23 @@ where
 #[derive(Debug, Clone)]
 pub struct TriggerService<ETM, ETR>
 where
-    ETM: TimingEnumerator + PartialEq + Copy,
-    ETR: TriggerEnumerator + PartialEq + Copy,
+    ETM: marker::TimingEnumerator + PartialEq + Copy,
+    ETR: marker::TriggerEnumerator + PartialEq + Copy,
 {
     storage: TriggerStorage<ETM, ETR>,
 }
 
 impl<ETM, ETR> Service for TriggerService<ETM, ETR>
 where
-    ETM: TimingEnumerator + PartialEq + Copy,
-    ETR: TriggerEnumerator + PartialEq + Copy,
+    ETM: marker::TimingEnumerator + PartialEq + Copy,
+    ETR: marker::TriggerEnumerator + PartialEq + Copy,
 {
 }
 
 impl<ETM, ETR> TriggerService<ETM, ETR>
 where
-    ETM: TimingEnumerator + PartialEq + Copy,
-    ETR: TriggerEnumerator + PartialEq + Copy,
+    ETM: marker::TimingEnumerator + PartialEq + Copy,
+    ETR: marker::TriggerEnumerator + PartialEq + Copy,
 {
     /// Creates a new object of this service.
     pub fn new() -> Self {
@@ -186,8 +186,8 @@ where
     where
         M: StateContainer,
         M::State: TriggerState,
-        <M::State as TriggerState>::Timing: TimingMarker + IntoEnum<ETM>,
-        <M::State as TriggerState>::Trigger: TriggerMarker + IntoEnum<ETR>,
+        <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
+        <M::State as TriggerState>::Trigger: marker::Trigger + IntoEnum<ETR>,
     {
         // Both the new method AND the Into trait will do the hard work for us!
         let safe_wrapper = TriggerWrapper::<M, ETM, ETR>::new(cb);
@@ -215,8 +215,8 @@ where
     where
         M: StateContainer,
         M::State: TriggerState,
-        <M::State as TriggerState>::Timing: TimingMarker + IntoEnum<ETM>,
-        <M::State as TriggerState>::Trigger: TriggerMarker + IntoEnum<ETR>,
+        <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
+        <M::State as TriggerState>::Trigger: marker::Trigger + IntoEnum<ETR>,
     {
         let timing_key: ETM = <M::State as TriggerState>::Timing::into_enum();
         let trigger_key: ETR = <M::State as TriggerState>::Trigger::into_enum();

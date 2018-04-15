@@ -3,14 +3,14 @@
 //! Expect to find small utilities here, but they are mostly used by the hidden parts of the core.
 use std::convert::TryInto;
 
-use marker::{TransactionContainer, TransactionMarker};
+use marker;
 
 /* Transaction helpers */
 /// Transform a transaction into the wrapping variant.
 pub fn pack_transaction<T, TC>(x: T) -> TC
 where
-    T: TransactionMarker + Into<TC> + 'static,
-    TC: TransactionContainer + 'static,
+    T: marker::Transaction + Into<TC> + 'static,
+    TC: marker::TransactionContainer + 'static,
 {
     x.into()
 }
@@ -20,8 +20,8 @@ where
 /// It's of course necessary to
 pub fn unpack_transaction<T, TC>(tc: TC) -> Result<T, TC::Error>
 where
-    T: TransactionMarker + 'static,
-    TC: TransactionContainer + TryInto<T> + 'static,
+    T: marker::Transaction + 'static,
+    TC: marker::TransactionContainer + TryInto<T> + 'static,
 {
     tc.try_into()
 }

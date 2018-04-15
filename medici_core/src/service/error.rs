@@ -5,7 +5,7 @@ use std::fmt::{self, Debug, Display};
 use failure::Fail as FailTrait;
 use failure_derive::Fail;
 
-use marker::ProtoEnumerator;
+use marker;
 
 /// Specific error thrown when the [`StackStorage`] has no items left
 /// and the users coded it to pop another item.
@@ -52,19 +52,19 @@ where
 pub struct MissingPrototypeError<ID, P>(pub ID, pub P)
 where
     ID: Display + Debug,
-    P: ProtoEnumerator + Debug;
+    P: marker::ProtoEnumerator + Debug;
 
 impl<ID, P> FailTrait for MissingPrototypeError<ID, P>
 where
     ID: Display + Debug + Send + Sync + 'static,
-    P: ProtoEnumerator + Debug + Send + Sync + 'static,
+    P: marker::ProtoEnumerator + Debug + Send + Sync + 'static,
 {
 }
 
 impl<ID, P> fmt::Display for MissingPrototypeError<ID, P>
 where
     ID: Display + Debug,
-    P: ProtoEnumerator + Debug,
+    P: marker::ProtoEnumerator + Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(

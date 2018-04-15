@@ -6,7 +6,7 @@
 use failure::{format_err, Error};
 
 use function::Entity;
-use marker::{ProtoEnumerator, PrototypeMarker};
+use marker;
 
 use prefab::entity::Entity as EntityPrefab;
 
@@ -80,13 +80,13 @@ where
 #[derive(Debug)]
 /// Prototype for game related behaviour.
 pub struct GameProto<'a, E: Entity + 'a>(pub Either<'a, E>);
-impl<'a, E: Entity + 'a> PrototypeMarker for GameProto<'a, E> {}
+impl<'a, E: Entity + 'a> marker::Prototype for GameProto<'a, E> {}
 
 #[derive(Debug)]
 /// Prototype for player related behaviour.
 pub struct PlayerProto<'a, E: Entity + 'a>(pub Either<'a, E>);
-impl<'a, E: Entity + 'a> PrototypeMarker for PlayerProto<'a, E> {}
+impl<'a, E: Entity + 'a> marker::Prototype for PlayerProto<'a, E> {}
 
 // value_from_type cannot automatically implement [`ProtoEnumerator`]
 // for the generated enum.
-impl ProtoEnumerator for ProtoItem {}
+impl marker::ProtoEnumerator for ProtoItem {}

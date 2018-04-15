@@ -5,7 +5,7 @@
 //! the value_from_type macro to generate ProtoItem.
 
 use medici_core::function::Entity;
-use medici_core::marker::{ProtoEnumerator, PrototypeMarker};
+use medici_core::marker;
 use medici_core::prefab::prototype::Either;
 
 use implementation::entity::Entity as MachineEntity;
@@ -22,7 +22,7 @@ pub type Player<'a> = PlayerProto<'a, MachineEntity>;
 #[derive(Debug)]
 /// Prototype for game related behaviour.
 pub struct GameProto<'a, E: Entity + 'a>(pub Either<'a, E>);
-impl<'a, E: Entity + 'a> PrototypeMarker for GameProto<'a, E> {}
+impl<'a, E: Entity + 'a> marker::Prototype for GameProto<'a, E> {}
 
 impl<'a, E: Entity + 'a> From<&'a E> for GameProto<'a, E> {
     fn from(x: &'a E) -> Self {
@@ -39,7 +39,7 @@ impl<'a, E: Entity + 'a> From<&'a mut E> for GameProto<'a, E> {
 #[derive(Debug)]
 /// Prototype for player related behaviour.
 pub struct PlayerProto<'a, E: Entity + 'a>(pub Either<'a, E>);
-impl<'a, E: Entity + 'a> PrototypeMarker for PlayerProto<'a, E> {}
+impl<'a, E: Entity + 'a> marker::Prototype for PlayerProto<'a, E> {}
 
 impl<'a, E: Entity + 'a> From<&'a E> for PlayerProto<'a, E> {
     fn from(x: &'a E) -> Self {
@@ -57,4 +57,4 @@ impl<'a, E: Entity + 'a> From<&'a mut E> for PlayerProto<'a, E> {
 
 // value_from_type cannot automatically implement [`ProtoEnumerator`]
 // for the generated enum.
-impl ProtoEnumerator for ProtoItem {}
+impl marker::ProtoEnumerator for ProtoItem {}

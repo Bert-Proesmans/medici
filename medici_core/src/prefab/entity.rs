@@ -7,7 +7,7 @@ use std::hash::Hash;
 use value_from_type_traits::IntoEnum;
 
 use function::{self, EntityBuilder, EntityId};
-use marker::{ProtoEnumerator, PrototypeMarker};
+use marker;
 use service::error::MissingPrototypeError;
 
 use prefab::prototype::ProtoItem;
@@ -31,7 +31,7 @@ pub type Entity = EntityStruct<i32, ProtoItem>;
 pub struct EntityStruct<S, P>
 where
     S: Clone + Eq + Hash,
-    P: ProtoEnumerator + Clone + Eq + Hash,
+    P: marker::ProtoEnumerator + Clone + Eq + Hash,
 {
     id: EntityId,
     /// Contains all properties attributed to this entity.
@@ -49,7 +49,7 @@ where
 impl<S, P> function::Entity for EntityStruct<S, P>
 where
     S: Clone + Eq + Hash,
-    P: ProtoEnumerator + Clone + Eq + Hash,
+    P: marker::ProtoEnumerator + Clone + Eq + Hash,
 {
     type ID = EntityId;
 
@@ -61,7 +61,7 @@ where
 impl<S, P> EntityBuilder<Self> for EntityStruct<S, P>
 where
     S: Clone + Eq + Hash,
-    P: ProtoEnumerator + Clone + Eq + Hash,
+    P: marker::ProtoEnumerator + Clone + Eq + Hash,
 {
     fn new_with_id(id: EntityId) -> Self {
         Self {
@@ -76,7 +76,7 @@ where
 impl<S, P> EntityStruct<S, P>
 where
     S: Clone + Eq + Hash,
-    P: ProtoEnumerator + Debug + Eq + Hash + Clone,
+    P: marker::ProtoEnumerator + Debug + Eq + Hash + Clone,
 {
     /// Retrieves the value of the requested property defined within this entity.
     /// 0 is returned as default value when the property key was not found!
@@ -99,7 +99,7 @@ where
     /// Attach new behaviour to this specific entity.
     pub fn add_proto<PT>(&mut self)
     where
-        PT: PrototypeMarker + IntoEnum<P>,
+        PT: marker::Prototype + IntoEnum<P>,
     {
         let proto_entry: P = PT::into_enum();
         self.prototypes.insert(proto_entry);
@@ -108,7 +108,7 @@ where
     /// Removes behaviour from this specific entity.
     pub fn remove_proto<PT>(&mut self)
     where
-        PT: PrototypeMarker + IntoEnum<P>,
+        PT: marker::Prototype + IntoEnum<P>,
     {
         let proto_entry: P = PT::into_enum();
         self.prototypes.remove(&proto_entry);
@@ -117,7 +117,7 @@ where
     /// Return this entity as the requested prototype.
     pub fn as_proto<'a, PT>(&'a self) -> Result<PT, MissingPrototypeError<EntityId, P>>
     where
-        PT: PrototypeMarker + IntoEnum<P> + From<&'a Self>,
+        PT: marker::Prototype + IntoEnum<P> + From<&'a Self>,
     {
         let proto_item: P = PT::into_enum();
         if self.prototypes.contains(&proto_item) {
@@ -131,7 +131,7 @@ where
     /// Return this entity as the requested prototype.
     pub fn as_proto_mut<'a, PT>(&'a mut self) -> Result<PT, MissingPrototypeError<EntityId, P>>
     where
-        PT: PrototypeMarker + IntoEnum<P> + From<&'a mut Self>,
+        PT: marker::Prototype + IntoEnum<P> + From<&'a mut Self>,
     {
         let proto_item: P = PT::into_enum();
         if self.prototypes.contains(&proto_item) {

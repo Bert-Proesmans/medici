@@ -5,17 +5,17 @@
 //! Correct understanding of what each trait encompasses is necessary!
 
 /// Types used to transition between state machine States.
-pub trait TransactionMarker: Copy + 'static {}
+pub trait Transaction: Copy + 'static {}
 
 /// Types which generalize multiple transactions into 1 [`Sized`] structure
 /// so the transactions themselves can be safely stored in memory.
 pub trait TransactionContainer {}
 
-/// Types which attribute functionality to state machines.
-///
-/// A Service is kind-of like a Trait (language item), but is used in a dynamic
-/// way to quickly de-/construct state machines with various functional methods.
-pub trait Service {}
+/// Types which enumerate all known [`Prototype`]s.
+pub trait ProtoEnumerator {}
+
+/// Types which attribute functionality to [`Entity`]s within the machine.
+pub trait Prototype {}
 
 /// Types which enumerate all possible timings at which moment a trigger can be
 /// executed.
@@ -25,41 +25,29 @@ pub trait Service {}
 pub trait TimingEnumerator {}
 
 /// Types which reflect the timing when a [`Trigger`] should be executed.
-pub trait TimingMarker {}
+pub trait Timing {}
 
 /// Types which enumerate all possible triggers which the machine facilitates reacting to.
 pub trait TriggerEnumerator {}
 
 /// Types which reflect an event after which functionality awaiting these events
 /// will be executed.
-pub trait TriggerMarker {}
-
-/// Types which enumerate all known [`Prototype`]s.
-pub trait ProtoEnumerator {}
-
-/// Types which attribute functionality to [`Entity`]s within the machine.
-pub trait PrototypeMarker {}
+pub trait Trigger {}
 
 /// (State) Types which are directly contained by the state machine.
 ///
 /// Note: States can be nested!
-pub trait TopLevelMarker {}
+pub trait TopLevel {}
 
 /// (State) Types which represent a condition for when the state machine itself
 /// should resume execution.
 ///
 /// The semantics are limited to the set of input types a user can generate.
-pub trait WaitableMarker {}
-
-/*
-/// (State) Types which represent a condition for when the state machine itself
-/// should iterate and evaluate all registered [`Trigger`]s and execute them.
-pub trait TriggerableMarker {}
-*/
+pub trait Waitable {}
 
 /// (State) Types which represent actions a user want to perform that activate
 /// the machine to work out its effects.
 ///
 /// The semantics are limited to the set of choices a player is presented with
 /// according to the state of the machine.
-pub trait ActionableMarker: TriggerMarker {}
+pub trait Actionable: Trigger {}

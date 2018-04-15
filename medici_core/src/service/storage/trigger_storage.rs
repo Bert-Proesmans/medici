@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use marker::{TimingEnumerator, TriggerEnumerator};
+use marker;
 
 /// Structure serializng/generalizing a trigger.
 ///
@@ -11,8 +11,8 @@ use marker::{TimingEnumerator, TriggerEnumerator};
 #[derive(Debug, Clone)]
 pub struct UnsafeTrigger<ETM, ETR>
 where
-    ETM: TimingEnumerator + Copy,
-    ETR: TriggerEnumerator + Copy,
+    ETM: marker::TimingEnumerator + Copy,
+    ETR: marker::TriggerEnumerator + Copy,
 {
     /// (Sized) Timing value belonging to the callback, see func_pointer.
     pub timing: ETM,
@@ -30,15 +30,15 @@ where
 
 unsafe impl<ETM, ETR> Send for UnsafeTrigger<ETM, ETR>
 where
-    ETM: TimingEnumerator + Copy + Send,
-    ETR: TriggerEnumerator + Copy + Send,
+    ETM: marker::TimingEnumerator + Copy + Send,
+    ETR: marker::TriggerEnumerator + Copy + Send,
 {
 }
 
 unsafe impl<ETM, ETR> Sync for UnsafeTrigger<ETM, ETR>
 where
-    ETM: TimingEnumerator + Copy + Sync,
-    ETR: TriggerEnumerator + Copy + Sync,
+    ETM: marker::TimingEnumerator + Copy + Sync,
+    ETR: marker::TriggerEnumerator + Copy + Sync,
 {
 }
 
@@ -46,8 +46,8 @@ where
 #[derive(Debug, Clone)]
 pub struct TriggerStorage<ETM, ETR>
 where
-    ETM: TimingEnumerator + Copy,
-    ETR: TriggerEnumerator + Copy,
+    ETM: marker::TimingEnumerator + Copy,
+    ETR: marker::TriggerEnumerator + Copy,
 {
     // pub pre_action_triggers: Vec<UnsafeTrigger<ETM, ETR>>,
     // pub peri_action_triggers: Vec<UnsafeTrigger<ETM, ETR>>,
@@ -60,8 +60,8 @@ where
 
 impl<ETM, ETR> TriggerStorage<ETM, ETR>
 where
-    ETM: TimingEnumerator + Copy,
-    ETR: TriggerEnumerator + Copy,
+    ETM: marker::TimingEnumerator + Copy,
+    ETR: marker::TriggerEnumerator + Copy,
 {
     /// Builds a new object for storage.
     pub fn new() -> Self {

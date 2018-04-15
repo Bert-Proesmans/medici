@@ -1,8 +1,7 @@
 use std::convert::TryFrom;
 use std::fmt::{Debug, Display};
 
-use function::{Entity, EntityBuilder};
-use marker::Service;
+use function::{Entity, EntityBuilder, Service};
 use service::error::{MissingEntityError, OverflowError};
 
 #[derive(Debug, Clone)]

@@ -6,7 +6,7 @@
 use value_from_type_macros::value_from_type;
 
 use medici_core::function::State;
-use medici_core::marker::{ActionableMarker, TriggerEnumerator, TriggerMarker, WaitableMarker};
+use medici_core::marker;
 /// Export the prefab timing items.
 pub use medici_core::prefab::timing::{Peri, Post, Pre, TimingItem};
 use medici_core::prefab::transaction::Epsilon;
@@ -27,7 +27,7 @@ pub mod triggerable {
 
     // Necessary implementation because value_from_type cannot automatically generate
     // this impl automatically for [`TriggerItem`].
-    impl TriggerEnumerator for TriggerItem {}
+    impl marker::TriggerEnumerator for TriggerItem {}
 
     /// Wait condition state until the game has been started.
     #[derive(Debug, Clone)]
@@ -35,9 +35,9 @@ pub mod triggerable {
     impl State for Start {
         type Transaction = Epsilon;
     }
-    impl WaitableMarker for Start {}
-    impl TriggerMarker for Start {}
-    impl ActionableMarker for Start {}
+    impl marker::Waitable for Start {}
+    impl marker::Trigger for Start {}
+    impl marker::Actionable for Start {}
 
     /// Wait condition state until the user has provided input.
     #[derive(Debug, Clone)]
@@ -45,7 +45,7 @@ pub mod triggerable {
     impl State for Input {
         type Transaction = Epsilon;
     }
-    impl WaitableMarker for Input {}
+    impl marker::Waitable for Input {}
 
     /// Action condition state until the user has provided input.
     #[derive(Debug, Clone)]
@@ -53,8 +53,8 @@ pub mod triggerable {
     impl State for EndTurn {
         type Transaction = Epsilon;
     }
-    impl ActionableMarker for EndTurn {}
-    impl TriggerMarker for EndTurn {}
+    impl marker::Actionable for EndTurn {}
+    impl marker::Trigger for EndTurn {}
 
     /// Action condition state indicating a card will be played.
     #[derive(Debug, Clone)]
@@ -62,8 +62,8 @@ pub mod triggerable {
     impl State for PlayCard {
         type Transaction = Epsilon;
     }
-    impl ActionableMarker for PlayCard {}
-    impl TriggerMarker for PlayCard {}
+    impl marker::Actionable for PlayCard {}
+    impl marker::Trigger for PlayCard {}
 
     /// Action condition state indicating an attack will commence.
     #[derive(Debug, Clone)]
@@ -71,8 +71,8 @@ pub mod triggerable {
     impl State for Attack {
         type Transaction = Epsilon;
     }
-    impl ActionableMarker for Attack {}
-    impl TriggerMarker for Attack {}
+    impl marker::Actionable for Attack {}
+    impl marker::Trigger for Attack {}
 
     /// Trigger condition for taken damage.
     #[derive(Debug, Clone)]
@@ -81,5 +81,5 @@ pub mod triggerable {
         // !-- See below *Transactions --!
         type Transaction = PrintTransaction;
     }
-    impl TriggerMarker for Damage {}
+    impl marker::Trigger for Damage {}
 }

@@ -1,11 +1,12 @@
-use marker::{Service, TransactionContainer};
+use function::Service;
+use marker;
 use service::error::StackPopError;
 
 /// Structure wrapping a [`Vec`] to provide a simple Stack interface.
 #[derive(Debug, Clone)]
 pub struct StackStorage<A>
 where
-    A: TransactionContainer,
+    A: marker::TransactionContainer,
 {
     /// Backing storage for the emulated Stack functionality.
     pub tape: Vec<A>,
@@ -13,13 +14,13 @@ where
 
 impl<A> Service for StackStorage<A>
 where
-    A: TransactionContainer,
+    A: marker::TransactionContainer,
 {
 }
 
 impl<A> StackStorage<A>
 where
-    A: TransactionContainer,
+    A: marker::TransactionContainer,
 {
     /// Creates a new object for storage.
     pub fn new() -> Self {

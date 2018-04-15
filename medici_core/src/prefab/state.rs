@@ -1,7 +1,7 @@
 //! Module containing often used state types.
 
 use function::{EffectState, State, TriggerState};
-use marker::{ActionableMarker, TimingMarker, TopLevelMarker, TriggerMarker, WaitableMarker};
+use marker;
 use prefab::transaction::Epsilon;
 
 /* Clone implementation on states is necessary because the auto-derive
@@ -17,33 +17,33 @@ to work properly.
 
 /// State indicating a pause until an input event has been generated.
 #[derive(Debug, Clone)]
-pub struct Wait<W: WaitableMarker>(W);
+pub struct Wait<W: marker::Waitable>(W);
 impl<W> State for Wait<W>
 where
-    W: WaitableMarker + State,
+    W: marker::Waitable + State,
 {
     type Transaction = <W as State>::Transaction;
 }
 
-impl<W> TopLevelMarker for Wait<W>
+impl<W> marker::TopLevel for Wait<W>
 where
-    W: WaitableMarker,
+    W: marker::Waitable,
 {
 }
 
 /// State indicating dynamic execution of the specific action is in progress.
 #[derive(Debug, Clone)]
-pub struct Action<A: ActionableMarker>(A);
+pub struct Action<A: marker::Actionable>(A);
 impl<A> State for Action<A>
 where
-    A: ActionableMarker + State,
+    A: marker::Actionable + State,
 {
     type Transaction = <A as State>::Transaction;
 }
 
-impl<A> TopLevelMarker for Action<A>
+impl<A> marker::TopLevel for Action<A>
 where
-    A: ActionableMarker,
+    A: marker::Actionable,
 {
 }
 
@@ -57,21 +57,21 @@ impl State for Finished {
     type Transaction = Epsilon;
 }
 
-impl TopLevelMarker for Finished {}
+impl marker::TopLevel for Finished {}
 
 #[derive(Debug, Clone)]
 /// First state used to execute an effect chain caused by the substate ([`Actionable`]).
-pub struct Effect<A: ActionableMarker>(A);
+pub struct Effect<A: marker::Actionable>(A);
 impl<A> State for Effect<A>
 where
-    A: ActionableMarker + State,
+    A: marker::Actionable + State,
 {
     type Transaction = <A as State>::Transaction;
 }
 
-impl<A> TopLevelMarker for Effect<A>
+impl<A> marker::TopLevel for Effect<A>
 where
-    A: ActionableMarker,
+    A: marker::Actionable,
 {
 }
 
@@ -81,26 +81,26 @@ where
 /// # Note
 /// [`State`] is implemented using the transaction type of [`Trigger`].
 /// This is because we assume [`Timing`] will always have an irrelevant (epsilon) [`Transaction`].
-pub struct RecurseEffect<TM: TimingMarker, TR: TriggerMarker>(TM, TR);
+pub struct RecurseEffect<TM: marker::Timing, TR: marker::Trigger>(TM, TR);
 impl<TM, TR> State for RecurseEffect<TM, TR>
 where
-    TM: TimingMarker + State,
-    TR: TriggerMarker + State,
+    TM: marker::Timing + State,
+    TR: marker::Trigger + State,
 {
     type Transaction = <TR as State>::Transaction;
 }
 
 impl<TM, TR> EffectState for RecurseEffect<TM, TR>
 where
-    TM: TimingMarker + State,
-    TR: TriggerMarker + State,
+    TM: marker::Timing + State,
+    TR: marker::Trigger + State,
 {
 }
 
-impl<TM, TR> TopLevelMarker for RecurseEffect<TM, TR>
+impl<TM, TR> marker::TopLevel for RecurseEffect<TM, TR>
 where
-    TM: TimingMarker + State,
-    TR: TriggerMarker + State,
+    TM: marker::Timing + State,
+    TR: marker::Trigger + State,
 {
 }
 
@@ -110,26 +110,26 @@ where
 /// # Note
 /// [`State`] is implemented using the transaction type of [`Trigger`].
 /// This is because we assume [`Timing`] will always have an irrelevant (epsilon) [`Transaction`].
-pub struct DeathEffect<TM: TimingMarker, TR: TriggerMarker>(TM, TR);
+pub struct DeathEffect<TM: marker::Timing, TR: marker::Trigger>(TM, TR);
 impl<TM, TR> State for DeathEffect<TM, TR>
 where
-    TM: TimingMarker + State,
-    TR: TriggerMarker + State,
+    TM: marker::Timing + State,
+    TR: marker::Trigger + State,
 {
     type Transaction = <TR as State>::Transaction;
 }
 
 impl<TM, TR> EffectState for DeathEffect<TM, TR>
 where
-    TM: TimingMarker + State,
-    TR: TriggerMarker + State,
+    TM: marker::Timing + State,
+    TR: marker::Trigger + State,
 {
 }
 
-impl<TM, TR> TopLevelMarker for DeathEffect<TM, TR>
+impl<TM, TR> marker::TopLevel for DeathEffect<TM, TR>
 where
-    TM: TimingMarker + State,
-    TR: TriggerMarker + State,
+    TM: marker::Timing + State,
+    TR: marker::Trigger + State,
 {
 }
 
@@ -141,27 +141,27 @@ where
 /// # Note
 /// [`State`] is implemented using the transaction type of [`Trigger`].
 /// This is because we assume [`Timing`] will always have an irrelevant (epsilon) [`Transaction`].
-pub struct Trigger<TM: TimingMarker, TR: TriggerMarker>(TM, TR);
+pub struct Trigger<TM: marker::Timing, TR: marker::Trigger>(TM, TR);
 impl<TM, TR> State for Trigger<TM, TR>
 where
-    TM: TimingMarker + State,
-    TR: TriggerMarker + State,
+    TM: marker::Timing + State,
+    TR: marker::Trigger + State,
 {
     type Transaction = <TR as State>::Transaction;
 }
 
 impl<TM, TR> TriggerState for Trigger<TM, TR>
 where
-    TM: TimingMarker + State,
-    TR: TriggerMarker + State,
+    TM: marker::Timing + State,
+    TR: marker::Trigger + State,
 {
     type Timing = TM;
     type Trigger = TR;
 }
 
-impl<TM, TR> TopLevelMarker for Trigger<TM, TR>
+impl<TM, TR> marker::TopLevel for Trigger<TM, TR>
 where
-    TM: TimingMarker + State,
-    TR: TriggerMarker + State,
+    TM: marker::Timing + State,
+    TR: marker::Trigger + State,
 {
 }

@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 
 use medici_core::function::{ServiceCompliance, State, StateContainer};
-use medici_core::marker::TopLevelMarker;
+use medici_core::marker;
 use medici_core::service::storage::{EntityStorage, StackStorage};
 use medici_core::service::trigger::TriggerService;
 
@@ -22,7 +22,7 @@ use implementation::entity::Entity;
 #[derive(Debug, Clone)]
 pub struct Machine<X>
 where
-    X: TopLevelMarker + State,
+    X: marker::TopLevel + State,
 {
     /* Absolute minimum variables */
     /// Field to encode the current state of the machine.
@@ -47,7 +47,7 @@ where
 
 impl<X> StateContainer for Machine<X>
 where
-    X: TopLevelMarker + State,
+    X: marker::TopLevel + State,
 {
     type State = X;
     type TimingEnum = TimingItem;
@@ -56,7 +56,7 @@ where
 
 impl<X> ServiceCompliance<StackStorage<TransactionItem>> for Machine<X>
 where
-    X: TopLevelMarker + State,
+    X: marker::TopLevel + State,
 {
     fn get(&self) -> &StackStorage<TransactionItem> {
         &self.transactions
@@ -69,7 +69,7 @@ where
 
 impl<X> ServiceCompliance<TriggerService<TimingItem, TriggerItem>> for Machine<X>
 where
-    X: TopLevelMarker + State,
+    X: marker::TopLevel + State,
 {
     fn get(&self) -> &TriggerService<TimingItem, TriggerItem> {
         &self.triggers
@@ -82,7 +82,7 @@ where
 
 impl<X> ServiceCompliance<EntityStorage<Entity>> for Machine<X>
 where
-    X: TopLevelMarker + State,
+    X: marker::TopLevel + State,
 {
     fn get(&self) -> &EntityStorage<Entity> {
         &self.entities

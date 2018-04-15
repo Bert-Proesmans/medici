@@ -2,7 +2,7 @@
 
 use error::MachineError;
 use function::{ServiceCompliance, State, StateContainer};
-use marker::{TransactionContainer, TransactionMarker};
+use marker;
 use service::storage::StackStorage;
 
 /// Types, state machines residing in a certain state, which transform one-sided
@@ -16,7 +16,7 @@ where
     T: StateContainer + 'static,
     Self: StateContainer + 'static,
     Self::State: State + 'static,
-    <Self::State as State>::Transaction: TransactionMarker + 'static,
+    <Self::State as State>::Transaction: marker::Transaction + 'static,
 {
     /// Transition from the provided state into the implementing state.
     fn transition_from(_: T, _: <Self::State as State>::Transaction) -> Self;
@@ -28,7 +28,7 @@ where
     T: StateContainer + 'static,
     Self: StateContainer + 'static,
     T::State: State + 'static,
-    <T::State as State>::Transaction: TransactionMarker + 'static,
+    <T::State as State>::Transaction: marker::Transaction + 'static,
 {
     /// Transition from Self into the desired state.
     fn transition(self, _: <T::State as State>::Transaction) -> T;
@@ -39,7 +39,7 @@ where
     S: StateContainer + 'static,
     T: TransitionFrom<S> + StateContainer,
     T::State: State + 'static,
-    <T::State as State>::Transaction: TransactionMarker + 'static,
+    <T::State as State>::Transaction: marker::Transaction + 'static,
 {
     fn transition(self, t: <T::State as State>::Transaction) -> T {
         // self is of type S.
@@ -60,11 +60,11 @@ where
 /// valid [A -> B].
 pub trait PushdownFrom<T, TTC>
 where
-    TTC: TransactionContainer + 'static,
+    TTC: marker::TransactionContainer + 'static,
     T: StateContainer + 'static,
     Self: StateContainer + ServiceCompliance<StackStorage<TTC>> + 'static,
     Self::State: State + 'static,
-    <Self::State as State>::Transaction: TransactionMarker + 'static,
+    <Self::State as State>::Transaction: marker::Transaction + 'static,
 {
     /// Transition from the provided state into the implementing state.
     fn pushdown_from(_: T, _: <Self::State as State>::Transaction) -> Self;
@@ -73,10 +73,10 @@ where
 /// Syntax simplifying trait in accordance to [`PushdownFrom`].
 pub trait PushdownInto<T, TTC>
 where
-    TTC: TransactionContainer + 'static,
+    TTC: marker::TransactionContainer + 'static,
     T: StateContainer + 'static,
     T::State: State + 'static,
-    <T::State as State>::Transaction: TransactionMarker + 'static,
+    <T::State as State>::Transaction: marker::Transaction + 'static,
     Self: StateContainer + 'static,
 {
     /// Transition from Self into the desired state.
@@ -86,10 +86,10 @@ where
 impl<T, TTC, S> PushdownInto<T, TTC> for S
 where
     S: StateContainer + 'static,
-    TTC: TransactionContainer + 'static,
+    TTC: marker::TransactionContainer + 'static,
     T: PushdownFrom<S, TTC> + StateContainer + 'static,
     T::State: State + 'static,
-    <T::State as State>::Transaction: TransactionMarker + 'static,
+    <T::State as State>::Transaction: marker::Transaction + 'static,
 {
     fn pushdown(self, t: <T::State as State>::Transaction) -> T {
         // self is of type S.
@@ -110,11 +110,11 @@ where
 /// and the following transition is valid [A <- B].
 pub trait PullupFrom<T, TTC>
 where
-    TTC: TransactionContainer + 'static,
+    TTC: marker::TransactionContainer + 'static,
     T: StateContainer + ServiceCompliance<StackStorage<TTC>> + 'static,
     Self: StateContainer + Sized + 'static,
     Self::State: State + 'static,
-    <Self::State as State>::Transaction: TransactionMarker + 'static,
+    <Self::State as State>::Transaction: marker::Transaction + 'static,
 {
     /// Transition from the provided state into the implementing state.
     ///
@@ -128,10 +128,10 @@ where
 /// Syntax sumplifying trait in accordance to [`PullupFrom`].
 pub trait PullupInto<T, TTC>
 where
-    TTC: TransactionContainer + 'static,
+    TTC: marker::TransactionContainer + 'static,
     T: StateContainer + 'static,
     T::State: State + 'static,
-    <T::State as State>::Transaction: TransactionMarker + 'static,
+    <T::State as State>::Transaction: marker::Transaction + 'static,
     Self: StateContainer + ServiceCompliance<StackStorage<TTC>> + Sized + 'static,
 {
     /// Transition from Self into the desired state.
@@ -141,10 +141,10 @@ where
 impl<T, TTC, S> PullupInto<T, TTC> for S
 where
     S: StateContainer + ServiceCompliance<StackStorage<TTC>> + 'static,
-    TTC: TransactionContainer + 'static,
+    TTC: marker::TransactionContainer + 'static,
     T: PullupFrom<S, TTC> + StateContainer + 'static,
     T::State: State + 'static,
-    <T::State as State>::Transaction: TransactionMarker + 'static,
+    <T::State as State>::Transaction: marker::Transaction + 'static,
 {
     fn pullup(self) -> Result<T, MachineError> {
         // self if of type S.

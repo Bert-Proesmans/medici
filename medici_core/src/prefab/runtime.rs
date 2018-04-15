@@ -5,8 +5,7 @@ use failure::{format_err, Error};
 use value_from_type_traits::IntoEnum;
 
 use function::{ServiceCompliance, State, StateContainer, TriggerState};
-use marker::{ActionableMarker, TimingEnumerator, TimingMarker, TransactionMarker,
-             TriggerEnumerator, TriggerMarker};
+use marker;
 use service::storage::UnsafeTrigger;
 use service::trigger::{TriggerService, TriggerWrapper};
 use stm::*;
@@ -20,10 +19,10 @@ pub fn fetch_triggers<M, ETM, ETR>(machine: &M) -> Vec<UnsafeTrigger<ETM, ETR>>
 where
     M: StateContainer + ServiceCompliance<TriggerService<ETM, ETR>>,
     <M as StateContainer>::State: TriggerState,
-    <M::State as TriggerState>::Timing: TimingMarker + IntoEnum<ETM>,
-    <M::State as TriggerState>::Trigger: TriggerMarker + IntoEnum<ETR>,
-    ETM: TimingEnumerator + PartialEq + Copy,
-    ETR: TriggerEnumerator + PartialEq + Copy,
+    <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
+    <M::State as TriggerState>::Trigger: marker::Trigger + IntoEnum<ETR>,
+    ETM: marker::TimingEnumerator + PartialEq + Copy,
+    ETR: marker::TriggerEnumerator + PartialEq + Copy,
 {
     ServiceCompliance::<TriggerService<ETM, ETR>>::get(machine)
         .retrieve_triggers(machine)
@@ -43,10 +42,10 @@ pub unsafe fn exec_trigger_stepped<M, TM, TR, ETM, ETR, I>(
 where
     M: StateContainer,
     M::State: TriggerState<Timing = TM, Trigger = TR>,
-    TM: TimingMarker + IntoEnum<ETM>,
-    TR: TriggerMarker + IntoEnum<ETR>,
-    ETM: TimingEnumerator + PartialEq + Copy,
-    ETR: TriggerEnumerator + PartialEq + Copy,
+    TM: marker::Timing + IntoEnum<ETM>,
+    TR: marker::Trigger + IntoEnum<ETR>,
+    ETM: marker::TimingEnumerator + PartialEq + Copy,
+    ETR: marker::TriggerEnumerator + PartialEq + Copy,
     I: IntoIterator<Item = UnsafeTrigger<ETM, ETR>>,
 {
     for t in triggers.into_iter() {
@@ -86,8 +85,7 @@ macro_rules! build_exec_triggers {
 
         use self::_shorten_syntax::*;
         use $crate::function::{ServiceCompliance, State, StateContainer, TriggerState};
-        use $crate::marker::{ActionableMarker, TimingEnumerator, TransactionMarker,
-                             TriggerEnumerator};
+        use $crate::marker;
         use $crate::prefab::runtime::{exec_trigger_stepped, fetch_triggers};
         use $crate::prefab::state::{Effect, Trigger};
         // use $crate::prefab::timing::*;
@@ -115,10 +113,10 @@ macro_rules! build_exec_triggers {
             // for each TriggerState variant over Timing.
             // eg: Effect<TR>::Transaction == Trigger<Pre, TR>::Transaction ==
             // Trigger<Peri, TR>::Transaction == ..
-            TR: ActionableMarker + State<Transaction = TT> + IntoEnum<ETR>,
-            TT: TransactionMarker,
-            ETM: TimingEnumerator + PartialEq + Copy,
-            ETR: TriggerEnumerator + PartialEq + Copy,
+            TR: marker::Actionable + State<Transaction = TT> + IntoEnum<ETR>,
+            TT: marker::Transaction,
+            ETM: marker::TimingEnumerator + PartialEq + Copy,
+            ETR: marker::TriggerEnumerator + PartialEq + Copy,
             //
             M1<TR>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR> + TransitionInto<M2<TR>>,
             <M1<TR> as StateContainer>::State: State<Transaction = TT>,

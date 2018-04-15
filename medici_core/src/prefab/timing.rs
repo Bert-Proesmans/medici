@@ -3,14 +3,14 @@
 //! trigger constraints.
 
 use function::State;
-use marker::{TimingEnumerator, TimingMarker};
+use marker;
 
 use prefab::transaction::Epsilon;
 
 /// Type representing a timing relationship. Pre X means before X is executed.
 #[derive(Debug, Clone, Copy)]
 pub struct Pre();
-impl TimingMarker for Pre {}
+impl marker::Timing for Pre {}
 impl State for Pre {
     type Transaction = Epsilon;
 }
@@ -18,7 +18,7 @@ impl State for Pre {
 /// Type representing a timing relationship. Peri X means during/while X is executed.
 #[derive(Debug, Clone, Copy)]
 pub struct Peri();
-impl TimingMarker for Peri {}
+impl marker::Timing for Peri {}
 impl State for Peri {
     type Transaction = Epsilon;
 }
@@ -26,7 +26,7 @@ impl State for Peri {
 /// Type representing a timing relationship. Pre X means after X is executed.
 #[derive(Debug, Clone, Copy)]
 pub struct Post();
-impl TimingMarker for Post {}
+impl marker::Timing for Post {}
 impl State for Post {
     type Transaction = Epsilon;
 }
@@ -35,4 +35,4 @@ impl State for Post {
 // The first parameter of the macro will be the identifier of the generated
 // enumeration == [`TimingItem`].
 // The enumeration itself will be defined INSIDE this module.
-impl TimingEnumerator for TimingItem {}
+impl marker::TimingEnumerator for TimingItem {}

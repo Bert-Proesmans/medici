@@ -3,7 +3,7 @@
 use std::convert::TryFrom;
 
 use medici_core::error::RuntimeConstraintError;
-use medici_core::marker::{TransactionContainer, TransactionMarker};
+use medici_core::marker;
 
 // Epsilon is re-exported here so implementers can do
 // 'use transaction::*' and have both the medici_core transactions
@@ -20,7 +20,7 @@ pub enum TransactionItem {
     Print(PrintTransaction),
 }
 
-impl TransactionContainer for TransactionItem {}
+impl marker::TransactionContainer for TransactionItem {}
 
 impl From<Epsilon> for TransactionItem {
     fn from(x: Epsilon) -> Self {
@@ -49,7 +49,7 @@ impl TryFrom<TransactionItem> for Epsilon {
 /// about it..
 #[derive(Debug, Clone, Copy)]
 pub struct PrintTransaction(pub &'static str);
-impl TransactionMarker for PrintTransaction {}
+impl marker::Transaction for PrintTransaction {}
 
 impl From<PrintTransaction> for TransactionItem {
     fn from(x: PrintTransaction) -> Self {

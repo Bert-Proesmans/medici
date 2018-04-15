@@ -1,7 +1,6 @@
 //! Contains the core functionality items for our system.
 
-use marker::{Service, TimingEnumerator, TimingMarker, TransactionMarker, TriggerEnumerator,
-             TriggerMarker};
+use marker;
 
 /// Trait generalizing over any structure that could act as a container of states.
 ///
@@ -11,18 +10,18 @@ pub trait StateContainer {
     type State: State;
     /// Type of transaction object necessary to transition into the
     /// current state of the machine.
-    type Transaction: TransactionMarker = <Self::State as State>::Transaction;
+    type Transaction: marker::Transaction = <Self::State as State>::Transaction;
     /// Type which enumerates all possible timings contained by the machine.
-    type TimingEnum: TimingEnumerator;
+    type TimingEnum: marker::TimingEnumerator;
     /// Type which enumerates all possible triggers contained by the machine.
-    type TriggerEnum: TriggerEnumerator;
+    type TriggerEnum: marker::TriggerEnumerator;
 }
 
 /// Trait generalizing over any state that's present in the state machine.
 pub trait State {
     /// Type of structure which must be provided when transitioning into the state
     /// represented by the enclosing type.
-    type Transaction: TransactionMarker;
+    type Transaction: marker::Transaction;
 }
 
 /// Trait generalizing over any state which is used to bootstrap an execution of triggers.
@@ -33,9 +32,17 @@ pub trait EffectState: State {}
 pub trait TriggerState: State {
     /// Encoded type value representing the timing (related to triggers) of the
     /// current state.
-    type Timing: TimingMarker;
+    type Timing: marker::Timing;
     /// Encoded type value representing the trigger of the current state.
-    type Trigger: TriggerMarker;
+    type Trigger: marker::Trigger;
+}
+
+/// Types which attribute functionality to state machines.
+///
+/// A Service is kind-of like a Trait (language item), but is used in a dynamic
+/// way to quickly de-/construct state machines with various functional methods.
+pub trait Service {
+    // Note; It's quite possible this trait will receive methods later on.
 }
 
 /// Type that's generally used to identify and order [`Entity`] objects.
@@ -87,9 +94,9 @@ pub trait Card {
     ///     of the state-machine containing that entity object.
     type UID: Copy;
     /// All timing types this card holds listeners for.
-    type TimingEnum: TimingEnumerator;
+    type TimingEnum: marker::TimingEnumerator;
     /// All trigger types this card holds listeners for.
-    type TriggerEnum: TriggerEnumerator;
+    type TriggerEnum: marker::TriggerEnumerator;
 
     /// Returns the globally unique identifier of this specific card.
     fn uid(&self) -> Self::UID;

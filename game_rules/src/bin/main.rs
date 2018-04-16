@@ -1,37 +1,8 @@
-#![feature(nll, proc_macro)]
-#![deny(missing_docs)]
+extern crate game_rules;
 
-//! Crate implementing a basic card game.
-
-extern crate failure;
-extern crate game_system;
-
-mod action;
-mod card_set;
-mod trigger;
-
-use std::default::Default;
-
-use failure::{format_err, Error};
-use game_system::prelude::*;
-
-use action::{end_turn, start_game};
-use trigger::{start_game_trigger, turn_end_trigger};
-
-fn pre_end_turn_trigger<CTS>(
-    x: Machine<Trigger<Pre, EndTurn>, CTS>,
-) -> Result<Machine<Trigger<Pre, EndTurn>, CTS>, Error>
-where
-    CTS: CTStack,
-{
-    let game_entity = x.entities.get(GAME_E_ID)?;
-    let player_idx = game_entity
-        .get_value(&EntityTags::CurrentPlayerOrd)
-        .ok_or_else(|| format_err!("Missing CurrentPlayerOrd!"))?;
-    println!("[PRE_ENDTURN_TRIGGER] for player {:}", player_idx);
-    //
-    Ok(x)
-}
+use game_rules::action::*;
+use game_rules::game_system::prelude::*;
+use game_rules::trigger::*;
 
 fn main() {
     // DBG; This will enable Failure to print out full backtraces.
@@ -64,4 +35,6 @@ fn main() {
     let finished_state: Machine<Finished> = input_state.transition(Epsilon);
 
     println!("{:?}", finished_state);
-    */}
+    */
+    println!("Finished");
+}

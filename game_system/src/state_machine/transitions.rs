@@ -246,7 +246,9 @@ mod gen_impl {
     {
         fn pullup_from(mut old: Machine<Trigger<Pre, TR>, CTS>) -> Result<Self, MachineError> {
             // Archive state of the old machine.
-            let old_transaction = function::ServiceCompliance::<storage::StackStorage<TransactionItem>>::get_mut(&mut old)
+            let old_transaction = function::ServiceCompliance::<
+                storage::StackStorage<TransactionItem>,
+            >::get_mut(&mut old)
                 .pop()
                 .context(ErrorKind::LogicError, &old)
                 .and_then(|item| {
@@ -316,7 +318,9 @@ mod gen_impl {
     {
         fn pullup_from(mut old: Machine<Trigger<Peri, TR>, CTS>) -> Result<Self, MachineError> {
             // Archive state of the old machine.
-            let old_transaction = function::ServiceCompliance::<storage::StackStorage<TransactionItem>>::get_mut(&mut old)
+            let old_transaction = function::ServiceCompliance::<
+                storage::StackStorage<TransactionItem>,
+            >::get_mut(&mut old)
                 .pop()
                 .context(ErrorKind::LogicError, &old)
                 .and_then(|item| {
@@ -386,7 +390,9 @@ mod gen_impl {
     {
         fn pullup_from(mut old: Machine<Trigger<Post, TR>, CTS>) -> Result<Self, MachineError> {
             // Archive state of the old machine.
-            let old_transaction = function::ServiceCompliance::<storage::StackStorage<TransactionItem>>::get_mut(&mut old)
+            let old_transaction = function::ServiceCompliance::<
+                storage::StackStorage<TransactionItem>,
+            >::get_mut(&mut old)
                 .pop()
                 .context(ErrorKind::LogicError, &old)
                 .and_then(|item| {
@@ -458,7 +464,9 @@ mod gen_impl {
     {
         fn pullup_from(mut old: Machine<RecurseEffect<TR>, CTS>) -> Result<Self, MachineError> {
             // Archive state of the old machine.
-            let old_transaction = function::ServiceCompliance::<storage::StackStorage<TransactionItem>>::get_mut(&mut old)
+            let old_transaction = function::ServiceCompliance::<
+                storage::StackStorage<TransactionItem>,
+            >::get_mut(&mut old)
                 .pop()
                 .context(ErrorKind::LogicError, &old)
                 .and_then(|item| {
@@ -478,58 +486,3 @@ mod gen_impl {
         }
     }
 }
-
-/*
-#[cfg(test)]
-mod tests {
-    use std::default::Default;
-    use std::marker::PhantomData;
-
-    use medici_core::ctstack::EmptyStack;
-    use medici_core::stm::checked::{PullupFrom, PushdownFrom};
-
-    use state_machine::prelude::*;
-    use state_machine::state::prelude::*;
-    use state_machine::transaction::Epsilon;
-
-    #[test]
-    fn checked_transitions() {
-        // Build a new machine to reuse internal parts to build a custom one.
-        let machine = Machine::new(&Default::default()).expect("Error building machine");
-        let machine: Machine<Action<Start>, EmptyStack> = Machine {
-            state: PhantomData,
-            history: PhantomData,
-            transaction: Epsilon,
-            //
-            transactions: machine.transactions,
-            entities: machine.entities,
-            triggers: machine.triggers,
-        };
-
-        println!("START\n{:?}\n", machine);
-        let push: Machine<Effect<Start>, _> = PushdownFrom::pushdown_from(machine, Epsilon);
-        println!("PUSHED DOWN\n{:?}\n", push);
-        let pull: Machine<Action<Start>, _> =
-            PullupFrom::pullup_from(push).expect("Failed to pullup!");
-        println!("PULLED UP\n{:?}\n", pull);
-    }
-
-    #[test]
-    fn invalid_transition() {
-        // Build a new machine to reuse internal parts to build a custom one.
-        let machine = Machine::new(&Default::default()).expect("Error building machine");
-        let machine: Machine<Effect<Start>, EmptyStack> = Machine {
-            state: PhantomData,
-            history: PhantomData,
-            transaction: Epsilon,
-            //
-            transactions: machine.transactions,
-            entities: machine.entities,
-            triggers: machine.triggers,
-        };
-        // This is an invalid pullup because the transition history is empty.
-        let pull: Result<Machine<Action<Start>, _>, _> = PullupFrom::pullup_from(machine);
-        assert!(pull.is_err());
-    }
-}
-*/

@@ -36,8 +36,9 @@ pub mod re_export {
     pub use medici_core::function;
     pub use medici_core::marker;
     pub use medici_core::service;
-    pub use medici_core::storage;
     pub use medici_core::stm::checked::{PullupFrom, PushdownFrom, TransitionFrom};
+    pub use medici_core::storage;
+    pub use medici_core::service::error::*;
     // Macro re-exported
     pub use medici_core::ct;
 }
@@ -50,6 +51,7 @@ pub mod prelude {
     pub use medici_core::error::*;
     pub use medici_core::stm::checked::{PullupInto, PushdownInto, TransitionInto};
     pub use medici_core::transaction::{pack_transaction, unpack_transaction};
+    pub use medici_core::function::{Service, Entity, EntityBuilder, Card, CardBuilder, ServiceCompliance};
 
     pub use entity::*;
     pub use state_machine::config::SetupConfig;
@@ -66,25 +68,12 @@ pub mod prelude {
     pub use state_machine::transaction;
 }
 
-/*
 #[cfg(test)]
 mod tests {
-    use std::default::Default;
-
+    use std::marker::PhantomData;
     use failure::{Error, Fail};
-
-    use medici_core::ctstack::AnyStack;
-    use medici_core::function::Entity;
-    use medici_core::prefab::entity::GAME_E_ID;
-    use medici_core::service::error::MissingEntityError;
-    // use medici_core::stm::*;
-
-    use super::implementation::effect::action::{end_turn, start_game};
-    use super::implementation::effect::trigger::{start_game_trigger, turn_end_trigger};
-    use super::implementation::entity::EntityTags;
-    use super::state_machine::prelude::*;
-    // use super::state_machine::state::prelude::*;
-    // use super::state_machine::transaction::*;
+    use re_export::*;
+    use prelude::*;
 
     #[test]
     fn failure_derive() {
@@ -94,56 +83,44 @@ mod tests {
         let err: Error = MissingEntityError(id).into();
     }
 
-    /*
     #[test]
-    fn transition() {
-        let config: SetupConfig = Default::default();
-        let game: Machine![Wait<Start>] = Machine::new(&config).expect("Error creating new game!");
-        let game: Machine![Action<Start>] = game.transitio(Epsilon).expect("Game enexpectedly finished");
-        let game: Machine![Effect<Start>] = game.pushdown(Epsilon).expect("Game enexpectedly finished");
+    fn checked_transitions() {
+        // Build a new machine to reuse internal parts to build a custom one.
+        let machine = Machine::new(&Default::default()).expect("Error building machine");
+        let machine: Machine<Action<Start>, EmptyStack> = Machine {
+            state: PhantomData,
+            history: PhantomData,
+            transaction: transaction::Epsilon,
+            //
+            transactions: machine.transactions,
+            entities: machine.entities,
+            triggers: machine.triggers,
+        };
+
+        println!("START\n{:?}\n", machine);
+        let push: Machine<Effect<Start>, _> =
+            PushdownFrom::pushdown_from(machine, transaction::Epsilon);
+        println!("PUSHED DOWN\n{:?}\n", push);
+        let pull: Machine<Action<Start>, _> =
+            PullupFrom::pullup_from(push).expect("Failed to pullup!");
+        println!("PULLED UP\n{:?}\n", pull);
     }
-    */
 
     #[test]
-    fn entry() {
-        let config: SetupConfig = Default::default();
-        let mut game = Machine::new(&config).expect("Error creating new game!");
-
-        {
-            let game_entity = game.entities.get(GAME_E_ID).unwrap();
-            assert_eq!(GAME_E_ID, 0);
-            assert_eq!(GAME_E_ID, game_entity.id());
-        }
-
-        // Add triggers.
-        // These triggers are specialized to use AnyStack for the compile-time stack
-        // generic parameter. This is allowed because the size of any CTStack within
-        // our state machine is 0.
-        game.triggers
-            .add_trigger(start_game_trigger::<AnyStack>)
-            .unwrap();
-        game.triggers
-            .add_trigger(turn_end_trigger::<AnyStack>)
-            .unwrap();
-
-        // Start game
-        let first_turn = start_game(game).expect("Game unexpectedly finished");
-
-        // Check we're currently within the turn of player 1.
-        let game_entity = first_turn.entities.get(GAME_E_ID).unwrap();
-        assert_eq!(
-            game_entity.get_value_default(&EntityTags::CurrentPlayerOrd),
-            1
-        );
-        let second_turn = end_turn(first_turn).expect("Game unexpectedly finished");
-
-        // Check we're currently within the turn of player 2.
-        let game_entity = second_turn.entities.get(GAME_E_ID).unwrap();
-        assert_eq!(
-            game_entity.get_value_default(&EntityTags::CurrentPlayerOrd),
-            2
-        );
-        let _third_turn = end_turn(second_turn).expect("Game unexpectedly finished");
+    fn invalid_transition() {
+        // Build a new machine to reuse internal parts to build a custom one.
+        let machine = Machine::new(&Default::default()).expect("Error building machine");
+        let machine: Machine<Effect<Start>, EmptyStack> = Machine {
+            state: PhantomData,
+            history: PhantomData,
+            transaction: transaction::Epsilon,
+            //
+            transactions: machine.transactions,
+            entities: machine.entities,
+            triggers: machine.triggers,
+        };
+        // This is an invalid pullup because the transition history is empty.
+        let pull: Result<Machine<Action<Start>, _>, _> = PullupFrom::pullup_from(machine);
+        assert!(pull.is_err());
     }
 }
-*/

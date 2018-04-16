@@ -6,9 +6,9 @@ use value_from_type_traits::IntoEnum;
 
 use function::{ServiceCompliance, State, StateContainer, TriggerState};
 use marker;
-use storage::UnsafeTrigger;
 use service::trigger::{TriggerService, TriggerWrapper};
 use stm::*;
+use storage::UnsafeTrigger;
 
 /// Extract all triggers from the provided machine for matching
 /// conditions.

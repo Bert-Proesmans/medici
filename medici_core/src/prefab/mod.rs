@@ -2,7 +2,7 @@
 //! the opiniated nature of this framework.
 //! Framework users are encouraged to use these types whenever possible. The services
 //! are built to make use of these types, but freedom was preserved wherever possible.
-//! 
+//!
 //! # Note
 //! The child (and grandchild) types defined within this module are built to be as generic
 //! as possible, but some make use of other types within the [`prefab`] module.

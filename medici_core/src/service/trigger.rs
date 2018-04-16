@@ -211,7 +211,7 @@ where
     /// [`UnsafeTrigger`] reference. Ultimately we leave the choice of usage up to the framework
     /// user. The reason being that we want additional functional operations to be as lightweight
     /// as possible.
-    pub fn retrieve_triggers<M>(&self, m: &M) -> impl Iterator<Item = &UnsafeTrigger<ETM, ETR>>
+    pub fn retrieve_triggers<M>(&self, _: &M) -> impl Iterator<Item = &UnsafeTrigger<ETM, ETR>>
     where
         M: StateContainer,
         M::State: TriggerState,

@@ -1,8 +1,5 @@
 // Linters.
-#![allow(
-    unknown_lints, dead_code, unused_mut, unused_variables, let_and_return, useless_format,
-    unused_unsafe, unused_macros, unused_imports
-)]
+#![allow(unused_unsafe)]
 #![deny(missing_docs)]
 // Unstable features.
 #![feature(associated_type_defaults, try_from, never_type, proc_macro)]

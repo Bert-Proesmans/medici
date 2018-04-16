@@ -1,13 +1,12 @@
 //! Module containing methods which make working with the state
 //! machine a bit easier.
 
-use failure::{format_err, Error};
+use failure::Error;
 use value_from_type_traits::IntoEnum;
 
-use function::{ServiceCompliance, State, StateContainer, TriggerState};
+use function::{ServiceCompliance, StateContainer, TriggerState};
 use marker;
 use service::trigger::{TriggerService, TriggerWrapper};
-use stm::*;
 use storage::UnsafeTrigger;
 
 /// Extract all triggers from the provided machine for matching
@@ -89,7 +88,6 @@ macro_rules! build_exec_triggers_checked {
         use $crate::service::trigger::TriggerService;
 
         #[doc(hidden)]
-        #[allow(non_camel_case)]
         mod _shorten_syntax {
             use super::*;
             pub type M1<TR, CTS> = $container_name<Effect<TR>, CTS>;
@@ -141,7 +139,7 @@ macro_rules! build_exec_triggers_checked {
             <<M4<TR, CTS> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,
         {
             // Pre
-            let mut pre: M2<TR, CTS> = machine.transition(transaction);
+            let pre: M2<TR, CTS> = machine.transition(transaction);
             let listeners = fetch_triggers(&pre);
             // IMMUT REBIND
             let pre = unsafe { exec_trigger_stepped(pre, listeners)? };

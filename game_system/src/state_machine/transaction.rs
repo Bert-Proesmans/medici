@@ -32,11 +32,13 @@ impl TryFrom<TransactionItem> for Epsilon {
     fn try_from(tc: TransactionItem) -> Result<Self, Self::Error> {
         match tc {
             TransactionItem::Epsilon(x) => Ok(x),
+            /*
             e @ _ => {
                 let expected = stringify!(TransactionItem::Epsilon);
                 let factual = format!("{:?}", e);
                 Err((expected, factual).into())
             }
+            */
         }
     }
 }

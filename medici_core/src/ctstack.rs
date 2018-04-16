@@ -1,8 +1,6 @@
 //! Module which implements a CONS-LIST for transition validation at compile
 //! time.
 
-use std::fmt::Debug;
-
 use function::State;
 use marker;
 

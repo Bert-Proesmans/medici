@@ -1,5 +1,5 @@
 // Linters.
-#![allow(unknown_lints, dead_code, unused_mut, unused_variables, let_and_return, useless_format)]
+#![allow()]
 // Prevent successful compilation when documentation is missing.
 #![deny(missing_docs)]
 // Unstable features.
@@ -78,9 +78,9 @@ mod tests {
     #[test]
     fn failure_derive() {
         let id: usize = 0;
-        let error = MissingEntityError(id);
-        let fail: &Fail = &MissingEntityError(id);
-        let err: Error = MissingEntityError(id).into();
+        let _error = MissingEntityError(id);
+        let _fail: &Fail = &MissingEntityError(id);
+        let _err: Error = MissingEntityError(id).into();
     }
 
     #[test]

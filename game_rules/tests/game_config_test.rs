@@ -1,8 +1,8 @@
 extern crate game_rules;
 
-use game_rules::action::*;
+// use game_rules::action::*;
 use game_rules::game_system::prelude::*;
-use game_rules::trigger::*;
+// use game_rules::trigger::*;
 
 #[test]
 #[should_panic]

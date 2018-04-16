@@ -5,5 +5,4 @@
 //! services to be implemented before use.
 
 pub mod error;
-pub mod storage;
 pub mod trigger;

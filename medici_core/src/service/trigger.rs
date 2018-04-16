@@ -8,7 +8,7 @@ use value_from_type_traits::IntoEnum;
 
 use function::{Service, StateContainer, TriggerState};
 use marker;
-use service::storage::{TriggerStorage, UnsafeTrigger};
+use storage::{TriggerStorage, UnsafeTrigger};
 
 // Shortcut for a callback method prototype which consumes the machine
 // and returns it again.. or a generic error.

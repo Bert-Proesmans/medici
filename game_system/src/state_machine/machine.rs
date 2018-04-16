@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 use medici_core::ctstack::CTStack;
 use medici_core::function::{ServiceCompliance, State, StateContainer};
 use medici_core::marker;
-use medici_core::service::storage::{EntityStorage, StackStorage};
+use medici_core::storage::{EntityStorage, StackStorage};
 use medici_core::service::trigger::TriggerService;
 
 use state_machine::state::prelude::*;

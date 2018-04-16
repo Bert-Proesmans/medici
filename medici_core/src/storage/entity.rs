@@ -1,3 +1,5 @@
+//! Module containing structures for storing entities.
+
 use std::convert::TryFrom;
 use std::fmt::{Debug, Display};
 

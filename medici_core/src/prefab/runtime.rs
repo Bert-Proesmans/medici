@@ -6,12 +6,9 @@ use value_from_type_traits::IntoEnum;
 
 use function::{ServiceCompliance, State, StateContainer, TriggerState};
 use marker;
-use service::storage::UnsafeTrigger;
+use storage::UnsafeTrigger;
 use service::trigger::{TriggerService, TriggerWrapper};
 use stm::*;
-
-use prefab::state::{Effect, Trigger};
-use prefab::timing::*;
 
 /// Extract all triggers from the provided machine for matching
 /// conditions.
@@ -89,9 +86,7 @@ macro_rules! build_exec_triggers_checked {
         use $crate::marker;
         use $crate::prefab::runtime::{exec_trigger_stepped, fetch_triggers};
         use $crate::prefab::state::{Effect, Trigger};
-        // use $crate::prefab::timing::*;
         use $crate::service::trigger::TriggerService;
-        use $crate::stm::checked::*;
 
         #[doc(hidden)]
         #[allow(non_camel_case)]

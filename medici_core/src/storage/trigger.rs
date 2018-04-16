@@ -1,3 +1,5 @@
+//! Module containing types for storing game triggers.
+
 use std::marker::PhantomData;
 
 use marker;

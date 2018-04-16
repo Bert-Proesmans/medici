@@ -36,6 +36,7 @@ pub mod re_export {
     pub use medici_core::function;
     pub use medici_core::marker;
     pub use medici_core::service;
+    pub use medici_core::storage;
     pub use medici_core::stm::checked::{PullupFrom, PushdownFrom, TransitionFrom};
     // Macro re-exported
     pub use medici_core::ct;

@@ -68,7 +68,7 @@ macro_rules! build_pushdown {
             {
                 // Archive state of the old machine.
                 let old_transaction: $t_type = $crate::prelude::pack_transaction(old.transaction);
-                $crate::re_export::function::ServiceCompliance::<$crate::re_export::service::storage::StackStorage<$t_type>>::get_mut(&mut old)
+                $crate::re_export::function::ServiceCompliance::<$crate::re_export::storage::StackStorage<$t_type>>::get_mut(&mut old)
                     .push(old_transaction)
                     .expect("Never type triggered!");
 
@@ -105,7 +105,7 @@ macro_rules! build_pullup {
             fn pullup_from(mut old: $crate::prelude::Machine<$from, CTS>) -> Result<Self, $crate::prelude::MachineError>
             {
                 // Archive state of the old machine.
-                let old_transaction = $crate::re_export::function::ServiceCompliance::<$crate::re_export::service::storage::StackStorage<$t_type>>
+                let old_transaction = $crate::re_export::function::ServiceCompliance::<$crate::re_export::storage::StackStorage<$t_type>>
                 ::get_mut(&mut old)
                     .pop()
                     .context($crate::prelude::ErrorKind::LogicError, &old)
@@ -194,7 +194,7 @@ mod gen_impl {
 
     use prelude::transaction::TransactionItem;
     use prelude::*;
-    use re_export::{ct, function, marker, service, PullupFrom, PushdownFrom};
+    use re_export::{ct, function, marker, storage, PullupFrom, PushdownFrom};
 
     /* RecurseEffect<_> -> Trigger<Pre, _> */
     #[allow(non_camel_case_types)]
@@ -215,7 +215,7 @@ mod gen_impl {
         ) -> Self {
             // Archive state of the old machine.
             let old_transaction: TransactionItem = pack_transaction(old.transaction);
-            function::ServiceCompliance::<service::storage::StackStorage<TransactionItem>>::get_mut(
+            function::ServiceCompliance::<storage::StackStorage<TransactionItem>>::get_mut(
                 &mut old,
             ).push(old_transaction)
                 .expect("Never type triggered!");
@@ -246,9 +246,7 @@ mod gen_impl {
     {
         fn pullup_from(mut old: Machine<Trigger<Pre, TR>, CTS>) -> Result<Self, MachineError> {
             // Archive state of the old machine.
-            let old_transaction = function::ServiceCompliance::<
-                service::storage::StackStorage<TransactionItem>,
-            >::get_mut(&mut old)
+            let old_transaction = function::ServiceCompliance::<storage::StackStorage<TransactionItem>>::get_mut(&mut old)
                 .pop()
                 .context(ErrorKind::LogicError, &old)
                 .and_then(|item| {
@@ -287,7 +285,7 @@ mod gen_impl {
         ) -> Self {
             // Archive state of the old machine.
             let old_transaction: TransactionItem = pack_transaction(old.transaction);
-            function::ServiceCompliance::<service::storage::StackStorage<TransactionItem>>::get_mut(
+            function::ServiceCompliance::<storage::StackStorage<TransactionItem>>::get_mut(
                 &mut old,
             ).push(old_transaction)
                 .expect("Never type triggered!");
@@ -318,9 +316,7 @@ mod gen_impl {
     {
         fn pullup_from(mut old: Machine<Trigger<Peri, TR>, CTS>) -> Result<Self, MachineError> {
             // Archive state of the old machine.
-            let old_transaction = function::ServiceCompliance::<
-                service::storage::StackStorage<TransactionItem>,
-            >::get_mut(&mut old)
+            let old_transaction = function::ServiceCompliance::<storage::StackStorage<TransactionItem>>::get_mut(&mut old)
                 .pop()
                 .context(ErrorKind::LogicError, &old)
                 .and_then(|item| {
@@ -359,7 +355,7 @@ mod gen_impl {
         ) -> Self {
             // Archive state of the old machine.
             let old_transaction: TransactionItem = pack_transaction(old.transaction);
-            function::ServiceCompliance::<service::storage::StackStorage<TransactionItem>>::get_mut(
+            function::ServiceCompliance::<storage::StackStorage<TransactionItem>>::get_mut(
                 &mut old,
             ).push(old_transaction)
                 .expect("Never type triggered!");
@@ -390,9 +386,7 @@ mod gen_impl {
     {
         fn pullup_from(mut old: Machine<Trigger<Post, TR>, CTS>) -> Result<Self, MachineError> {
             // Archive state of the old machine.
-            let old_transaction = function::ServiceCompliance::<
-                service::storage::StackStorage<TransactionItem>,
-            >::get_mut(&mut old)
+            let old_transaction = function::ServiceCompliance::<storage::StackStorage<TransactionItem>>::get_mut(&mut old)
                 .pop()
                 .context(ErrorKind::LogicError, &old)
                 .and_then(|item| {
@@ -432,7 +426,7 @@ mod gen_impl {
         ) -> Self {
             // Archive state of the old machine.
             let old_transaction: TransactionItem = pack_transaction(old.transaction);
-            function::ServiceCompliance::<service::storage::StackStorage<TransactionItem>>::get_mut(
+            function::ServiceCompliance::<storage::StackStorage<TransactionItem>>::get_mut(
                 &mut old,
             ).push(old_transaction)
                 .expect("Never type triggered!");
@@ -464,9 +458,7 @@ mod gen_impl {
     {
         fn pullup_from(mut old: Machine<RecurseEffect<TR>, CTS>) -> Result<Self, MachineError> {
             // Archive state of the old machine.
-            let old_transaction = function::ServiceCompliance::<
-                service::storage::StackStorage<TransactionItem>,
-            >::get_mut(&mut old)
+            let old_transaction = function::ServiceCompliance::<storage::StackStorage<TransactionItem>>::get_mut(&mut old)
                 .pop()
                 .context(ErrorKind::LogicError, &old)
                 .and_then(|item| {

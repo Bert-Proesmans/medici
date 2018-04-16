@@ -4,7 +4,9 @@ use ctstack::CTStack;
 use error::MachineError;
 use function::{ServiceCompliance, State, StateContainer};
 use marker;
-use service::storage::StackStorage;
+// TODO; Make the dependancy on StackStorage generic through construction of a trait
+// which abstracts t's behaviour.
+use storage::StackStorage;
 
 // Re-export traits and implementations from the submodule below.
 pub use self::usability_impl::{PullupInto, PushdownInto, TransitionInto};

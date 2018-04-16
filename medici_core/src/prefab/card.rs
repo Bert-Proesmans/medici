@@ -1,7 +1,5 @@
 //! Module containing items to work with game cards.
 
-pub mod storage;
-
 use std::collections::HashMap;
 use std::hash::Hash;
 

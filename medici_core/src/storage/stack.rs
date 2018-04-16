@@ -1,3 +1,5 @@
+//! Module containing a type which acts like a stack (for storage).
+
 use function::Service;
 use marker;
 use service::error::StackPopError;

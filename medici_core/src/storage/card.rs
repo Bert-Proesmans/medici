@@ -6,7 +6,7 @@ use std::hash::Hash;
 
 use function::{Card, Service};
 use marker;
-use service::storage::UnsafeTrigger;
+use storage::UnsafeTrigger;
 
 #[derive(Debug, Clone)]
 /// Structure serializing/deserializing a game card.

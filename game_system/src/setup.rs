@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 
 use medici_core::ctstack::EmptyStack;
-use medici_core::service::storage::{EntityStorage, StackStorage};
+use medici_core::storage::{EntityStorage, StackStorage};
 use medici_core::service::trigger::TriggerService;
 
 use state_machine::config::SetupConfig;

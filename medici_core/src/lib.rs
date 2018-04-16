@@ -46,3 +46,4 @@ pub mod marker;
 pub mod service;
 pub mod stm;
 pub mod transaction;
+pub mod storage;

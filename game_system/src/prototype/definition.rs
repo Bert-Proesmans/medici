@@ -8,7 +8,7 @@ use medici_core::function::Entity;
 use medici_core::marker;
 use medici_core::prefab::prototype::Either;
 
-use implementation::entity::Entity as MachineEntity;
+use entity::Entity as MachineEntity;
 
 /// Prototype for game behaviour specifically targetting the [`Entity`] defined
 /// within medici_core::prefab.

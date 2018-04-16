@@ -4,3 +4,6 @@ version = "0.1.0"
 authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 
 [dependencies]
+game_system = {path = "../game_system"}
+
+failure = "0.1.1"

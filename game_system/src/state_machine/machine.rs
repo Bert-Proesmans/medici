@@ -11,14 +11,20 @@ use medici_core::service::trigger::TriggerService;
 use state_machine::state::prelude::*;
 use state_machine::transaction::TransactionItem;
 
-use implementation::entity::Entity;
+use entity::Entity;
 
 /// The state machine.
 ///
-/// The developer is encouraged to design this structure in any desired
-/// way by storing services into it's members.
-/// Each state machine MUST have a `state` and `transaction` field AT
+/// The developer is encouraged to alter this contents of this structure to fit his
+/// use case.
+/// Each state machine MUST have a `state`, `history` and `transaction` field AT
 /// MINIMUM.
+///
+/// # Safety
+/// Fields `state` and `history` are not accessible because altering them would cause
+/// the state transition and -history system to fall apart.
+/// Any code that has valid reason to alter these fields should be defined within this
+/// crate.
 #[derive(Debug, Clone)]
 pub struct Machine<X, CTS>
 where

@@ -16,8 +16,6 @@ pub use medici_core::prefab::transaction::Epsilon;
 pub enum TransactionItem {
     /// See [`Epsilon`]
     Epsilon(Epsilon),
-    /// See [`PrintTransaction`]
-    Print(PrintTransaction),
 }
 
 impl marker::TransactionContainer for TransactionItem {}
@@ -36,35 +34,6 @@ impl TryFrom<TransactionItem> for Epsilon {
             TransactionItem::Epsilon(x) => Ok(x),
             e @ _ => {
                 let expected = stringify!(TransactionItem::Epsilon);
-                let factual = format!("{:?}", e);
-                Err((expected, factual).into())
-            }
-        }
-    }
-}
-
-/// Transaction to be received by states with printing behaviour.
-///
-/// This state is pure exemplary, I don't know what else to tell you
-/// about it..
-#[derive(Debug, Clone, Copy)]
-pub struct PrintTransaction(pub &'static str);
-impl marker::Transaction for PrintTransaction {}
-
-impl From<PrintTransaction> for TransactionItem {
-    fn from(x: PrintTransaction) -> Self {
-        TransactionItem::Print(x)
-    }
-}
-
-impl TryFrom<TransactionItem> for PrintTransaction {
-    type Error = RuntimeConstraintError;
-
-    fn try_from(tc: TransactionItem) -> Result<Self, Self::Error> {
-        match tc {
-            TransactionItem::Print(x) => Ok(x),
-            e @ _ => {
-                let expected = stringify!(TransactionItem::Print);
                 let factual = format!("{:?}", e);
                 Err((expected, factual).into())
             }

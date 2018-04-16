@@ -2,7 +2,7 @@
 
 use failure::{format_err, Error};
 
-use implementation::entity::EntityTags;
+use entity::EntityTags;
 
 use super::Game as GameProto;
 

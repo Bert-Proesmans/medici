@@ -2,8 +2,8 @@
 
 use std::default::Default;
 
-/// Notifies the codebase about the maximum players our game can
-/// support.
+/// Constant defining how much memory at minimum MUST be (statically) allocated
+/// to support all players that joined the game.
 pub const MAX_PLAYERS: usize = 5;
 
 #[derive(Debug)]
@@ -14,8 +14,9 @@ pub struct SetupConfig {
     /// This array is also used to calculate the amount of players to initialise.
     /// Make entries None to skip generation of a new player entity.
     ///
-    /// The index within this array corresponds to the PlayerID. Do not
-    /// confuse with EntityID. PlayerID is a 1-indexed ordinal number.
+    /// # Note
+    /// PlayerID is a 1-indexed ordinal number. The first player defined as [`Some(String)`]
+    /// will receive PlayerID 1.
     pub player_names: [Option<String>; MAX_PLAYERS],
     /// Maximum amount of entities to be stored inside this machine.
     pub max_entities: usize,

@@ -1,27 +1,24 @@
 //! Defines all transitions within our state machine.
 
 use std::marker::PhantomData;
-
+// Trait must be in scope for the [`SnapshottedErrorExt::context`] method to work.
 use medici_core::error::SnapshottedErrorExt;
-
-// Current macro implementations use [`Machine`] directly. These use statements
-// are necessary until the macros change.
-use state_machine::prelude::*;
-use state_machine::state::prelude::*;
+// Import the prelude because the macro arguments must resolve ofcourse.
+use prelude::*;
 
 /// Macro to easily implement [`TransitionFrom`] for state machine transitions.
 macro_rules! build_transition {
     (Machine < $from:ty > => Machine < $into:ty >; $($args:tt)*) => {
-        impl<CTS, $($args)*> $crate::medici_core::stm::checked::TransitionFrom<Machine<$from, CTS>, CTS>
-            for Machine<$into, CTS>
+        impl<CTS, $($args)*> $crate::re_export::TransitionFrom<$crate::prelude::Machine<$from, CTS>, CTS>
+            for $crate::prelude::Machine<$into, CTS>
         where
-            CTS: $crate::medici_core::ctstack::CTStack + 'static,
+            CTS: $crate::prelude::CTStack + 'static,
         {
             fn transition_from(
                 old: Machine<$from, CTS>,
-                t: <Self::State as $crate::medici_core::function::State>::Transaction,
+                t: <Self::State as $crate::re_export::function::State>::Transaction,
             ) -> Self {
-                Machine {
+                $crate::prelude::Machine {
                     state: PhantomData,
                     history: PhantomData,
                     transaction: t,
@@ -57,27 +54,26 @@ macro_rules! push_it {
 macro_rules! build_pushdown {
     (Machine< $from:ty > => Machine< $into:ty >; $t_type:ty; $($args:tt)*) => {
         #[allow(non_camel_case_types)]
-        impl<CTS_OLD, $($args)*> $crate::medici_core::stm::checked::PushdownFrom<
-            Machine<$from, CTS_OLD>,
-            $crate::medici_core::ct!($into => CTS_OLD),
+        impl<CTS_OLD, $($args)*> $crate::re_export::PushdownFrom<$crate::prelude::Machine<$from, CTS_OLD>,
+            $crate::re_export::ct!($into => CTS_OLD),
             $t_type
-        > for Machine< $into, $crate::medici_core::ct!($into => CTS_OLD) >
+        > for $crate::prelude::Machine< $into, $crate::re_export::ct!($into => CTS_OLD) >
         where
-            CTS_OLD: $crate::medici_core::ctstack::CTStack + 'static,
+            CTS_OLD: $crate::prelude::CTStack + 'static,
         {
             fn pushdown_from(
                 mut old: Machine<$from, CTS_OLD>,
-                t: <Self::State as $crate::medici_core::function::State>::Transaction,
+                t: <Self::State as $crate::re_export::function::State>::Transaction,
             ) -> Self
             {
                 // Archive state of the old machine.
-                let old_transaction: $t_type = $crate::medici_core::transaction::pack_transaction(old.transaction);
-                $crate::medici_core::function::ServiceCompliance::<$crate::medici_core::service::storage::StackStorage<$t_type>>::get_mut(&mut old)
+                let old_transaction: $t_type = $crate::prelude::pack_transaction(old.transaction);
+                $crate::re_export::function::ServiceCompliance::<$crate::re_export::service::storage::StackStorage<$t_type>>::get_mut(&mut old)
                     .push(old_transaction)
                     .expect("Never type triggered!");
 
                 // Build new machine.
-                Machine {
+                $crate::prelude::Machine {
                     state: PhantomData,
                     history: PhantomData,
                     transaction: t,
@@ -101,26 +97,24 @@ macro_rules! build_pushdown {
 macro_rules! build_pullup {
     (Machine<$from:ty> => Machine<$into:ty>; $t_type:ty; $($args:tt)*) => {
         #[allow(non_camel_case_types)]
-        impl<CTS, $($args)*> $crate::medici_core::stm::checked::PullupFrom<Machine<$from, CTS>, CTS, $t_type>
-        for Machine< $into, <CTS as $crate::medici_core::ctstack::CTStack>::Tail >
+        impl<CTS, $($args)*> $crate::re_export::PullupFrom<$crate::prelude::Machine<$from, CTS>, CTS, $t_type>
+        for $crate::prelude::Machine< $into, <CTS as $crate::prelude::CTStack>::Tail >
         where
-            CTS: $crate::medici_core::ctstack::CTStack + $crate::std::fmt::Debug + Clone + Send + Sync + 'static,
+            CTS: $crate::prelude::CTStack + $crate::std::fmt::Debug + Clone + Send + Sync + 'static,
         {
-            fn pullup_from(mut old: Machine<$from, CTS>) -> Result<Self, $crate::medici_core::error::MachineError>
+            fn pullup_from(mut old: $crate::prelude::Machine<$from, CTS>) -> Result<Self, $crate::prelude::MachineError>
             {
                 // Archive state of the old machine.
-                let old_transaction = $crate::medici_core::function::ServiceCompliance::<
-                    $crate::medici_core::service::storage::StackStorage<$t_type>,
-                >::get_mut(&mut old)
+                let old_transaction = $crate::re_export::function::ServiceCompliance::<$crate::re_export::service::storage::StackStorage<$t_type>>
+                ::get_mut(&mut old)
                     .pop()
-                    .context($crate::medici_core::error::ErrorKind::LogicError, &old)
+                    .context($crate::prelude::ErrorKind::LogicError, &old)
                     .and_then(|item| {
-                        $crate::medici_core::transaction::unpack_transaction(item)
-                            .context($crate::medici_core::error::ErrorKind::ConstraintError, &old)
+                        $crate::prelude::unpack_transaction(item).context($crate::prelude::ErrorKind::ConstraintError, &old)
                     })?;
 
                 // Build new machine.
-                Ok(Machine {
+                Ok($crate::prelude::Machine {
                     state: PhantomData,
                     history: PhantomData,
                     transaction: old_transaction,
@@ -198,18 +192,9 @@ mod gen_impl {
 
     use failure::Fail;
 
-    use medici_core::ct;
-    use medici_core::ctstack::CTStack;
-    use medici_core::error::{ErrorKind, MachineError, SnapshottedErrorExt};
-    use medici_core::function::{ServiceCompliance, State};
-    use medici_core::marker;
-    use medici_core::service::storage::StackStorage;
-    use medici_core::stm::checked::{PullupFrom, PushdownFrom};
-    use medici_core::transaction::{pack_transaction, unpack_transaction};
-
-    use state_machine::prelude::*;
-    use state_machine::state::prelude::*;
-    use state_machine::transaction::TransactionItem;
+    use prelude::transaction::TransactionItem;
+    use prelude::*;
+    use re_export::{ct, function, marker, service, PullupFrom, PushdownFrom};
 
     /* RecurseEffect<_> -> Trigger<Pre, _> */
     #[allow(non_camel_case_types)]
@@ -221,17 +206,18 @@ mod gen_impl {
         > for Machine<Trigger<Pre, TR>, ct!(Trigger<Pre, TR> => CTS_OLD)>
     where
         CTS_OLD: CTStack + 'static,
-        TR: State + marker::Triggerable + 'static,
-        <TR as State>::Transaction: Into<TransactionItem>,
+        TR: function::State + marker::Triggerable + 'static,
+        <TR as function::State>::Transaction: Into<TransactionItem>,
     {
         fn pushdown_from(
             mut old: Machine<RecurseEffect<TR>, CTS_OLD>,
-            t: <Self::State as State>::Transaction,
+            t: <Self::State as function::State>::Transaction,
         ) -> Self {
             // Archive state of the old machine.
             let old_transaction: TransactionItem = pack_transaction(old.transaction);
-            ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(&mut old)
-                .push(old_transaction)
+            function::ServiceCompliance::<service::storage::StackStorage<TransactionItem>>::get_mut(
+                &mut old,
+            ).push(old_transaction)
                 .expect("Never type triggered!");
 
             // Build new machine.
@@ -253,15 +239,17 @@ mod gen_impl {
         for Machine<RecurseEffect<TR>, <CTS as CTStack>::Tail>
     where
         CTS: CTStack + Debug + Clone + Send + Sync + 'static,
-        TR: State + marker::Triggerable + Debug + Clone + Send + Sync + 'static,
-        <TR as State>::Transaction: TryFrom<TransactionItem> + Debug + Send + Sync + 'static,
-        <<TR as State>::Transaction as TryFrom<TransactionItem>>::Error: Fail,
+        TR: function::State + marker::Triggerable + Debug + Clone + Send + Sync + 'static,
+        <TR as function::State>::Transaction:
+            TryFrom<TransactionItem> + Debug + Send + Sync + 'static,
+        <<TR as function::State>::Transaction as TryFrom<TransactionItem>>::Error: Fail,
     {
         fn pullup_from(mut old: Machine<Trigger<Pre, TR>, CTS>) -> Result<Self, MachineError> {
             // Archive state of the old machine.
-            let old_transaction = ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(
-                &mut old,
-            ).pop()
+            let old_transaction = function::ServiceCompliance::<
+                service::storage::StackStorage<TransactionItem>,
+            >::get_mut(&mut old)
+                .pop()
                 .context(ErrorKind::LogicError, &old)
                 .and_then(|item| {
                     unpack_transaction(item).context(ErrorKind::ConstraintError, &old)
@@ -290,17 +278,18 @@ mod gen_impl {
         > for Machine<Trigger<Peri, TR>, ct!(Trigger<Peri, TR> => CTS_OLD)>
     where
         CTS_OLD: CTStack + 'static,
-        TR: State + marker::Triggerable + 'static,
-        <TR as State>::Transaction: Into<TransactionItem>,
+        TR: function::State + marker::Triggerable + 'static,
+        <TR as function::State>::Transaction: Into<TransactionItem>,
     {
         fn pushdown_from(
             mut old: Machine<Trigger<Pre, TR>, CTS_OLD>,
-            t: <Self::State as State>::Transaction,
+            t: <Self::State as function::State>::Transaction,
         ) -> Self {
             // Archive state of the old machine.
             let old_transaction: TransactionItem = pack_transaction(old.transaction);
-            ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(&mut old)
-                .push(old_transaction)
+            function::ServiceCompliance::<service::storage::StackStorage<TransactionItem>>::get_mut(
+                &mut old,
+            ).push(old_transaction)
                 .expect("Never type triggered!");
 
             // Build new machine.
@@ -322,15 +311,17 @@ mod gen_impl {
         for Machine<Trigger<Pre, TR>, <CTS as CTStack>::Tail>
     where
         CTS: CTStack + Debug + Clone + Send + Sync + 'static,
-        TR: State + marker::Triggerable + Debug + Clone + Send + Sync + 'static,
-        <TR as State>::Transaction: TryFrom<TransactionItem> + Debug + Send + Sync + 'static,
-        <<TR as State>::Transaction as TryFrom<TransactionItem>>::Error: Fail,
+        TR: function::State + marker::Triggerable + Debug + Clone + Send + Sync + 'static,
+        <TR as function::State>::Transaction:
+            TryFrom<TransactionItem> + Debug + Send + Sync + 'static,
+        <<TR as function::State>::Transaction as TryFrom<TransactionItem>>::Error: Fail,
     {
         fn pullup_from(mut old: Machine<Trigger<Peri, TR>, CTS>) -> Result<Self, MachineError> {
             // Archive state of the old machine.
-            let old_transaction = ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(
-                &mut old,
-            ).pop()
+            let old_transaction = function::ServiceCompliance::<
+                service::storage::StackStorage<TransactionItem>,
+            >::get_mut(&mut old)
+                .pop()
                 .context(ErrorKind::LogicError, &old)
                 .and_then(|item| {
                     unpack_transaction(item).context(ErrorKind::ConstraintError, &old)
@@ -359,17 +350,18 @@ mod gen_impl {
         > for Machine<Trigger<Post, TR>, ct!(Trigger<Post, TR> => CTS_OLD)>
     where
         CTS_OLD: CTStack + 'static,
-        TR: State + marker::Triggerable + 'static,
-        <TR as State>::Transaction: Into<TransactionItem>,
+        TR: function::State + marker::Triggerable + 'static,
+        <TR as function::State>::Transaction: Into<TransactionItem>,
     {
         fn pushdown_from(
             mut old: Machine<Trigger<Peri, TR>, CTS_OLD>,
-            t: <Self::State as State>::Transaction,
+            t: <Self::State as function::State>::Transaction,
         ) -> Self {
             // Archive state of the old machine.
             let old_transaction: TransactionItem = pack_transaction(old.transaction);
-            ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(&mut old)
-                .push(old_transaction)
+            function::ServiceCompliance::<service::storage::StackStorage<TransactionItem>>::get_mut(
+                &mut old,
+            ).push(old_transaction)
                 .expect("Never type triggered!");
 
             // Build new machine.
@@ -391,15 +383,17 @@ mod gen_impl {
         for Machine<Trigger<Peri, TR>, <CTS as CTStack>::Tail>
     where
         CTS: CTStack + Debug + Clone + Send + Sync + 'static,
-        TR: State + marker::Triggerable + Debug + Clone + Send + Sync + 'static,
-        <TR as State>::Transaction: TryFrom<TransactionItem> + Debug + Send + Sync + 'static,
-        <<TR as State>::Transaction as TryFrom<TransactionItem>>::Error: Fail,
+        TR: function::State + marker::Triggerable + Debug + Clone + Send + Sync + 'static,
+        <TR as function::State>::Transaction:
+            TryFrom<TransactionItem> + Debug + Send + Sync + 'static,
+        <<TR as function::State>::Transaction as TryFrom<TransactionItem>>::Error: Fail,
     {
         fn pullup_from(mut old: Machine<Trigger<Post, TR>, CTS>) -> Result<Self, MachineError> {
             // Archive state of the old machine.
-            let old_transaction = ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(
-                &mut old,
-            ).pop()
+            let old_transaction = function::ServiceCompliance::<
+                service::storage::StackStorage<TransactionItem>,
+            >::get_mut(&mut old)
+                .pop()
                 .context(ErrorKind::LogicError, &old)
                 .and_then(|item| {
                     unpack_transaction(item).context(ErrorKind::ConstraintError, &old)
@@ -428,18 +422,19 @@ mod gen_impl {
         > for Machine<RecurseEffect<TR>, ct!(RecurseEffect<TR> => CTS_OLD)>
     where
         CTS_OLD: CTStack + 'static,
-        TR: State + marker::Triggerable + 'static,
-        <TR as State>::Transaction: Into<TransactionItem>,
-        TM: State + marker::Timing + 'static,
+        TR: function::State + marker::Triggerable + 'static,
+        <TR as function::State>::Transaction: Into<TransactionItem>,
+        TM: function::State + marker::Timing + 'static,
     {
         fn pushdown_from(
             mut old: Machine<Trigger<TM, TR>, CTS_OLD>,
-            t: <Self::State as State>::Transaction,
+            t: <Self::State as function::State>::Transaction,
         ) -> Self {
             // Archive state of the old machine.
             let old_transaction: TransactionItem = pack_transaction(old.transaction);
-            ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(&mut old)
-                .push(old_transaction)
+            function::ServiceCompliance::<service::storage::StackStorage<TransactionItem>>::get_mut(
+                &mut old,
+            ).push(old_transaction)
                 .expect("Never type triggered!");
 
             // Build new machine.
@@ -461,16 +456,18 @@ mod gen_impl {
         for Machine<Trigger<TM, TR>, <CTS as CTStack>::Tail>
     where
         CTS: CTStack + Debug + Clone + Send + Sync + 'static,
-        TR: State + marker::Triggerable + Debug + Clone + Send + Sync + 'static,
-        <TR as State>::Transaction: TryFrom<TransactionItem> + Debug + Send + Sync + 'static,
-        <<TR as State>::Transaction as TryFrom<TransactionItem>>::Error: Fail,
-        TM: State + marker::Timing + 'static,
+        TR: function::State + marker::Triggerable + Debug + Clone + Send + Sync + 'static,
+        <TR as function::State>::Transaction:
+            TryFrom<TransactionItem> + Debug + Send + Sync + 'static,
+        <<TR as function::State>::Transaction as TryFrom<TransactionItem>>::Error: Fail,
+        TM: function::State + marker::Timing + 'static,
     {
         fn pullup_from(mut old: Machine<RecurseEffect<TR>, CTS>) -> Result<Self, MachineError> {
             // Archive state of the old machine.
-            let old_transaction = ServiceCompliance::<StackStorage<TransactionItem>>::get_mut(
-                &mut old,
-            ).pop()
+            let old_transaction = function::ServiceCompliance::<
+                service::storage::StackStorage<TransactionItem>,
+            >::get_mut(&mut old)
+                .pop()
                 .context(ErrorKind::LogicError, &old)
                 .and_then(|item| {
                     unpack_transaction(item).context(ErrorKind::ConstraintError, &old)
@@ -490,6 +487,7 @@ mod gen_impl {
     }
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use std::default::Default;
@@ -542,3 +540,4 @@ mod tests {
         assert!(pull.is_err());
     }
 }
+*/

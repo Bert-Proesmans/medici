@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 
 [dependencies]
+medici_derive = {path = "../medici_derive"}
 value_from_type_macros = "1.0.3"
 value_from_type_traits = "1.0.2"
 

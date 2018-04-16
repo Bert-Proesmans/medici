@@ -10,11 +10,14 @@
 // Linters for code residing in documentation.
 #![doc(test(attr(allow(unused_variables), deny(warnings))))]
 
-//! Crate used to show off the power of the Medici framework.
+//! Crate to implement the state machine for a specific kind of game.
+//! Any type which is used in managing the built state machine MUST be exported
+//! from this crate.
+//! Any type that's directly used from medici_core MUST transitively be re-exported here.
+//! Re-exporting allows the downstream crates to have a single dependancy, this crate.
 
 extern crate failure;
 extern crate failure_derive;
-extern crate lazy_static;
 extern crate maplit;
 extern crate value_from_type_macros;
 extern crate value_from_type_traits;
@@ -22,13 +25,47 @@ extern crate value_from_type_traits;
 // Medici opinionated framework.
 extern crate medici_core;
 
-pub mod card_set;
-pub mod implementation;
+pub mod entity;
+pub mod prototype;
+pub mod runtime;
+pub mod setup;
 pub mod state_machine;
 
-// Note: Keep tests during structural upgrade. These will be used
-// to verify everything works as expected.
+/// Re-export these types because macros defined within this crate need access to them.
+pub mod re_export {
+    pub use medici_core::function;
+    pub use medici_core::marker;
+    pub use medici_core::service;
+    pub use medici_core::stm::checked::{PullupFrom, PushdownFrom, TransitionFrom};
+    // Macro re-exported
+    pub use medici_core::ct;
+}
 
+/// Re-exports and new types often used when interacting with the built state machine.
+pub mod prelude {
+    // These traits must be in scope to properly use [`PullupInto::pullup`] and
+    // [`PushdownInto::pushdown`], ..
+    pub use medici_core::ctstack::*;
+    pub use medici_core::error::*;
+    pub use medici_core::stm::checked::{PullupInto, PushdownInto, TransitionInto};
+    pub use medici_core::transaction::{pack_transaction, unpack_transaction};
+
+    pub use entity::*;
+    pub use state_machine::config::SetupConfig;
+    pub use state_machine::machine::Machine;
+    pub use state_machine::state::leaf::triggerable::*;
+    pub use state_machine::state::leaf::*;
+    pub use state_machine::state::toplevel::*;
+
+    // Transactions and Prototypes are NOT re-exported within the module
+    // because their names could clash with States.
+    // Users are anyway encouraged to prefix these types with an explicit `transaction::`
+    // and `prototype::` for better code readability.
+    pub use prototype;
+    pub use state_machine::transaction;
+}
+
+/*
 #[cfg(test)]
 mod tests {
     use std::default::Default;
@@ -108,3 +145,4 @@ mod tests {
         let _third_turn = end_turn(second_turn).expect("Game unexpectedly finished");
     }
 }
+*/

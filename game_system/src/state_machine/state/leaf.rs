@@ -9,13 +9,8 @@ use medici_core::function::State;
 use medici_core::marker;
 /// Export the prefab timing items.
 pub use medici_core::prefab::timing::{Peri, Post, Pre, TimingItem};
-use medici_core::prefab::transaction::Epsilon;
 
-use state_machine::transaction::PrintTransaction;
-
-/* All imports are grouped above so we can simply import all by using
- `super::*` in child modules.
- */
+use state_machine::transaction::Epsilon;
 
 pub mod triggerable {
     #![value_from_type(TriggerItem)]
@@ -23,6 +18,10 @@ pub mod triggerable {
     //!
     //! A matching [`TriggerItem`] is on of the requirements to activate pending triggers.
 
+    /*
+     * All imports are grouped above so we can simply import them all by using
+     * `super::*` in child modules.
+     */
     use super::*;
 
     // Necessary implementation because value_from_type cannot automatically generate
@@ -33,7 +32,7 @@ pub mod triggerable {
     #[derive(Debug, Clone)]
     pub struct Start();
     impl State for Start {
-        type Transaction = Epsilon;
+        type Transaction = Epsilon; // TODO
     }
     impl marker::Waitable for Start {}
     impl marker::Triggerable for Start {}
@@ -43,7 +42,7 @@ pub mod triggerable {
     #[derive(Debug, Clone)]
     pub struct Input();
     impl State for Input {
-        type Transaction = Epsilon;
+        type Transaction = Epsilon; // TODO
     }
     impl marker::Waitable for Input {}
 
@@ -51,7 +50,7 @@ pub mod triggerable {
     #[derive(Debug, Clone)]
     pub struct EndTurn();
     impl State for EndTurn {
-        type Transaction = Epsilon;
+        type Transaction = Epsilon; // TODO
     }
     impl marker::Actionable for EndTurn {}
     impl marker::Triggerable for EndTurn {}
@@ -60,7 +59,7 @@ pub mod triggerable {
     #[derive(Debug, Clone)]
     pub struct PlayCard();
     impl State for PlayCard {
-        type Transaction = Epsilon;
+        type Transaction = Epsilon; // TODO
     }
     impl marker::Actionable for PlayCard {}
     impl marker::Triggerable for PlayCard {}
@@ -69,7 +68,7 @@ pub mod triggerable {
     #[derive(Debug, Clone)]
     pub struct Attack();
     impl State for Attack {
-        type Transaction = Epsilon;
+        type Transaction = Epsilon; // TODO
     }
     impl marker::Actionable for Attack {}
     impl marker::Triggerable for Attack {}
@@ -78,8 +77,7 @@ pub mod triggerable {
     #[derive(Debug, Clone)]
     pub struct Damage();
     impl State for Damage {
-        // !-- See below *Transactions --!
-        type Transaction = PrintTransaction;
+        type Transaction = Epsilon; // TODO
     }
     impl marker::Triggerable for Damage {}
 }

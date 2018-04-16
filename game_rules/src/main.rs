@@ -1,24 +1,22 @@
-#![feature(nll)]
+#![feature(nll, proc_macro)]
+#![deny(missing_docs)]
 
-#[macro_use]
+//! Crate implementing a basic card game.
+
 extern crate failure;
-extern crate medici;
-extern crate medici_core;
+extern crate game_system;
+
+mod action;
+mod card_set;
+mod trigger;
 
 use std::default::Default;
 
-use failure::Error;
+use failure::{format_err, Error};
+use game_system::prelude::*;
 
-use medici_core::ctstack::{AnyStack, CTStack};
-use medici_core::prefab::entity::GAME_E_ID;
-// use medici_core::stm::*;
-
-use medici::implementation::effect::action::{end_turn, start_game};
-use medici::implementation::effect::trigger::{start_game_trigger, turn_end_trigger};
-use medici::implementation::entity::EntityTags;
-use medici::state_machine::prelude::*;
-use medici::state_machine::state::prelude::*;
-// use medici::state_machine::transaction::*;
+use action::{end_turn, start_game};
+use trigger::{start_game_trigger, turn_end_trigger};
 
 fn pre_end_turn_trigger<CTS>(
     x: Machine<Trigger<Pre, EndTurn>, CTS>,

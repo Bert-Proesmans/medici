@@ -10,11 +10,16 @@
 // Linters for code residing in documentation.
 #![doc(test(attr(allow(unused_variables), deny(warnings))))]
 
-//! Crate to implement the state machine for a specific kind of game.
-//! Any type which is used in managing the built state machine MUST be exported
+//! # Example crate
+//! Implements the state machine for a board game.
+//! Any type which interacts with the built state machine MUST be exported
 //! from this crate.
 //! Any type that's directly used from medici_core MUST transitively be re-exported here.
 //! Re-exporting allows the downstream crates to have a single dependancy, this crate.
+//!
+//! # See also
+//! [`game_rules`] for an example how to implement game rules which use the state machine
+//! defined within this crate.
 
 extern crate failure;
 extern crate failure_derive;
@@ -31,27 +36,40 @@ pub mod runtime;
 pub mod setup;
 pub mod state_machine;
 
-/// Re-export these types because macros defined within this crate need access to them.
+/// Exported types from [`medici_core`].
+///
+/// This crate declares macros which make direct use of the exported types so we make
+/// them available through this crate to keep the amount of dependancies small.
+/// This effectively removes the dependancy on [`medici_core`] for any downstream crate.
 pub mod re_export {
     pub use medici_core::function;
     pub use medici_core::marker;
     pub use medici_core::service;
+    pub use medici_core::service::error::*;
     pub use medici_core::stm::checked::{PullupFrom, PushdownFrom, TransitionFrom};
     pub use medici_core::storage;
-    pub use medici_core::service::error::*;
     // Macro re-exported
     pub use medici_core::ct;
 }
 
-/// Re-exports and new types often used when interacting with the built state machine.
+/// Often used types exported together for ease of use.
+///
+/// This module can be imported like so
+/// ```
+/// # #![allow(unused_imports)]
+/// extern crate game_system;
+/// use game_system::prelude::*;
+/// ```
+/// and will cause all exported types to be injected in the declared scope.
 pub mod prelude {
-    // These traits must be in scope to properly use [`PullupInto::pullup`] and
-    // [`PushdownInto::pushdown`], ..
+    // These traits must be in scope to properly use [`PullupInto::pullup`],
+    // [`PushdownInto::pushdown`] and [`TransitionInto::transition`].
     pub use medici_core::ctstack::*;
     pub use medici_core::error::*;
+    pub use medici_core::function::{Card, CardBuilder, Entity, EntityBuilder, Service,
+                                    ServiceCompliance};
     pub use medici_core::stm::checked::{PullupInto, PushdownInto, TransitionInto};
     pub use medici_core::transaction::{pack_transaction, unpack_transaction};
-    pub use medici_core::function::{Service, Entity, EntityBuilder, Card, CardBuilder, ServiceCompliance};
 
     pub use entity::*;
     pub use state_machine::config::SetupConfig;
@@ -70,10 +88,10 @@ pub mod prelude {
 
 #[cfg(test)]
 mod tests {
-    use std::marker::PhantomData;
     use failure::{Error, Fail};
-    use re_export::*;
     use prelude::*;
+    use re_export::*;
+    use std::marker::PhantomData;
 
     #[test]
     fn failure_derive() {

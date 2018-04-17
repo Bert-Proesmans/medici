@@ -1,0 +1,15 @@
+# Define which build-status markers Bors should use to determine
+# working builds and tests
+status = [
+	# Travis
+  	"continuous-integration/travis-ci/push",
+  	# AppVeyor
+  	# "continuous-integration/appveyor/branch"
+]
+
+# Aditional configuration documentation can be found here:
+# https://bors.tech/documentation/
+
+# Bors auto fails commits when a working build isn't generated within 1 hour.
+# Use the following setting to change that default to 2 hours if necessary.
+#timeout_sec = 7200

@@ -2,6 +2,15 @@ language: rust
 rust:
   - nightly
 cache: cargo
+branches:
+  only:
+    # This is where pull requests from "bors r+" are built.
+    - staging
+    # This is where pull requests from "bors try" are built.
+    - trying
+    # Keep building everything on master as well. This is actually duplicate
+    # work but necessary because of our doc generation.
+    - master
 # RUST_BACKTRACE is explicitly unset after building to not loiter the log
 # with value_from_type token output.
 script:

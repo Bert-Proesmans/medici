@@ -3,7 +3,7 @@
 use error::MachineError;
 use function::{ServiceCompliance, State, StateContainer};
 use marker;
-use service::storage::StackStorage;
+use storage::StackStorage;
 
 /// Types, state machines residing in a certain state, which transform one-sided
 /// into a next Type.

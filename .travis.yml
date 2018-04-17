@@ -11,18 +11,23 @@ branches:
     # Keep building everything on master as well. This is actually duplicate
     # work but necessary because of our doc generation.
     - master
-# RUST_BACKTRACE is explicitly unset after building to not loiter the log
+# Note: RUST_BACKTRACE is explicitly unset (to 0) after building to not loiter the log
 # with value_from_type token output.
 script:
   - export RUST_BACKTRACE="1"
   - cargo build --all
   - export RUST_BACKTRACE="0"
-  - cargo test --all
+  - cargo test --all --no-fail-fast
+# Note: --no-fail-fast runs ALL tests, even when one of them fails which by default
+# would lead to fast_exit!
+# 
+# Note: $DOC_SUBDIR should contain the name of the crate which doc-pages must be 
+# opened when users visit the documentation site.
 after_success: |
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
   cargo doc --all --no-deps &&
-  echo "<meta http-equiv=refresh content=0;url=`echo $TRAVIS_REPO_SLUG | cut -d '/' -f 2`/index.html>" > target/doc/index.html &&
+  echo "<meta http-equiv=refresh content=0;url=`echo $DOC_SUBDIR`/index.html>" > target/doc/index.html &&
   sudo pip install ghp-import &&
   ghp-import -n target/doc &&
   git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages

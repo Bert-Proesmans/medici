@@ -8,7 +8,7 @@ use value_from_type_traits::IntoEnum;
 
 use function::{Service, StateContainer, TriggerState};
 use marker;
-use service::storage::{TriggerStorage, UnsafeTrigger};
+use storage::{TriggerStorage, UnsafeTrigger};
 
 // Shortcut for a callback method prototype which consumes the machine
 // and returns it again.. or a generic error.
@@ -211,7 +211,7 @@ where
     /// [`UnsafeTrigger`] reference. Ultimately we leave the choice of usage up to the framework
     /// user. The reason being that we want additional functional operations to be as lightweight
     /// as possible.
-    pub fn retrieve_triggers<M>(&self, m: &M) -> impl Iterator<Item = &UnsafeTrigger<ETM, ETR>>
+    pub fn retrieve_triggers<M>(&self, _: &M) -> impl Iterator<Item = &UnsafeTrigger<ETM, ETR>>
     where
         M: StateContainer,
         M::State: TriggerState,

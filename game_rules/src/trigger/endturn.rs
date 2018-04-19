@@ -13,7 +13,7 @@ pub fn pre_end_turn_trigger<CTS>(
 where
     CTS: CTStack,
 {
-    let game_entity = x.entities.get(GAME_E_ID)?;
+    let game_entity = x.entities.get_entity(GAME_E_ID)?;
     let player_idx = game_entity
         .get_value(&EntityTags::CurrentPlayerOrd)
         .ok_or_else(|| format_err!("Missing CurrentPlayerOrd!"))?;
@@ -31,7 +31,7 @@ where
 {
     println!("[TURN_END_TRIGGER] PERI - END TURN");
     //
-    let game_entity = x.entities.get_mut(GAME_E_ID)?;
+    let game_entity = x.entities.get_entity_mut(GAME_E_ID)?;
     let mut game_proto = game_entity.as_proto_mut::<GameProto>()?;
     game_proto.set_next_player()?;
     //

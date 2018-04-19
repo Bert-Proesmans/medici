@@ -1,7 +1,10 @@
 //! Contains the core functionality items for our system.
+use std::fmt::{Debug, Display};
 
 use ctstack::CTStack;
+use failure::Error;
 use marker;
+use service::error::{MissingEntityError, OverflowError};
 
 /// Trait generalizing over any structure that could act as a container of states.
 ///
@@ -49,6 +52,21 @@ pub trait Service {
     // Note; It's quite possible this trait will receive methods later on.
 }
 
+/// Trait for implementing a certain service on the state machine.
+///
+/// Because of this design exactly one object of each service type can be hooked onto
+/// the same state machine.
+pub trait ServiceCompliance<S>
+where
+    S: Service,
+    Self: StateContainer,
+{
+    /// Retrieves an immutable reference to service `S`.
+    fn get(&self) -> &S;
+    /// Retrieves a mutable reference to service `S`.
+    fn get_mut(&mut self) -> &mut S;
+}
+
 /// Type that's generally used to identify and order [`Entity`] objects.
 ///
 /// Throughout medici-core it's assumed this type is an alias for a numeric
@@ -71,7 +89,7 @@ pub trait Entity {
 /// Trait used to create a new [`Entity`] object.
 pub trait EntityBuilder<E: Entity> {
     /// Build a new [`Entity`] with the provided identifier.
-    fn new_with_id(id: E::ID) -> E;
+    fn new_with_id<X: Into<E::ID>>(id: X) -> Result<E, Error>;
 }
 
 /// Type thet's generally used to identify and order [`Card`] objects.
@@ -109,17 +127,8 @@ pub trait Card {
 /// Trait used to create a new [`Card`] object.
 pub trait CardBuilder<C: Card> {}
 
-/// Trait for implementing a certain service on the state machine.
-///
-/// Because of this design exactly one object of each service type can be hooked onto
-/// the same state machine.
-pub trait ServiceCompliance<S>
-where
-    S: Service,
-    Self: StateContainer,
-{
-    /// Retrieves an immutable reference to service `S`.
-    fn get(&self) -> &S;
-    /// Retrieves a mutable reference to service `S`.
-    fn get_mut(&mut self) -> &mut S;
+/// Types which enumerate all possible zones in the game.
+pub trait ZoneEnumerator {
+    /// Returns the amount of entities this zone can hold.
+    fn max_entities(&self) -> usize;
 }

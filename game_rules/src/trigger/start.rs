@@ -16,7 +16,7 @@ where
     //
     // Set the current turn to be for player 1 (1), the first player.
     // Note that the value for CurrentPlayerOrd is 1-indexed!
-    let game_entity = x.entities.get_mut(GAME_E_ID)?;
+    let game_entity = x.entities.get_entity_mut(GAME_E_ID)?;
     game_entity.set_value(EntityTags::CurrentPlayerOrd, 1);
     Ok(x)
 }

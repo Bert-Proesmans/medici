@@ -27,8 +27,9 @@ pub extern crate value_from_type_traits;
 
 pub extern crate failure;
 extern crate failure_derive;
-#[macro_use]
+extern crate indexmap;
 extern crate maplit;
+extern crate rand;
 
 mod workaround;
 

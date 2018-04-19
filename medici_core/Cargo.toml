@@ -11,6 +11,13 @@ value_from_type_traits = "1.0.2"
 failure = "0.1.1"
 failure_derive = "0.1.1"
 maplit = "1.0.1"
+indexmap = "1.0.1"
+
+[dependencies.rand]
+# Rand is currently going through an update which breaks backwards compatibility.
+# Be aware that updating this dependancy will break the build!
+version = "0.4.2"
+features = ["nightly"]
 
 # [patch.crates-io]
 # value_from_type_macros = { path = "D:\\Git\\value-from-type-derive\\value_from_type_macros" }

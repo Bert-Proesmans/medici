@@ -5,6 +5,7 @@ use std::fmt::Debug;
 use std::hash::Hash;
 
 use failure::Error;
+use maplit::{hashmap, hashset};
 use value_from_type_traits::IntoEnum;
 
 use function::{self, EntityBuilder, EntityId};

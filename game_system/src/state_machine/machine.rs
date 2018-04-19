@@ -11,7 +11,7 @@ use medici_core::storage::{EntityStorage, StackStorage};
 use state_machine::state::prelude::*;
 use state_machine::transaction::TransactionItem;
 
-use entity::Entity;
+use entity::{Entity, Zones};
 
 /// The state machine.
 ///
@@ -49,7 +49,7 @@ where
     /// implemented.
     pub transactions: StackStorage<TransactionItem>,
     /// Entities handler.
-    pub entities: EntityStorage<Entity>,
+    pub entities: EntityStorage<Entity, Zones>,
     /// Trigger handler.
     pub triggers: TriggerService<TimingItem, TriggerItem>,
 }
@@ -93,16 +93,16 @@ where
     }
 }
 
-impl<X, CTS> ServiceCompliance<EntityStorage<Entity>> for Machine<X, CTS>
+impl<X, CTS> ServiceCompliance<EntityStorage<Entity, Zones>> for Machine<X, CTS>
 where
     X: marker::TopLevel + State,
     CTS: CTStack,
 {
-    fn get(&self) -> &EntityStorage<Entity> {
+    fn get(&self) -> &EntityStorage<Entity, Zones> {
         &self.entities
     }
 
-    fn get_mut(&mut self) -> &mut EntityStorage<Entity> {
+    fn get_mut(&mut self) -> &mut EntityStorage<Entity, Zones> {
         &mut self.entities
     }
 }

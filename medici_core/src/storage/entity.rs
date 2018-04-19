@@ -2,39 +2,47 @@
 
 use std::convert::TryFrom;
 use std::fmt::{Debug, Display};
+use std::hash::Hash;
+use std::ops::{Deref, DerefMut};
 
-use function::{Entity, EntityBuilder, Service};
+use function::{Entity, EntityBuilder, Service, ZoneEnumerator};
 use service::error::{MissingEntityError, OverflowError};
+use storage::ZoneEntityStorage;
 
 #[derive(Debug, Clone)]
 /// Structure wrapping a [`Vec`] to provide a container for (all) entities
 /// within the state machine.
-pub struct EntityStorage<E>
+pub struct EntityStorage<E, EZ>
 where
     E: Entity + EntityBuilder<E> + Clone,
-    <E as Entity>::ID: Into<usize> + From<usize> + Copy,
+    <E as Entity>::ID: Into<usize> + From<usize> + Copy + Display + Debug + PartialEq + Eq + Hash,
+    EZ: ZoneEnumerator + Clone + Default + Debug + PartialEq + Eq + Hash,
 {
-    entities: Vec<E>,
     maximum_items: usize,
+    entities: Vec<E>,
+    zones: ZoneEntityStorage<E, EZ>,
 }
 
-impl<E> Service for EntityStorage<E>
+impl<E, EZ> Service for EntityStorage<E, EZ>
 where
     E: Entity + EntityBuilder<E> + Clone,
-    <E as Entity>::ID: Into<usize> + From<usize> + Copy,
+    <E as Entity>::ID: Into<usize> + From<usize> + Copy + Display + Debug + PartialEq + Eq + Hash,
+    EZ: ZoneEnumerator + Clone + Default + Debug + PartialEq + Eq + Hash,
 {
 }
 
-impl<E> EntityStorage<E>
+impl<E, EZ> EntityStorage<E, EZ>
 where
     E: Entity + EntityBuilder<E> + Clone,
-    <E as Entity>::ID: Into<usize> + From<usize> + Debug + Display + Copy,
+    <E as Entity>::ID: Into<usize> + From<usize> + Copy + Display + Debug + PartialEq + Eq + Hash,
+    EZ: ZoneEnumerator + Clone + Default + Debug + PartialEq + Eq + Hash,
 {
     /// Creates a new object for storage.
     pub fn new(maximum_items: usize) -> Self {
         Self {
             entities: vec![],
             maximum_items,
+            zones: ZoneEntityStorage::<E, EZ>::new(),
         }
     }
 
@@ -63,5 +71,38 @@ where
     pub fn get_entity_mut(&mut self, id: E::ID) -> Result<&mut E, MissingEntityError<E::ID>> {
         let idx_id = id.into();
         self.entities.get_mut(idx_id).ok_or(MissingEntityError(id))
+    }
+}
+
+/*
+ * Implementing Deref allows the compiler to invisibly coerce the EntityStorage into a
+ * ZoneEntityStorage. This is allowed because the ZoneEntityStorage provides a disjunct
+ * interface from EntityStorage.
+ */
+
+impl<E, EZ> Deref for EntityStorage<E, EZ>
+where
+    E: Entity + EntityBuilder<E> + Clone,
+    <E as Entity>::ID: Into<usize> + From<usize> + Copy + Display + Debug + PartialEq + Eq + Hash,
+    EZ: ZoneEnumerator + Clone + Default + Debug + PartialEq + Eq + Hash,
+{
+    type Target = ZoneEntityStorage<E, EZ>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.zones
+    }
+}
+
+impl<E, EZ> DerefMut for EntityStorage<E, EZ>
+where
+    E: Entity + EntityBuilder<E> + Clone,
+    <E as Entity>::ID: Into<usize> + From<usize> + Copy + Display + Debug + PartialEq + Eq + Hash,
+    EZ: ZoneEnumerator + Clone + Default + Debug + PartialEq + Eq + Hash,
+{
+    // Type is taken from Deref, because Deref must be implemented before
+    // DerefMut is implemented!
+
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.zones
     }
 }

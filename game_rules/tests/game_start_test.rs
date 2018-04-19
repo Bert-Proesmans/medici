@@ -22,7 +22,7 @@ fn game_setup() {
     let mut game = Machine::new(&config).expect("Error creating new game!");
 
     {
-        let game_entity = game.entities.get(GAME_E_ID).unwrap();
+        let game_entity = game.entities.get_entity(GAME_E_ID).unwrap();
         assert_eq!(GAME_E_ID, 0);
         assert_eq!(GAME_E_ID, game_entity.id());
     }
@@ -42,7 +42,7 @@ fn game_setup() {
     let first_turn = start_game(game).expect("Game unexpectedly finished");
 
     // Check we're currently within the turn of player 1.
-    let game_entity = first_turn.entities.get(GAME_E_ID).unwrap();
+    let game_entity = first_turn.entities.get_entity(GAME_E_ID).unwrap();
     assert_eq!(
         game_entity.get_value_default(&EntityTags::CurrentPlayerOrd),
         1
@@ -50,7 +50,7 @@ fn game_setup() {
     let second_turn = end_turn(first_turn).expect("Game unexpectedly finished");
 
     // Check we're currently within the turn of player 2.
-    let game_entity = second_turn.entities.get(GAME_E_ID).unwrap();
+    let game_entity = second_turn.entities.get_entity(GAME_E_ID).unwrap();
     assert_eq!(
         game_entity.get_value_default(&EntityTags::CurrentPlayerOrd),
         2

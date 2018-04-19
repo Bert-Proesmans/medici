@@ -66,12 +66,13 @@ pub mod prelude {
     // [`PushdownInto::pushdown`] and [`TransitionInto::transition`].
     pub use medici_core::ctstack::*;
     pub use medici_core::error::*;
-    pub use medici_core::function::{Card, CardBuilder, Entity, EntityBuilder, Service,
-                                    ServiceCompliance};
-    pub use medici_core::stm::checked::{PullupInto, PushdownInto, TransitionInto};
+    pub use medici_core::function::*;
+    pub use medici_core::stm::checked::*;
     pub use medici_core::transaction::{pack_transaction, unpack_transaction};
 
-    pub use entity::*;
+    // Importing everything from the entity submodule will also include the
+    // type [`entity::Entity`] which shadows the trait [`medici_core::function::Entity`].
+    pub use entity::{EntityTags, GAME_E_ID};
     pub use state_machine::config::SetupConfig;
     pub use state_machine::machine::Machine;
     pub use state_machine::state::leaf::triggerable::*;

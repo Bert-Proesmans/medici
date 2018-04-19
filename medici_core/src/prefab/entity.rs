@@ -4,6 +4,8 @@ use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::hash::Hash;
 
+use failure::Error;
+use maplit::{hashmap, hashset};
 use value_from_type_traits::IntoEnum;
 
 use function::{self, EntityBuilder, EntityId};
@@ -63,13 +65,13 @@ where
     S: Clone + Eq + Hash,
     P: marker::ProtoEnumerator + Clone + Eq + Hash,
 {
-    fn new_with_id(id: EntityId) -> Self {
-        Self {
-            id,
+    fn new_with_id<X: Into<EntityId>>(id: X) -> Result<Self, Error> {
+        Ok(Self {
+            id: id.into(),
             state: hashmap!{},
             prototypes: hashset!{},
             human_readable: None,
-        }
+        })
     }
 }
 

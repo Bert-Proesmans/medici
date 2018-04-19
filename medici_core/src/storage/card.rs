@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
 
+use maplit::hashmap;
+
 use function::{Card, Service};
 use marker;
 use storage::UnsafeTrigger;

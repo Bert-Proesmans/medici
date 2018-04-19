@@ -35,14 +35,15 @@ fn config() {
     let machine = Machine::new(&config).unwrap();
     //
     assert_eq!(GAME_E_ID, 0);
-    let game_entity = machine.entities.get(GAME_E_ID).unwrap();
+    let game_entity = machine.entities.get_entity(GAME_E_ID).unwrap();
     let max_players = game_entity.get_value(&EntityTags::MaxPlayers).unwrap();
     assert_eq!(NUM_PLAYERS, max_players as usize);
     // Check the name for each player entity
     for i in 0..NUM_PLAYERS {
-        // Player id is 1-indexed
+        // Player id is 1-indexed, which matches perfectly on entity idx
+        // because the game entity ALWAYS has entity id 0.
         let player_idx = i + 1;
-        let player = machine.entities.get(player_idx).unwrap();
+        let player = machine.entities.get_entity(player_idx).unwrap();
         assert_eq!(player.human_readable, config.player_names[i]);
     }
 }

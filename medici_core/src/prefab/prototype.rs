@@ -3,8 +3,7 @@
 //!
 //! The defined prototypes can be implemented in derived crates.
 
-use failure::{format_err, Error};
-
+use error::custom_type::InvalidEntityMutUnwrap;
 use function::Entity;
 use marker;
 
@@ -69,10 +68,10 @@ where
     }
 
     /// Returns a mutable reference to the contained [`Entity`].
-    pub fn unwrap_mut(&mut self) -> Result<&mut E, Error> {
+    pub fn unwrap_mut(&mut self) -> Result<&mut E, InvalidEntityMutUnwrap> {
         match self {
             Either::Mut(e) => Ok(e),
-            _ => Err(format_err!("Invalid access!")),
+            _ => Err(InvalidEntityMutUnwrap),
         }
     }
 }

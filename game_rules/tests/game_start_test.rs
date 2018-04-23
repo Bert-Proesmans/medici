@@ -31,12 +31,8 @@ fn game_setup() {
     // These triggers are specialized to use AnyStack for the compile-time stack
     // generic parameter. This is allowed because the size of any CTStack within
     // our state machine is 0.
-    game.triggers
-        .add_trigger(start_game_trigger::<AnyStack>)
-        .unwrap();
-    game.triggers
-        .add_trigger(turn_end_trigger::<AnyStack>)
-        .unwrap();
+    game.triggers.add_trigger(start_game_trigger::<AnyStack>);
+    game.triggers.add_trigger(turn_end_trigger::<AnyStack>);
 
     // Start game
     let first_turn = start_game(game).expect("Game unexpectedly finished");

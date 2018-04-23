@@ -1,9 +1,11 @@
 //! Types, to be used within the system, providing context of unexpected behaviour.
 
+use std::borrow::Cow;
 use std::fmt::{self, Debug, Display, Formatter};
 use std::string::ToString;
+use std::sync::{Arc, Mutex};
 
-use failure::{Backtrace, Context, Fail};
+use failure::{Backtrace, Context, Error, Fail};
 
 use function::StateContainer;
 use marker;
@@ -16,7 +18,9 @@ use marker;
 /// after the failure occurred.
 #[derive(Debug)]
 pub struct MachineError {
-    machine: Box<(Debug + Send + Sync)>,
+    // Debug + Send becomes Debug + Send + Sync when wrapped in the
+    // Arc<Mutex<_>> combo!
+    machine: Arc<Mutex<Debug + Send>>,
     inner: Context<ErrorKind>,
 }
 
@@ -37,7 +41,7 @@ impl Display for MachineError {
 }
 
 /// Enumeration of publicl cases of state machine failures.
-#[derive(Debug, Fail, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Fail, Clone, Eq, PartialEq)]
 pub enum ErrorKind {
     /// Error indicating some constraint failed to assert at runtime.
     #[fail(display = "An operation failed to meet required constraints")]
@@ -46,11 +50,38 @@ pub enum ErrorKind {
     /// his code.
     #[fail(display = "A logical error ocurred")]
     LogicError,
+    /// Error allowing to print an entirely custom message
+    #[fail(display = "{:}", _0)]
+    Custom(Cow<'static, str>),
+}
+
+/// TODO
+pub trait HydratedErrorExt {
+    /// TODO
+    fn hydrate<M, I>(self, machine: I) -> MachineError
+    where
+        I: FnOnce() -> M,
+        M: StateContainer + Debug + Send + 'static;
+}
+
+impl HydratedErrorExt for Error {
+    fn hydrate<M, I>(self, machine: I) -> MachineError
+    where
+        I: FnOnce() -> M,
+        M: StateContainer + Debug + Send + 'static,
+    {
+        MachineError {
+            machine: Arc::new(Mutex::new((machine)())),
+            // TODO; Figure out how to reach the original error and
+            // build a context from there.
+            inner: self.context(ErrorKind::LogicError),
+        }
+    }
 }
 
 /// Trait facilitating error creation with a snapshot of the state machine
 /// attached.
-pub trait SnapshottedErrorExt<T> {
+pub trait FrontendErrorExt {
     /// Builds a [`MachineError`] from some error or empty option.
     ///
     /// # Constraints
@@ -60,50 +91,59 @@ pub trait SnapshottedErrorExt<T> {
     /// context [`ErrorKind`] - is ment to categorize different errors. Make sure the value
     /// you choose is semantically correct because that's all the communicated information
     /// to the end user.
+    ///
     /// machine [´StateContainer`] - is ment to store (effectively through [`Clone`]) a
     /// snapshot of the state machine onto the heap. The stored state machine will be an exact
     /// copy of the real one at the moment of failure.
-    fn context<M>(self, context: ErrorKind, machine: &M) -> Result<T, MachineError>
+    fn infuse<M, I>(self, context: ErrorKind, machine: I) -> MachineError
     where
-        M: StateContainer + Clone + Debug + Sync + Send + 'static;
+        I: FnOnce() -> M,
+        M: StateContainer + Debug + Send + 'static;
+
+    /// Builds a [`MachineError`] from some error or empty option. The [`ErrorKind`] invariant
+    /// will be [`ErrorKind::Custom`] which will contain the string type passed into this method.
+    ///
+    /// # Parameters
+    /// custom [`Cow`] - represents an owned string or a string reference.
+    ///
+    /// machine [´StateContainer`] - is ment to store (effectively through [`Clone`]) a
+    /// snapshot of the state machine onto the heap. The stored state machine will be an exact
+    /// copy of the real one at the moment of failure.
+    fn infuse_with<F, M>(self, msg: F, machine: M) -> MachineError
+    where
+        F: Into<Cow<'static, str>>,
+        M: StateContainer + Debug + Send + 'static;
 }
 
-impl<T, E> SnapshottedErrorExt<T> for Result<T, E>
+impl<E> FrontendErrorExt for E
 where
     E: Fail,
 {
-    fn context<M>(self, context: ErrorKind, machine: &M) -> Result<T, MachineError>
+    fn infuse<M, I>(self, context: ErrorKind, machine: I) -> MachineError
     where
-        M: StateContainer + Clone + Debug + Sync + Send + 'static,
+        I: FnOnce() -> M,
+        M: StateContainer + Debug + Send + 'static,
     {
-        self.map_err(move |failure| {
-            // Build and return custom error type
-            MachineError {
-                machine: Box::new(machine.clone()),
-                // Build new context for our own error kind.
-                // and chain the previous one..
-                inner: failure.context(context),
-            }
-        })
+        // Build and return custom error type
+        MachineError {
+            machine: Arc::new(Mutex::new((machine)())),
+            // Build new context for our own error kind.
+            // and chain the previous one..
+            inner: self.context(context),
+        }
     }
-}
 
-impl<T> SnapshottedErrorExt<T> for Option<T> {
-    fn context<M>(self, context: ErrorKind, machine: &M) -> Result<T, MachineError>
+    fn infuse_with<F, M>(self, msg: F, machine: M) -> MachineError
     where
-        M: StateContainer + Clone + Debug + Sync + Send + 'static,
+        F: Into<Cow<'static, str>>,
+        M: StateContainer + Debug + Send + 'static,
     {
-        match self {
-            Some(v) => Ok(v),
-            None => {
-                // Build and return custom error type
-                Err(MachineError {
-                    machine: Box::new(machine.clone()),
-                    // Build new context for our own error kind.
-                    // and chain the previous one..
-                    inner: Context::new(context),
-                })
-            }
+        // Build and return custom error type
+        MachineError {
+            machine: Arc::new(Mutex::new(machine)),
+            // Build new context for our own error kind.
+            // and chain the previous one..
+            inner: self.context(ErrorKind::Custom(msg.into())),
         }
     }
 }
@@ -142,14 +182,29 @@ pub mod custom_type {
 
     /// Code failed to push a new item onto the chosen stack.
     #[derive(Debug, Fail)]
+    #[fail(display = "Error unpacking the provided transaction")]
+    pub struct TransactionUnpackError;
+
+    /// Code failed to push a new item onto the chosen stack.
+    #[derive(Debug, Fail)]
     #[fail(display = "Error pushing data to the stack")]
-    pub struct StackPushError {}
+    pub struct StackPushError;
+
+    /// Code failed to push a new item onto the chosen stack.
+    #[derive(Debug, Fail)]
+    #[fail(display = "Error popping data from the stack")]
+    pub struct StackPopError;
 
     /// Specific error thrown to indicate the system cannot execute the request under
     /// constrained circumstances.
     #[derive(Debug, Fail)]
     #[fail(display = "A constraint amount is overflowed, maximum is {:}", _0)]
     pub struct OverflowError(pub usize);
+
+    /// Code failed to get a mutable reference to an [`Entity`].
+    #[derive(Debug, Fail)]
+    #[fail(display = "The entity cannot be unwrapped mutably")]
+    pub struct InvalidEntityMutUnwrap;
 
     /*
      * Code below contains a workaround for a pending failure_derive bug.
@@ -175,6 +230,35 @@ pub mod custom_type {
     {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "The entity with id `{:}` was not found", self.0)
+        }
+    }
+
+    /// Specific error thrown when the requested property is not known.
+    #[derive(Debug)]
+    // #[fail(display = "The entity with id `{:}` was not found", _0)]
+    pub struct MissingPropertyError<ID, PROP>(pub ID, pub PROP)
+    where
+        ID: Display + Debug,
+        PROP: Debug;
+
+    impl<ID, PROP> Fail for MissingPropertyError<ID, PROP>
+    where
+        ID: Display + Debug + Send + Sync + 'static,
+        PROP: Debug + Send + Sync + 'static,
+    {
+    }
+
+    impl<ID, PROP> fmt::Display for MissingPropertyError<ID, PROP>
+    where
+        ID: Display + Debug,
+        PROP: Debug,
+    {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(
+                f,
+                "The property `{:?}` was not found for entity `{:}`",
+                self.1, self.0
+            )
         }
     }
 
@@ -205,5 +289,17 @@ pub mod custom_type {
                 self.0, self.1
             )
         }
+    }
+
+    /// Enumeration of failure cases working with [`Trigger`]s.
+    #[derive(Debug, Fail, Copy, Clone, Eq, PartialEq)]
+    pub enum TriggerFail {
+        /// Error indicating the callback pointer is invalid.
+        #[fail(display = "The provided callback pointer is invalid")]
+        CallbackNull,
+        /// Error indicating the provided machine does not validate the [`Trigger`]
+        /// constraints.
+        #[fail(display = "The provided machine does not validate on the constraints")]
+        ConstraintFail,
     }
 }

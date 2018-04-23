@@ -36,6 +36,8 @@ mod workaround;
 pub mod prefab;
 #[macro_use]
 pub mod ctstack;
+#[macro_use]
+pub mod macros;
 
 pub mod error;
 pub mod function;

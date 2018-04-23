@@ -28,8 +28,8 @@ use entity::Entity;
 #[derive(Debug, Clone)]
 pub struct Machine<X, CTS>
 where
-    X: marker::TopLevel + State,
-    CTS: CTStack,
+    X: marker::TopLevel + State + Send,
+    CTS: CTStack + Send,
 {
     /* Absolute minimum variables */
     /// Field to encode the current state of the machine.
@@ -56,8 +56,8 @@ where
 
 impl<X, CTS> StateContainer for Machine<X, CTS>
 where
-    X: marker::TopLevel + State,
-    CTS: CTStack,
+    X: marker::TopLevel + State + Send,
+    CTS: CTStack + Send,
 {
     type State = X;
     type TransitionRecord = CTS;
@@ -67,8 +67,8 @@ where
 
 impl<X, CTS> ServiceCompliance<TriggerService<TimingItem, TriggerItem>> for Machine<X, CTS>
 where
-    X: marker::TopLevel + State,
-    CTS: CTStack,
+    X: marker::TopLevel + State + Send,
+    CTS: CTStack + Send,
 {
     fn get(&self) -> &TriggerService<TimingItem, TriggerItem> {
         &self.triggers
@@ -81,8 +81,8 @@ where
 
 impl<X, CTS> ServiceCompliance<EntityService<Entity>> for Machine<X, CTS>
 where
-    X: marker::TopLevel + State,
-    CTS: CTStack,
+    X: marker::TopLevel + State + Send,
+    CTS: CTStack + Send,
 {
     fn get(&self) -> &EntityService<Entity> {
         &self.entities

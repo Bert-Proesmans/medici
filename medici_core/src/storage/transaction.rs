@@ -1,5 +1,6 @@
 //! Module containing types for storing [`Transaction`] objects.
 
+use error::custom_type::StackPopError;
 use function::StackStorageCompliance;
 use marker;
 
@@ -37,7 +38,7 @@ where
         self.transactions.push(item.into());
     }
 
-    fn pop(&mut self) -> Option<Self::Item> {
-        self.transactions.pop()
+    fn pop(&mut self) -> Result<Self::Item, StackPopError> {
+        self.transactions.pop().ok_or_else(|| StackPopError)
     }
 }

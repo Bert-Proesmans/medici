@@ -6,7 +6,7 @@ use std::hash::Hash;
 
 use value_from_type_traits::IntoEnum;
 
-use error::custom_type::MissingPrototypeError;
+use error::custom_type::{MissingPropertyError, MissingPrototypeError};
 use function::{self, EntityBuilder, EntityId};
 use marker;
 
@@ -75,7 +75,7 @@ where
 
 impl<S, P> EntityStruct<S, P>
 where
-    S: Clone + Eq + Hash,
+    S: Debug + Clone + Eq + Hash,
     P: marker::ProtoEnumerator + Debug + Eq + Hash + Clone,
 {
     /// Retrieves the value of the requested property defined within this entity.
@@ -85,8 +85,11 @@ where
     }
 
     /// Retrieves the value of the requested property defined within this entity.
-    pub fn get_value(&self, key: &S) -> Option<u32> {
-        self.state.get(key).cloned()
+    pub fn get_value(&self, key: &S) -> Result<u32, MissingPropertyError<EntityId, S>> {
+        self.state
+            .get(key)
+            .cloned()
+            .ok_or_else(|| MissingPropertyError(self.id, key.clone()))
     }
 
     /// Store the provided property key with corresponding value into this entity.

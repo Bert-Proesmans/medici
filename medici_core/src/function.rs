@@ -1,6 +1,7 @@
 //! Contains the core functionality items for our system.
 
 use ctstack::CTStack;
+use error::custom_type::StackPopError;
 use marker;
 
 /// Trait generalizing over any structure that could act as a container of states.
@@ -129,7 +130,7 @@ pub trait StackStorageCompliance {
     ///
     /// The top most item is the one which was pushed last before
     /// executing this method.
-    fn pop(&mut self) -> Option<Self::Item>;
+    fn pop(&mut self) -> Result<Self::Item, StackPopError>;
 }
 
 /// Defines indexed behaviour for a certain storage object.

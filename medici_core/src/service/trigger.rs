@@ -3,9 +3,10 @@
 use std::cmp::PartialEq;
 use std::marker::PhantomData;
 
-use failure::{format_err, Error};
 use value_from_type_traits::IntoEnum;
 
+use error::custom_type::TriggerFail;
+use error::MachineError;
 use function::{StateContainer, TriggerState};
 use marker;
 use storage::trigger::{TriggerStorage, UnsafeTrigger};
@@ -14,7 +15,7 @@ use storage::trigger::{TriggerStorage, UnsafeTrigger};
 // and returns it again.. or a generic error.
 //
 // TODO; Transfrom Error into a real error type.
-type _FNTrigger<M> = fn(M) -> Result<M, Error>;
+type _FNTrigger<M> = fn(M) -> Result<M, MachineError>;
 
 /// Safe abstraction over UnsafeTrigger objects.
 #[derive(Debug)]
@@ -57,18 +58,18 @@ where
     /// types Timing and Trigger match on the requested machine.
     ///
     /// See [`TriggerService`] for more information!
-    pub unsafe fn try_from_trigger_entry(x: UnsafeTrigger<ETM, ETR>) -> Result<Self, Error> {
+    pub unsafe fn try_from_trigger_entry(x: UnsafeTrigger<ETM, ETR>) -> Result<Self, TriggerFail> {
         let timing_key: ETM = <M::State as TriggerState>::Timing::into_enum();
         let trigger_key: ETR = <M::State as TriggerState>::Trigger::into_enum();
 
         if x.func_pointer.is_null() {
             // TODO: Transform into real error!
-            return Err(format_err!("Callback is NULL!"));
+            return Err(TriggerFail::CallbackNull);
         }
 
         if x.timing != timing_key || x.trigger != trigger_key {
             // TODO; Transform into real error!
-            return Err(format_err!("Incompatible layout!"));
+            return Err(TriggerFail::ConstraintFail);
         }
 
         // Proceed with converting the callback pointer into an FN type
@@ -182,7 +183,7 @@ where
     }
 
     /// Add a new trigger to the store.
-    pub fn add_trigger<M>(&mut self, cb: _FNTrigger<M>) -> Result<(), Error>
+    pub fn add_trigger<M>(&mut self, cb: _FNTrigger<M>)
     where
         M: StateContainer,
         M::State: TriggerState,
@@ -191,9 +192,7 @@ where
     {
         // Both the new method AND the Into trait will do the hard work for us!
         let safe_wrapper = TriggerWrapper::<M, ETM, ETR>::new(cb);
-        // TODO; Abstract the triggers field of TriggerStorage!
         self.storage.triggers.push(safe_wrapper.into());
-        Ok(())
     }
 
     /// Retrieve all triggers matching the provided machine.

@@ -64,12 +64,14 @@ pub mod prelude {
     // These traits must be in scope to properly use [`PullupInto::pullup`],
     // [`PushdownInto::pushdown`] and [`TransitionInto::transition`].
     pub use medici_core::ctstack::*;
-    pub use medici_core::error::{self, ErrorKind, MachineError, SnapshottedErrorExt};
+    pub use medici_core::error::{self, ErrorKind, FrontendErrorExt, HydratedErrorExt, MachineError};
     pub use medici_core::function::{Card, CardBuilder, Entity, EntityBuilder,
                                     IndexedStorageCompliance, ServiceCompliance,
                                     StackStorageCompliance};
+    // Macros
     pub use medici_core::stm::checked::{PullupInto, PushdownInto, TransitionInto};
     pub use medici_core::transaction::{pack_transaction, unpack_transaction};
+    pub use medici_core::{ctxt, hydrate};
 
     pub use entity::*;
     pub use state_machine::config::SetupConfig;

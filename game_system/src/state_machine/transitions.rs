@@ -1,8 +1,8 @@
 //! Defines all transitions within our state machine.
 
 use std::marker::PhantomData;
-// Trait must be in scope for the [`SnapshottedErrorExt::context`] method to work.
-use medici_core::error::SnapshottedErrorExt;
+// Trait must be in scope for the [`FrontendErrorExt::context`] method to work.
+use medici_core::error::FrontendErrorExt;
 // Import the prelude because the macro arguments must resolve ofcourse.
 use prelude::*;
 
@@ -12,7 +12,7 @@ macro_rules! build_transition {
         impl<CTS, $($args)*> $crate::re_export::TransitionFrom<$crate::prelude::Machine<$from, CTS>, CTS>
             for $crate::prelude::Machine<$into, CTS>
         where
-            CTS: $crate::prelude::CTStack + 'static,
+            CTS: $crate::prelude::CTStack + Send + 'static,
         {
             fn transition_from(
                 old: Machine<$from, CTS>,
@@ -59,7 +59,7 @@ macro_rules! build_pushdown {
             $t_type
         > for $crate::prelude::Machine< $into, $crate::re_export::ct!($into => CTS_OLD) >
         where
-            CTS_OLD: $crate::prelude::CTStack + 'static,
+            CTS_OLD: $crate::prelude::CTStack + Send + 'static,
         {
             fn pushdown_from(
                 mut old: Machine<$from, CTS_OLD>,
@@ -99,14 +99,19 @@ macro_rules! build_pullup {
         for $crate::prelude::Machine< $into, <CTS as $crate::prelude::CTStack>::Tail >
         where
             CTS: $crate::prelude::CTStack + $crate::std::fmt::Debug + Clone + Send + Sync + 'static,
+            CTS::Tail: Send,
         {
             fn pullup_from(mut old: $crate::prelude::Machine<$from, CTS>) -> Result<Self, $crate::prelude::MachineError>
             {
-                // Archive state of the old machine.
-                let old_transaction = old.transactions.pop().context($crate::prelude::ErrorKind::LogicError, &old)
-                    .and_then(|item| {
-                        $crate::prelude::unpack_transaction(item).context($crate::prelude::ErrorKind::ConstraintError, &old)
-                    })?;
+                // Retrieve state of the old machine.
+                let old_transaction: $t_type = match old.transactions.pop() {
+                    Ok(v) => v,
+                    Err(e) => return Err(e.infuse($crate::prelude::ErrorKind::LogicError, || old)),
+                };
+                let old_transaction = match $crate::prelude::unpack_transaction(old_transaction) {
+                    Ok(v) => v,
+                    Err(e) => return Err(e.infuse($crate::prelude::ErrorKind::ConstraintError, || old)),
+                };
 
                 // Build new machine.
                 Ok($crate::prelude::Machine {
@@ -185,8 +190,7 @@ mod gen_impl {
     use std::fmt::Debug;
     use std::marker::PhantomData;
 
-    use failure::Fail;
-
+    use prelude::error::custom_type::TransactionUnpackError;
     use prelude::transaction::TransactionItem;
     use prelude::*;
     use re_export::{ct, function, marker, PullupFrom, PushdownFrom};
@@ -200,8 +204,8 @@ mod gen_impl {
             TransactionItem,
         > for Machine<Trigger<Pre, TR>, ct!(Trigger<Pre, TR> => CTS_OLD)>
     where
-        CTS_OLD: CTStack + 'static,
-        TR: function::State + marker::Triggerable + 'static,
+        CTS_OLD: CTStack + Send + 'static,
+        TR: function::State + marker::Triggerable + Send + 'static,
         <TR as function::State>::Transaction: Into<TransactionItem>,
     {
         fn pushdown_from(
@@ -231,19 +235,25 @@ mod gen_impl {
         for Machine<RecurseEffect<TR>, <CTS as CTStack>::Tail>
     where
         CTS: CTStack + Debug + Clone + Send + Sync + 'static,
+        CTS::Tail: Send,
         TR: function::State + marker::Triggerable + Debug + Clone + Send + Sync + 'static,
         <TR as function::State>::Transaction:
-            TryFrom<TransactionItem> + Debug + Send + Sync + 'static,
-        <<TR as function::State>::Transaction as TryFrom<TransactionItem>>::Error: Fail,
+            TryFrom<TransactionItem, Error = TransactionUnpackError>
+                + Debug
+                + Send
+                + Sync
+                + 'static,
     {
         fn pullup_from(mut old: Machine<Trigger<Pre, TR>, CTS>) -> Result<Self, MachineError> {
-            // Archive state of the old machine.
-            let old_transaction = old.transactions
-                .pop()
-                .context(ErrorKind::LogicError, &old)
-                .and_then(|item| {
-                    unpack_transaction(item).context(ErrorKind::ConstraintError, &old)
-                })?;
+            // Retrieve state of the old machine.
+            let old_transaction = match old.transactions.pop() {
+                Ok(v) => v,
+                Err(e) => return Err(e.infuse(ErrorKind::LogicError, || old)),
+            };
+            let old_transaction = match unpack_transaction(old_transaction) {
+                Ok(v) => v,
+                Err(e) => return Err(e.infuse(ErrorKind::ConstraintError, || old)),
+            };
 
             // Build new machine.
             Ok(Machine {
@@ -267,8 +277,8 @@ mod gen_impl {
             TransactionItem,
         > for Machine<Trigger<Peri, TR>, ct!(Trigger<Peri, TR> => CTS_OLD)>
     where
-        CTS_OLD: CTStack + 'static,
-        TR: function::State + marker::Triggerable + 'static,
+        CTS_OLD: CTStack + Send + 'static,
+        TR: function::State + marker::Triggerable + Send + 'static,
         <TR as function::State>::Transaction: Into<TransactionItem>,
     {
         fn pushdown_from(
@@ -298,19 +308,25 @@ mod gen_impl {
         for Machine<Trigger<Pre, TR>, <CTS as CTStack>::Tail>
     where
         CTS: CTStack + Debug + Clone + Send + Sync + 'static,
+        CTS::Tail: Send,
         TR: function::State + marker::Triggerable + Debug + Clone + Send + Sync + 'static,
         <TR as function::State>::Transaction:
-            TryFrom<TransactionItem> + Debug + Send + Sync + 'static,
-        <<TR as function::State>::Transaction as TryFrom<TransactionItem>>::Error: Fail,
+            TryFrom<TransactionItem, Error = TransactionUnpackError>
+                + Debug
+                + Send
+                + Sync
+                + 'static,
     {
         fn pullup_from(mut old: Machine<Trigger<Peri, TR>, CTS>) -> Result<Self, MachineError> {
-            // Archive state of the old machine.
-            let old_transaction = old.transactions
-                .pop()
-                .context(ErrorKind::LogicError, &old)
-                .and_then(|item| {
-                    unpack_transaction(item).context(ErrorKind::ConstraintError, &old)
-                })?;
+            // Retrieve state of the old machine.
+            let old_transaction = match old.transactions.pop() {
+                Ok(v) => v,
+                Err(e) => return Err(e.infuse(ErrorKind::LogicError, || old)),
+            };
+            let old_transaction = match unpack_transaction(old_transaction) {
+                Ok(v) => v,
+                Err(e) => return Err(e.infuse(ErrorKind::ConstraintError, || old)),
+            };
 
             // Build new machine.
             Ok(Machine {
@@ -334,8 +350,8 @@ mod gen_impl {
             TransactionItem,
         > for Machine<Trigger<Post, TR>, ct!(Trigger<Post, TR> => CTS_OLD)>
     where
-        CTS_OLD: CTStack + 'static,
-        TR: function::State + marker::Triggerable + 'static,
+        CTS_OLD: CTStack + Send + 'static,
+        TR: function::State + marker::Triggerable + Send + 'static,
         <TR as function::State>::Transaction: Into<TransactionItem>,
     {
         fn pushdown_from(
@@ -365,19 +381,25 @@ mod gen_impl {
         for Machine<Trigger<Peri, TR>, <CTS as CTStack>::Tail>
     where
         CTS: CTStack + Debug + Clone + Send + Sync + 'static,
+        CTS::Tail: Send,
         TR: function::State + marker::Triggerable + Debug + Clone + Send + Sync + 'static,
         <TR as function::State>::Transaction:
-            TryFrom<TransactionItem> + Debug + Send + Sync + 'static,
-        <<TR as function::State>::Transaction as TryFrom<TransactionItem>>::Error: Fail,
+            TryFrom<TransactionItem, Error = TransactionUnpackError>
+                + Debug
+                + Send
+                + Sync
+                + 'static,
     {
         fn pullup_from(mut old: Machine<Trigger<Post, TR>, CTS>) -> Result<Self, MachineError> {
-            // Archive state of the old machine.
-            let old_transaction = old.transactions
-                .pop()
-                .context(ErrorKind::LogicError, &old)
-                .and_then(|item| {
-                    unpack_transaction(item).context(ErrorKind::ConstraintError, &old)
-                })?;
+            // Retrieve state of the old machine.
+            let old_transaction = match old.transactions.pop() {
+                Ok(v) => v,
+                Err(e) => return Err(e.infuse(ErrorKind::LogicError, || old)),
+            };
+            let old_transaction = match unpack_transaction(old_transaction) {
+                Ok(v) => v,
+                Err(e) => return Err(e.infuse(ErrorKind::ConstraintError, || old)),
+            };
 
             // Build new machine.
             Ok(Machine {
@@ -401,10 +423,10 @@ mod gen_impl {
             TransactionItem,
         > for Machine<RecurseEffect<TR>, ct!(RecurseEffect<TR> => CTS_OLD)>
     where
-        CTS_OLD: CTStack + 'static,
-        TR: function::State + marker::Triggerable + 'static,
+        CTS_OLD: CTStack + Send + 'static,
+        TR: function::State + marker::Triggerable + Send + 'static,
         <TR as function::State>::Transaction: Into<TransactionItem>,
-        TM: function::State + marker::Timing + 'static,
+        TM: function::State + marker::Timing + Send + 'static,
     {
         fn pushdown_from(
             mut old: Machine<Trigger<TM, TR>, CTS_OLD>,
@@ -433,20 +455,26 @@ mod gen_impl {
         for Machine<Trigger<TM, TR>, <CTS as CTStack>::Tail>
     where
         CTS: CTStack + Debug + Clone + Send + Sync + 'static,
+        CTS::Tail: Send,
         TR: function::State + marker::Triggerable + Debug + Clone + Send + Sync + 'static,
         <TR as function::State>::Transaction:
-            TryFrom<TransactionItem> + Debug + Send + Sync + 'static,
-        <<TR as function::State>::Transaction as TryFrom<TransactionItem>>::Error: Fail,
-        TM: function::State + marker::Timing + 'static,
+            TryFrom<TransactionItem, Error = TransactionUnpackError>
+                + Debug
+                + Send
+                + Sync
+                + 'static,
+        TM: function::State + marker::Timing + Send + 'static,
     {
         fn pullup_from(mut old: Machine<RecurseEffect<TR>, CTS>) -> Result<Self, MachineError> {
-            // Archive state of the old machine.
-            let old_transaction = old.transactions
-                .pop()
-                .context(ErrorKind::LogicError, &old)
-                .and_then(|item| {
-                    unpack_transaction(item).context(ErrorKind::ConstraintError, &old)
-                })?;
+            // Retrieve state of the old machine.
+            let old_transaction = match old.transactions.pop() {
+                Ok(v) => v,
+                Err(e) => return Err(e.infuse(ErrorKind::LogicError, || old)),
+            };
+            let old_transaction = match unpack_transaction(old_transaction) {
+                Ok(v) => v,
+                Err(e) => return Err(e.infuse(ErrorKind::ConstraintError, || old)),
+            };
 
             // Build new machine.
             Ok(Machine {

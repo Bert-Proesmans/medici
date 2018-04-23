@@ -5,8 +5,8 @@ use std::marker::PhantomData;
 use medici_core::ctstack::CTStack;
 use medici_core::function::{ServiceCompliance, State, StateContainer};
 use medici_core::marker;
-use medici_core::service::trigger::TriggerService;
-use medici_core::storage::{EntityStorage, TransactionStorage};
+use medici_core::service::{EntityService, TriggerService};
+use medici_core::storage::TransactionStorage;
 
 use state_machine::state::prelude::*;
 use state_machine::transaction::TransactionItem;
@@ -47,11 +47,11 @@ where
     /* Optionals */
     /// Object for manipulating [`Trigger`]s.
     pub triggers: TriggerService<TimingItem, TriggerItem>,
+    /// Object for manipulating [`Entity`]s.
+    pub entities: EntityService<Entity>,
     /// Storage object allowing [`PushdownInto`] and [`PullupInto`] to store
     /// the [`Transaction`] objects for each state to be re-used.
     pub transactions: TransactionStorage<TransactionItem>,
-    /// Object for manipulating [`Entity`]s.
-    pub entities: EntityStorage<Entity>,
 }
 
 impl<X, CTS> StateContainer for Machine<X, CTS>
@@ -65,18 +65,30 @@ where
     type TriggerEnum = TriggerItem;
 }
 
-impl<X, CTS> ServiceCompliance for Machine<X, CTS>
+impl<X, CTS> ServiceCompliance<TriggerService<TimingItem, TriggerItem>> for Machine<X, CTS>
 where
     X: marker::TopLevel + State,
     CTS: CTStack,
 {
-    type Service = TriggerService<TimingItem, TriggerItem>;
-
     fn get(&self) -> &TriggerService<TimingItem, TriggerItem> {
         &self.triggers
     }
 
     fn get_mut(&mut self) -> &mut TriggerService<TimingItem, TriggerItem> {
         &mut self.triggers
+    }
+}
+
+impl<X, CTS> ServiceCompliance<EntityService<Entity>> for Machine<X, CTS>
+where
+    X: marker::TopLevel + State,
+    CTS: CTStack,
+{
+    fn get(&self) -> &EntityService<Entity> {
+        &self.entities
+    }
+
+    fn get_mut(&mut self) -> &mut EntityService<Entity> {
+        &mut self.entities
     }
 }

@@ -3,8 +3,8 @@
 use std::marker::PhantomData;
 
 use medici_core::ctstack::EmptyStack;
-use medici_core::service::trigger::TriggerService;
-use medici_core::storage::{EntityStorage, TransactionStorage};
+use medici_core::service::{EntityService, TriggerService};
+use medici_core::storage::TransactionStorage;
 
 use state_machine::config::SetupConfig;
 use state_machine::machine::Machine;
@@ -21,7 +21,7 @@ pub mod error {
     //! new state machine.
 
     use failure::Fail;
-    use medici_core::service::error::OverflowError;
+    use medici_core::error::custom_type::OverflowError;
 
     #[derive(Debug, Fail)]
     /// Enumeration of possible errors when setting up a new game.
@@ -52,7 +52,7 @@ impl Machine<Wait<Start>, EmptyStack> {
             transaction: Epsilon,
             //
             transactions: TransactionStorage::new(),
-            entities: EntityStorage::new(cfg.max_entities),
+            entities: EntityService::new(cfg.max_entities),
             triggers: TriggerService::new(),
         };
         game = game.setup_game(cfg)?;

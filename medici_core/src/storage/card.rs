@@ -6,7 +6,7 @@ use std::hash::Hash;
 
 use function::Card;
 use marker;
-use storage::UnsafeTrigger;
+use storage::trigger::UnsafeTrigger;
 
 #[derive(Debug, Clone)]
 /// Structure serializing/deserializing a game card.
@@ -31,15 +31,6 @@ where
 {
     /// Contains unsafe versions of implemented cards.
     pub cards: HashMap<C::UID, UnsafeCardEntry<C>>,
-}
-
-impl<C> marker::Service for CardStorage<C>
-where
-    C: Card,
-    C::UID: Copy + Eq + Hash,
-    C::TimingEnum: marker::TimingEnumerator + Debug + Copy,
-    C::TriggerEnum: marker::TriggerEnumerator + Debug + Copy,
-{
 }
 
 impl<C> CardStorage<C>

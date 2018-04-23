@@ -1,4 +1,5 @@
-use error;
+//! Module containing types for storing [`Transaction`] objects.
+
 use function::StackStorageCompliance;
 use marker;
 

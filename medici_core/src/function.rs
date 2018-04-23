@@ -1,7 +1,6 @@
 //! Contains the core functionality items for our system.
 
 use ctstack::CTStack;
-use error;
 use marker;
 
 /// Trait generalizing over any structure that could act as a container of states.
@@ -106,17 +105,15 @@ pub trait CardBuilder<C: Card> {}
 ///
 /// Because of this design exactly one object of each service type can be hooked onto
 /// the same state machine.
-pub trait ServiceCompliance
+pub trait ServiceCompliance<S>
 where
+    S: marker::Service,
     Self: StateContainer,
 {
-    /// The service type which is returned by the implementing type.
-    type Service: marker::Service;
-
     /// Retrieves an immutable reference to service `S`.
-    fn get(&self) -> &Self::Service;
+    fn get(&self) -> &S;
     /// Retrieves a mutable reference to service `S`.
-    fn get_mut(&mut self) -> &mut Self::Service;
+    fn get_mut(&mut self) -> &mut S;
 }
 
 /// Defines stack behaviour for a certain storage object.
@@ -145,5 +142,5 @@ pub trait IndexedStorageCompliance {
     fn as_slice(&self) -> &[Self::Item];
 
     /// Returns the current storage as a slice, which is an indexed storage.
-    fn as_slice_mut(&self) -> &mut [Self::Item];
+    fn as_slice_mut(&mut self) -> &mut [Self::Item];
 }

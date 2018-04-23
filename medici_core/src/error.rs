@@ -6,13 +6,14 @@ use std::string::ToString;
 use failure::{Backtrace, Context, Fail};
 
 use function::StateContainer;
+use marker;
 
-/// User facing error type indicating an issue ocurred during evalutation of any
-/// state machine processes.
+/// User facing error type indicating a failure during evalutation/computation of the
+/// state machine.
 ///
 /// This structure should be used to create an error that is presented to the end-user
-/// or external systems. It carries a snapshot of the state-machine at the moment
-/// the error occurred.
+/// or external systems. It carries a snapshot of the state-machine at the earliest moment
+/// after the failure occurred.
 #[derive(Debug)]
 pub struct MachineError {
     machine: Box<(Debug + Send + Sync)>,
@@ -107,31 +108,102 @@ impl<T> SnapshottedErrorExt<T> for Option<T> {
     }
 }
 
-/// Type used for indicating failure to meet specified constraints.
-#[derive(Debug, Fail)]
-#[fail(display = "Constraint violation detected! Expected `{:}`, provided `{:}`", expected, factual)]
-pub struct RuntimeConstraintError {
-    /// Value defining the constraint.
-    expected: String,
-    /// Value which fails to meet the constraint.
-    factual: String,
-}
+/// Error types which represent one specific kind of error (failure).
+/// These errors are reported within functions that manipulate properties of the state machine,
+/// but will be wrapped into [`MachineError`] eventually.
+pub mod custom_type {
+    use super::*;
 
-impl<S1, S2> From<(S1, S2)> for RuntimeConstraintError
-where
-    S1: ToString,
-    S2: ToString,
-{
-    fn from(x: (S1, S2)) -> Self {
-        let (expected, factual) = x;
-        RuntimeConstraintError {
-            expected: expected.to_string(),
-            factual: factual.to_string(),
+    /// Type used for indicating failure to meet specified constraints.
+    #[derive(Debug, Fail)]
+    #[fail(
+        display = "Constraint violation detected! Expected `{:}`, provided `{:}`", expected, factual
+    )]
+    pub struct RuntimeConstraintError {
+        /// Value defining the constraint.
+        expected: String,
+        /// Value which fails to meet the constraint.
+        factual: String,
+    }
+
+    impl<S1, S2> From<(S1, S2)> for RuntimeConstraintError
+    where
+        S1: ToString,
+        S2: ToString,
+    {
+        fn from(x: (S1, S2)) -> Self {
+            let (expected, factual) = x;
+            RuntimeConstraintError {
+                expected: expected.to_string(),
+                factual: factual.to_string(),
+            }
+        }
+    }
+
+    /// Code failed to push a new item onto the chosen stack.
+    #[derive(Debug, Fail)]
+    #[fail(display = "Error pushing data to the stack")]
+    pub struct StackPushError {}
+
+    /// Specific error thrown to indicate the system cannot execute the request under
+    /// constrained circumstances.
+    #[derive(Debug, Fail)]
+    #[fail(display = "A constraint amount is overflowed, maximum is {:}", _0)]
+    pub struct OverflowError(pub usize);
+
+    /*
+     * Code below contains a workaround for a pending failure_derive bug.
+     * Check the toplevel module [`workaround`] for more information.
+     */
+
+    /// Specific error thrown when the requested entity-id is not known.
+    #[derive(Debug)]
+    // #[fail(display = "The entity with id `{:}` was not found", _0)]
+    pub struct MissingEntityError<ID>(pub ID)
+    where
+        ID: Display + Debug;
+
+    impl<ID> Fail for MissingEntityError<ID>
+    where
+        ID: Display + Debug + Send + Sync + 'static,
+    {
+    }
+
+    impl<ID> fmt::Display for MissingEntityError<ID>
+    where
+        ID: Display + Debug,
+    {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "The entity with id `{:}` was not found", self.0)
+        }
+    }
+
+    /// Specific error thrown when the requested entity-id is not known.
+    #[derive(Debug)]
+    // #[fail(display = "The entity with id `{:}` doesn't have the prototype `{:?}`", _0, _1)]
+    pub struct MissingPrototypeError<ID, P>(pub ID, pub P)
+    where
+        ID: Display + Debug,
+        P: marker::ProtoEnumerator + Debug;
+
+    impl<ID, P> Fail for MissingPrototypeError<ID, P>
+    where
+        ID: Display + Debug + Send + Sync + 'static,
+        P: marker::ProtoEnumerator + Debug + Send + Sync + 'static,
+    {
+    }
+
+    impl<ID, P> fmt::Display for MissingPrototypeError<ID, P>
+    where
+        ID: Display + Debug,
+        P: marker::ProtoEnumerator + Debug,
+    {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(
+                f,
+                "The entity with id `{:}` doesn't have the prototype `{:?}`",
+                self.0, self.1
+            )
         }
     }
 }
-
-/// Code failed to push a new item onto the chosen stack.
-#[derive(Debug, Fail)]
-#[fail(display = "Error pushing data to the stack")]
-pub struct StackPushError {}

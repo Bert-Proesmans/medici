@@ -6,9 +6,9 @@ use std::hash::Hash;
 
 use value_from_type_traits::IntoEnum;
 
+use error::custom_type::MissingPrototypeError;
 use function::{self, EntityBuilder, EntityId};
 use marker;
-use service::error::MissingPrototypeError;
 
 use prefab::prototype::ProtoItem;
 

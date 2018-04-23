@@ -45,7 +45,6 @@ pub mod re_export {
     pub use medici_core::function;
     pub use medici_core::marker;
     pub use medici_core::service;
-    pub use medici_core::service::error::*;
     pub use medici_core::stm::checked::{PullupFrom, PushdownFrom, TransitionFrom};
     pub use medici_core::storage;
     // Macro re-exported
@@ -65,7 +64,7 @@ pub mod prelude {
     // These traits must be in scope to properly use [`PullupInto::pullup`],
     // [`PushdownInto::pushdown`] and [`TransitionInto::transition`].
     pub use medici_core::ctstack::*;
-    pub use medici_core::error::*;
+    pub use medici_core::error::{self, ErrorKind, MachineError, SnapshottedErrorExt};
     pub use medici_core::function::{Card, CardBuilder, Entity, EntityBuilder,
                                     IndexedStorageCompliance, ServiceCompliance,
                                     StackStorageCompliance};
@@ -90,12 +89,14 @@ pub mod prelude {
 #[cfg(test)]
 mod tests {
     use failure::{Error, Fail};
+    use prelude::error::custom_type::MissingEntityError;
     use prelude::*;
     use re_export::*;
     use std::marker::PhantomData;
 
     #[test]
     fn failure_derive() {
+        //
         let id: usize = 0;
         let _error = MissingEntityError(id);
         let _fail: &Fail = &MissingEntityError(id);

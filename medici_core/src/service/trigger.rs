@@ -1,4 +1,4 @@
-//! Contains the functionality to work with triggers.
+//! Contains the functionality to work with [`Trigger`]s.
 
 use std::cmp::PartialEq;
 use std::marker::PhantomData;
@@ -8,7 +8,7 @@ use value_from_type_traits::IntoEnum;
 
 use function::{StateContainer, TriggerState};
 use marker;
-use storage::{TriggerStorage, UnsafeTrigger};
+use storage::trigger::{TriggerStorage, UnsafeTrigger};
 
 // Shortcut for a callback method prototype which consumes the machine
 // and returns it again.. or a generic error.

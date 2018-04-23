@@ -2,7 +2,7 @@
 
 use std::convert::TryFrom;
 
-use medici_core::error::RuntimeConstraintError;
+use medici_core::error::custom_type::RuntimeConstraintError;
 use medici_core::marker;
 
 // Epsilon is re-exported here so implementers can do

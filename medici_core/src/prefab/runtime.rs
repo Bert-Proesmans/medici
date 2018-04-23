@@ -7,13 +7,13 @@ use value_from_type_traits::IntoEnum;
 use function::{ServiceCompliance, StateContainer, TriggerState};
 use marker;
 use service::trigger::{TriggerService, TriggerWrapper};
-use storage::UnsafeTrigger;
+use storage::trigger::UnsafeTrigger;
 
 /// Extract all triggers from the provided machine for matching
 /// conditions.
 pub fn fetch_triggers<M, ETM, ETR>(machine: &M) -> Vec<UnsafeTrigger<ETM, ETR>>
 where
-    M: StateContainer + ServiceCompliance<Service = TriggerService<ETM, ETR>>,
+    M: StateContainer + ServiceCompliance<TriggerService<ETM, ETR>>,
     <M as StateContainer>::State: TriggerState,
     <M::State as TriggerState>::Timing: marker::Timing + IntoEnum<ETM>,
     <M::State as TriggerState>::Trigger: marker::Triggerable + IntoEnum<ETR>,
@@ -119,21 +119,21 @@ macro_rules! build_exec_triggers_checked {
 
             M2<TR, CTS>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
                 + TransitionInto<M3<TR, CTS>, CTS>
-                + ServiceCompliance<Service = TriggerService<ETM, ETR>>,
+                + ServiceCompliance<TriggerService<ETM, ETR>>,
             <M2<TR, CTS> as StateContainer>::State:
                 State<Transaction = TT> + TriggerState<Trigger = TR>,
             <<M2<TR, CTS> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,
 
             M3<TR, CTS>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
                 + TransitionInto<M4<TR, CTS>, CTS>
-                + ServiceCompliance<Service = TriggerService<ETM, ETR>>,
+                + ServiceCompliance<TriggerService<ETM, ETR>>,
             <M3<TR, CTS> as StateContainer>::State:
                 State<Transaction = TT> + TriggerState<Trigger = TR>,
             <<M3<TR, CTS> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,
 
             M4<TR, CTS>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
                 + TransitionInto<M1<TR, CTS>, CTS>
-                + ServiceCompliance<Service = TriggerService<ETM, ETR>>,
+                + ServiceCompliance<TriggerService<ETM, ETR>>,
             <M4<TR, CTS> as StateContainer>::State:
                 State<Transaction = TT> + TriggerState<Trigger = TR>,
             <<M4<TR, CTS> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,

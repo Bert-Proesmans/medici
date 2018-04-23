@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
 
-use function::{Card, Service};
+use function::Card;
 use marker;
 use storage::UnsafeTrigger;
 
@@ -33,7 +33,7 @@ where
     pub cards: HashMap<C::UID, UnsafeCardEntry<C>>,
 }
 
-impl<C> Service for CardStorage<C>
+impl<C> marker::Service for CardStorage<C>
 where
     C: Card,
     C::UID: Copy + Eq + Hash,

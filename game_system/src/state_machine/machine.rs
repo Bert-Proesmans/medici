@@ -6,7 +6,7 @@ use medici_core::ctstack::CTStack;
 use medici_core::function::{ServiceCompliance, State, StateContainer};
 use medici_core::marker;
 use medici_core::service::trigger::TriggerService;
-use medici_core::storage::{EntityStorage, StackStorage};
+use medici_core::storage::{EntityStorage, TransactionStorage};
 
 use state_machine::state::prelude::*;
 use state_machine::transaction::TransactionItem;
@@ -45,13 +45,13 @@ where
     pub transaction: X::Transaction,
 
     /* Optionals */
-    /// Stack storage service to allow PushDown and Pullup behaviour to be
-    /// implemented.
-    pub transactions: StackStorage<TransactionItem>,
-    /// Entities handler.
-    pub entities: EntityStorage<Entity>,
-    /// Trigger handler.
+    /// Object for manipulating [`Trigger`]s.
     pub triggers: TriggerService<TimingItem, TriggerItem>,
+    /// Storage object allowing [`PushdownInto`] and [`PullupInto`] to store
+    /// the [`Transaction`] objects for each state to be re-used.
+    pub transactions: TransactionStorage<TransactionItem>,
+    /// Object for manipulating [`Entity`]s.
+    pub entities: EntityStorage<Entity>,
 }
 
 impl<X, CTS> StateContainer for Machine<X, CTS>
@@ -65,44 +65,18 @@ where
     type TriggerEnum = TriggerItem;
 }
 
-impl<X, CTS> ServiceCompliance<StackStorage<TransactionItem>> for Machine<X, CTS>
+impl<X, CTS> ServiceCompliance for Machine<X, CTS>
 where
     X: marker::TopLevel + State,
     CTS: CTStack,
 {
-    fn get(&self) -> &StackStorage<TransactionItem> {
-        &self.transactions
-    }
+    type Service = TriggerService<TimingItem, TriggerItem>;
 
-    fn get_mut(&mut self) -> &mut StackStorage<TransactionItem> {
-        &mut self.transactions
-    }
-}
-
-impl<X, CTS> ServiceCompliance<TriggerService<TimingItem, TriggerItem>> for Machine<X, CTS>
-where
-    X: marker::TopLevel + State,
-    CTS: CTStack,
-{
     fn get(&self) -> &TriggerService<TimingItem, TriggerItem> {
         &self.triggers
     }
 
     fn get_mut(&mut self) -> &mut TriggerService<TimingItem, TriggerItem> {
         &mut self.triggers
-    }
-}
-
-impl<X, CTS> ServiceCompliance<EntityStorage<Entity>> for Machine<X, CTS>
-where
-    X: marker::TopLevel + State,
-    CTS: CTStack,
-{
-    fn get(&self) -> &EntityStorage<Entity> {
-        &self.entities
-    }
-
-    fn get_mut(&mut self) -> &mut EntityStorage<Entity> {
-        &mut self.entities
     }
 }

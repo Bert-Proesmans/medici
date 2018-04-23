@@ -1,12 +1,11 @@
 //! (Type) Checked transitions for state machines.
 
+use std::convert::TryFrom;
+
 use ctstack::CTStack;
 use error::MachineError;
-use function::{ServiceCompliance, State, StateContainer};
+use function::{State, StateContainer};
 use marker;
-// TODO; Make the dependancy on StackStorage generic through construction of a trait
-// which abstracts t's behaviour.
-use storage::StackStorage;
 
 // Re-export traits and implementations from the submodule below.
 pub use self::usability_impl::{PullupInto, PushdownInto, TransitionInto};
@@ -51,9 +50,9 @@ where
     T: StateContainer<TransitionRecord = <CTS as CTStack>::Tail> + 'static,
     CTS: CTStack<Head = <Self as StateContainer>::State> + 'static,
     TTC: marker::TransactionContainer + 'static,
-    Self: StateContainer + ServiceCompliance<StackStorage<TTC>> + 'static,
+    Self: StateContainer + 'static,
     Self::State: State + 'static,
-    <Self::State as State>::Transaction: marker::Transaction + 'static,
+    <Self::State as State>::Transaction: marker::Transaction + Into<TTC> + 'static,
 {
     /// Transition from the provided state into the implementing state.
     fn pushdown_from(_: T, _: <Self::State as State>::Transaction) -> Self;
@@ -75,12 +74,12 @@ where
 /// [`PushdownFrom`]
 pub trait PullupFrom<T, CTS, TTC>
 where
-    T: StateContainer<TransitionRecord = CTS> + ServiceCompliance<StackStorage<TTC>> + 'static,
+    T: StateContainer<TransitionRecord = CTS> + 'static,
     CTS: CTStack + 'static,
     TTC: marker::TransactionContainer + 'static,
     Self: StateContainer<TransitionRecord = <CTS as CTStack>::Tail> + Sized + 'static,
     Self::State: State + 'static,
-    <Self::State as State>::Transaction: marker::Transaction + 'static,
+    <Self::State as State>::Transaction: marker::Transaction + TryFrom<TTC> + 'static,
 {
     /// Transition from the provided state into the implementing state.
     ///
@@ -126,9 +125,9 @@ mod usability_impl {
     /// Syntax simplifying trait in accordance to [`PushdownFrom`].
     pub trait PushdownInto<T, CTS, TTC>
     where
-        T: StateContainer + ServiceCompliance<StackStorage<TTC>> + 'static,
+        T: StateContainer + 'static,
         T::State: State + 'static,
-        <T::State as State>::Transaction: marker::Transaction + 'static,
+        <T::State as State>::Transaction: marker::Transaction + Into<TTC> + 'static,
         CTS: CTStack<Head = <T as StateContainer>::State> + 'static,
         TTC: marker::TransactionContainer + 'static,
         Self: StateContainer<TransitionRecord = <CTS as CTStack>::Tail> + 'static,
@@ -144,7 +143,7 @@ mod usability_impl {
         TTC: marker::TransactionContainer + 'static,
         T: PushdownFrom<S, CTS, TTC> + StateContainer + 'static,
         T::State: State + 'static,
-        <T::State as State>::Transaction: marker::Transaction + 'static,
+        <T::State as State>::Transaction: marker::Transaction + Into<TTC> + 'static,
     {
         fn pushdown(self, t: <T::State as State>::Transaction) -> T {
             T::pushdown_from(self, t)
@@ -156,11 +155,10 @@ mod usability_impl {
     where
         T: StateContainer<TransitionRecord = <CTS as CTStack>::Tail> + Sized + 'static,
         T::State: State + 'static,
-        <T::State as State>::Transaction: marker::Transaction + 'static,
+        <T::State as State>::Transaction: marker::Transaction + TryFrom<TTC> + 'static,
         CTS: CTStack + 'static,
         TTC: marker::TransactionContainer + 'static,
-        Self:
-            StateContainer<TransitionRecord = CTS> + ServiceCompliance<StackStorage<TTC>> + 'static,
+        Self: StateContainer<TransitionRecord = CTS> + 'static,
     {
         /// In accordance with [`PullupFrom::pullup_from`].
         fn pullup(self) -> Result<T, MachineError>;
@@ -172,11 +170,10 @@ mod usability_impl {
             + StateContainer<TransitionRecord = <CTS as CTStack>::Tail>
             + 'static,
         T::State: State + 'static,
-        <T::State as State>::Transaction: marker::Transaction + 'static,
+        <T::State as State>::Transaction: marker::Transaction + TryFrom<TTC> + 'static,
         CTS: CTStack + 'static,
         TTC: marker::TransactionContainer + 'static,
-        Self:
-            StateContainer<TransitionRecord = CTS> + ServiceCompliance<StackStorage<TTC>> + 'static,
+        Self: StateContainer<TransitionRecord = CTS> + 'static,
     {
         fn pullup(self) -> Result<T, MachineError> {
             T::pullup_from(self)

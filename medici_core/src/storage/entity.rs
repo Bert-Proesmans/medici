@@ -3,7 +3,8 @@
 use std::convert::TryFrom;
 use std::fmt::{Debug, Display};
 
-use function::{Entity, EntityBuilder, Service};
+use function::{Entity, EntityBuilder};
+use marker;
 use service::error::{MissingEntityError, OverflowError};
 
 #[derive(Debug, Clone)]
@@ -18,7 +19,7 @@ where
     maximum_items: usize,
 }
 
-impl<E> Service for EntityStorage<E>
+impl<E> marker::Service for EntityStorage<E>
 where
     E: Entity + EntityBuilder<E> + Clone,
     E::ID: Into<usize> + TryFrom<usize> + Copy,

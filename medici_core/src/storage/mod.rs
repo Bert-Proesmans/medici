@@ -2,10 +2,10 @@
 
 mod card;
 mod entity;
-mod stack;
+mod transaction;
 mod trigger;
 
 pub use self::card::*;
 pub use self::entity::*;
-pub use self::stack::*;
+pub use self::transaction::TransactionStorage;
 pub use self::trigger::*;

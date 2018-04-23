@@ -11,6 +11,12 @@ pub trait Transaction: Copy + 'static {}
 /// so the transactions themselves can be safely stored in memory.
 pub trait TransactionContainer {}
 
+/// Types which attribute functionality to state machines.
+///
+/// A Service is kind-of like a Trait (language item), but is used in a dynamic
+/// way to quickly de-/construct state machines with various functional methods.
+pub trait Service {}
+
 /// Types which enumerate all known [`Prototype`]s.
 pub trait ProtoEnumerator {}
 

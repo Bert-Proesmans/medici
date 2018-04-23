@@ -66,8 +66,9 @@ pub mod prelude {
     // [`PushdownInto::pushdown`] and [`TransitionInto::transition`].
     pub use medici_core::ctstack::*;
     pub use medici_core::error::*;
-    pub use medici_core::function::{Card, CardBuilder, Entity, EntityBuilder, Service,
-                                    ServiceCompliance};
+    pub use medici_core::function::{Card, CardBuilder, Entity, EntityBuilder,
+                                    IndexedStorageCompliance, ServiceCompliance,
+                                    StackStorageCompliance};
     pub use medici_core::stm::checked::{PullupInto, PushdownInto, TransitionInto};
     pub use medici_core::transaction::{pack_transaction, unpack_transaction};
 

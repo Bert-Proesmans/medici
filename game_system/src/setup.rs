@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 
 use medici_core::ctstack::EmptyStack;
 use medici_core::service::trigger::TriggerService;
-use medici_core::storage::{EntityStorage, StackStorage};
+use medici_core::storage::{EntityStorage, TransactionStorage};
 
 use state_machine::config::SetupConfig;
 use state_machine::machine::Machine;
@@ -51,7 +51,7 @@ impl Machine<Wait<Start>, EmptyStack> {
             history: PhantomData,
             transaction: Epsilon,
             //
-            transactions: StackStorage::new(),
+            transactions: TransactionStorage::new(),
             entities: EntityStorage::new(cfg.max_entities),
             triggers: TriggerService::new(),
         };

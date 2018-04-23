@@ -6,7 +6,7 @@ use std::marker::PhantomData;
 use failure::{format_err, Error};
 use value_from_type_traits::IntoEnum;
 
-use function::{Service, StateContainer, TriggerState};
+use function::{StateContainer, TriggerState};
 use marker;
 use storage::{TriggerStorage, UnsafeTrigger};
 
@@ -162,7 +162,7 @@ where
     storage: TriggerStorage<ETM, ETR>,
 }
 
-impl<ETM, ETR> Service for TriggerService<ETM, ETR>
+impl<ETM, ETR> marker::Service for TriggerService<ETM, ETR>
 where
     ETM: marker::TimingEnumerator + PartialEq + Copy,
     ETR: marker::TriggerEnumerator + PartialEq + Copy,

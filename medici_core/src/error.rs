@@ -50,7 +50,7 @@ pub enum ErrorKind {
 /// Trait facilitating error creation with a snapshot of the state machine
 /// attached.
 pub trait SnapshottedErrorExt<T> {
-    /// Builds a [`MachineError`] from some error.
+    /// Builds a [`MachineError`] from some error or empty option.
     ///
     /// # Constraints
     /// The error in question MUST implement [`Fail`]!
@@ -87,6 +87,26 @@ where
     }
 }
 
+impl<T> SnapshottedErrorExt<T> for Option<T> {
+    fn context<M>(self, context: ErrorKind, machine: &M) -> Result<T, MachineError>
+    where
+        M: StateContainer + Clone + Debug + Sync + Send + 'static,
+    {
+        match self {
+            Some(v) => Ok(v),
+            None => {
+                // Build and return custom error type
+                Err(MachineError {
+                    machine: Box::new(machine.clone()),
+                    // Build new context for our own error kind.
+                    // and chain the previous one..
+                    inner: Context::new(context),
+                })
+            }
+        }
+    }
+}
+
 /// Type used for indicating failure to meet specified constraints.
 #[derive(Debug, Fail)]
 #[fail(display = "Constraint violation detected! Expected `{:}`, provided `{:}`", expected, factual)]
@@ -110,3 +130,8 @@ where
         }
     }
 }
+
+/// Code failed to push a new item onto the chosen stack.
+#[derive(Debug, Fail)]
+#[fail(display = "Error pushing data to the stack")]
+pub struct StackPushError {}

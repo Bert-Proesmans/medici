@@ -2,7 +2,7 @@
 #![allow(unused_unsafe)]
 #![deny(missing_docs)]
 // Unstable features.
-#![feature(associated_type_defaults, try_from, never_type, proc_macro)]
+#![feature(associated_type_defaults, try_from, never_type, proc_macro, proc_macro_mod, proc_macro_path_invoc)]
 // Clippy linting when building debug versions.
 // #![cfg_attr(test, feature(plugin))]
 // #![cfg_attr(test, plugin(clippy))]

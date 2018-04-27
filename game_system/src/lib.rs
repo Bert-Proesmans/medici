@@ -3,7 +3,7 @@
 // Prevent successful compilation when documentation is missing.
 #![deny(missing_docs)]
 // Unstable features.
-#![feature(associated_type_defaults, try_from, never_type, proc_macro, nll)]
+#![feature(associated_type_defaults, try_from, never_type, proc_macro, proc_macro_mod, proc_macro_path_invoc, nll)]
 // Clippy linting when building debug versions.
 //#![cfg_attr(test, feature(plugin))]
 //#![cfg_attr(test, plugin(clippy))]
@@ -45,7 +45,6 @@ pub mod re_export {
     pub use medici_core::function;
     pub use medici_core::marker;
     pub use medici_core::service;
-    pub use medici_core::service::error::*;
     pub use medici_core::stm::checked::{PullupFrom, PushdownFrom, TransitionFrom};
     pub use medici_core::storage;
     // Macro re-exported
@@ -65,11 +64,14 @@ pub mod prelude {
     // These traits must be in scope to properly use [`PullupInto::pullup`],
     // [`PushdownInto::pushdown`] and [`TransitionInto::transition`].
     pub use medici_core::ctstack::*;
-    pub use medici_core::error::*;
-    pub use medici_core::function::{Card, CardBuilder, Entity, EntityBuilder, Service,
-                                    ServiceCompliance};
+    pub use medici_core::error::{self, ErrorKind, FrontendErrorExt, HydratedErrorExt, MachineError};
+    pub use medici_core::function::{Card, CardBuilder, Entity, EntityBuilder,
+                                    IndexedStorageCompliance, ServiceCompliance,
+                                    StackStorageCompliance};
+    // Macros
     pub use medici_core::stm::checked::{PullupInto, PushdownInto, TransitionInto};
     pub use medici_core::transaction::{pack_transaction, unpack_transaction};
+    pub use medici_core::{ctxt, hydrate};
 
     pub use entity::*;
     pub use state_machine::config::SetupConfig;
@@ -89,12 +91,14 @@ pub mod prelude {
 #[cfg(test)]
 mod tests {
     use failure::{Error, Fail};
+    use prelude::error::custom_type::MissingEntityError;
     use prelude::*;
     use re_export::*;
     use std::marker::PhantomData;
 
     #[test]
     fn failure_derive() {
+        //
         let id: usize = 0;
         let _error = MissingEntityError(id);
         let _fail: &Fail = &MissingEntityError(id);

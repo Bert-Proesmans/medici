@@ -4,15 +4,13 @@
 //! made by the current player (during his turn). Eg: Ending turn action
 //! maps to [`end_turn`].
 
-use failure::Error;
-
 use game_system::prelude::*;
 use game_system::runtime::exec_triggers;
 
 /// Method invoked to start the game.
 pub fn start_game(
     machine: Machine<Wait<Start>, EmptyStack>,
-) -> Result<Machine<Wait<Input>, EmptyStack>, Error> {
+) -> Result<Machine<Wait<Input>, EmptyStack>, MachineError> {
     // Transition into the desired state for trigger execution.
     let mut action: Machine<Action<Start>, _> = machine.transition(transaction::Epsilon);
     // Execute all listeners for this action.
@@ -27,7 +25,7 @@ pub fn start_game(
 /// Method invoked by user action: EndTurn
 pub fn end_turn(
     machine: Machine<Wait<Input>, EmptyStack>,
-) -> Result<Machine<Wait<Input>, EmptyStack>, Error> {
+) -> Result<Machine<Wait<Input>, EmptyStack>, MachineError> {
     // Transition into the desired state.
     let mut action: Machine<Action<EndTurn>, _> = machine.transition(transaction::Epsilon);
     // Execute all listeners for this action.

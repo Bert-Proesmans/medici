@@ -14,16 +14,13 @@ fn main() {
     // Add triggers
     wait_start_state
         .triggers
-        .add_trigger(start_game_trigger::<AnyStack>)
-        .unwrap();
+        .add_trigger(start_game_trigger::<AnyStack>);
     wait_start_state
         .triggers
-        .add_trigger(turn_end_trigger::<AnyStack>)
-        .unwrap();
+        .add_trigger(turn_end_trigger::<AnyStack>);
     wait_start_state
         .triggers
-        .add_trigger(pre_end_turn_trigger::<AnyStack>)
-        .unwrap();
+        .add_trigger(pre_end_turn_trigger::<AnyStack>);
 
     // Start the game, which will start the turn of the first player.
     let first_turn = start_game(wait_start_state).expect("Game didn't start!");

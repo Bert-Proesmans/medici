@@ -1,11 +1,11 @@
 //! Types with each different functionality to store data.
 
-mod card;
-mod entity;
-mod stack;
-mod trigger;
+pub mod card;
+pub mod entity;
+pub mod transaction;
+pub mod trigger;
 
-pub use self::card::*;
-pub use self::entity::*;
-pub use self::stack::*;
-pub use self::trigger::*;
+pub use self::card::CardStorage;
+pub use self::entity::EntityStorage;
+pub use self::transaction::TransactionStorage;
+pub use self::trigger::TriggerStorage;

@@ -2,7 +2,7 @@
 
 use std::convert::TryFrom;
 
-use medici_core::error::RuntimeConstraintError;
+use medici_core::error::custom_type::TransactionUnpackError;
 use medici_core::marker;
 
 // Epsilon is re-exported here so implementers can do
@@ -27,7 +27,7 @@ impl From<Epsilon> for TransactionItem {
 }
 
 impl TryFrom<TransactionItem> for Epsilon {
-    type Error = RuntimeConstraintError;
+    type Error = TransactionUnpackError;
 
     fn try_from(tc: TransactionItem) -> Result<Self, Self::Error> {
         match tc {

@@ -14,7 +14,7 @@ pub type ZeroSizedType<T> = PhantomData<T>;
 /// Type for starting a new CTStack.
 pub type EmptyStack = ();
 /// Type representing aq CTStack with any contents.
-/// 
+///
 /// # Safety
 /// This is valid if all CTStack types are zero-sized!
 /// Do NOT use this type otherwise.

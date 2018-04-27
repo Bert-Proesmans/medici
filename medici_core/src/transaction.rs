@@ -3,6 +3,7 @@
 //! Expect to find small utilities here, but they are mostly used by the hidden parts of the core.
 use std::convert::TryInto;
 
+use error::custom_type::TransactionUnpackError;
 use marker;
 
 /* Transaction helpers */
@@ -18,10 +19,10 @@ where
 /// Unpack a wrapped transaction into an owned value.
 ///
 /// It's of course necessary to
-pub fn unpack_transaction<T, TC>(tc: TC) -> Result<T, <TC as TryInto<T>>::Error>
+pub fn unpack_transaction<T, TC>(tc: TC) -> Result<T, TransactionUnpackError>
 where
     T: marker::Transaction + 'static,
-    TC: marker::TransactionContainer + TryInto<T> + 'static,
+    TC: marker::TransactionContainer + TryInto<T, Error = TransactionUnpackError> + 'static,
 {
     tc.try_into()
 }

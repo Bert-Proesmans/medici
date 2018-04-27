@@ -1,17 +1,20 @@
 //! Module containing methods which make working with the state
 //! machine a bit easier.
 
-use failure::Error;
 use value_from_type_traits::IntoEnum;
 
+use std::borrow::Borrow;
+use std::fmt::Debug;
+
+use error::*;
 use function::{ServiceCompliance, StateContainer, TriggerState};
 use marker;
 use service::trigger::{TriggerService, TriggerWrapper};
-use storage::UnsafeTrigger;
+use storage::trigger::UnsafeTrigger;
 
 /// Extract all triggers from the provided machine for matching
 /// conditions.
-pub fn fetch_triggers<M, ETM, ETR>(machine: &M) -> Vec<UnsafeTrigger<ETM, ETR>>
+pub fn fetch_triggers<'a, M, ETM, ETR>(machine: &M) -> Vec<UnsafeTrigger<ETM, ETR>>
 where
     M: StateContainer + ServiceCompliance<TriggerService<ETM, ETR>>,
     <M as StateContainer>::State: TriggerState,
@@ -20,7 +23,7 @@ where
     ETM: marker::TimingEnumerator + PartialEq + Copy,
     ETR: marker::TriggerEnumerator + PartialEq + Copy,
 {
-    ServiceCompliance::<TriggerService<ETM, ETR>>::get(machine)
+    ServiceCompliance::get(machine)
         .retrieve_triggers(machine)
         .cloned()
         .collect()
@@ -31,12 +34,12 @@ where
 /// # Unsafe
 /// Verify that each provided [`UnsafeTrigger`] has been specifically
 /// created for the provided machine!
-pub unsafe fn exec_trigger_stepped<M, TM, TR, ETM, ETR, I>(
+pub unsafe fn exec_trigger_stepped<'a, 'b, M, TM, TR, ETM, ETR, I>(
     mut machine: M,
     triggers: I,
-) -> Result<M, Error>
+) -> Result<M, MachineError>
 where
-    M: StateContainer,
+    M: StateContainer + Borrow<M> + Debug + Clone + Send + Sync + 'static,
     M::State: TriggerState<Timing = TM, Trigger = TR>,
     TM: marker::Timing + IntoEnum<ETM>,
     TR: marker::Triggerable + IntoEnum<ETR>,
@@ -51,10 +54,11 @@ where
         // Because the StateContainer type is erased, execution of the wrapped
         // trigger could lead to UB when a wrong trigger has been inserted.
         unsafe {
+            // Try to build a valid trigger for the specified machine.
+            // This will be reported back up to the caller on failure.
             let wrapper = match TriggerWrapper::try_from_trigger_entry(t) {
-                Ok(t) => t,
-                // TODO; Proper error handling here
-                Err(e) => return Err(e),
+                Ok(v) => v,
+                Err(e) => return Err(e.infuse(ErrorKind::ConstraintError, || machine)),
             };
 
             // Execute trigger on the machine.
@@ -75,8 +79,8 @@ where
 macro_rules! build_exec_triggers_checked {
     ($container_name:ident) => {
         // Since we're in macro space, we have no access to the std prelude!
+        use std::fmt::Debug;
         use std::result::Result;
-        use $crate::failure::Error;
         use $crate::value_from_type_traits::IntoEnum;
 
         use self::_shorten_syntax::*;
@@ -101,39 +105,59 @@ macro_rules! build_exec_triggers_checked {
         pub fn exec_triggers<CTS, TR, TT, ETM, ETR>(
             machine: M1<TR, CTS>,
             transaction: TT,
-        ) -> Result<M1<TR, CTS>, Error>
+        ) -> Result<M1<TR, CTS>, MachineError>
         where
-            CTS: CTStack + 'static,
+            CTS: CTStack + Send + 'static,
             // Note: These type constraints suppose the transaction of Effect<TR> is the same
             // for each TriggerState variant over Timing.
             // eg: Effect<TR>::Transaction == Trigger<Pre, TR>::Transaction ==
             // Trigger<Peri, TR>::Transaction == ..
-            TR: marker::Actionable + State<Transaction = TT> + IntoEnum<ETR>,
+            TR: marker::Actionable + State<Transaction = TT> + IntoEnum<ETR> + Send,
             TT: marker::Transaction,
             ETM: marker::TimingEnumerator + PartialEq + Copy,
             ETR: marker::TriggerEnumerator + PartialEq + Copy,
             //
             M1<TR, CTS>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
-                + TransitionInto<M2<TR, CTS>, CTS>,
+                + TransitionInto<M2<TR, CTS>, CTS>
+                + Debug
+                + Clone
+                + Send
+                + Sync
+                + 'static,
             <M1<TR, CTS> as StateContainer>::State: State<Transaction = TT>,
 
             M2<TR, CTS>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
                 + TransitionInto<M3<TR, CTS>, CTS>
-                + ServiceCompliance<TriggerService<ETM, ETR>>,
+                + ServiceCompliance<TriggerService<ETM, ETR>>
+                + Debug
+                + Clone
+                + Send
+                + Sync
+                + 'static,
             <M2<TR, CTS> as StateContainer>::State:
                 State<Transaction = TT> + TriggerState<Trigger = TR>,
             <<M2<TR, CTS> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,
 
             M3<TR, CTS>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
                 + TransitionInto<M4<TR, CTS>, CTS>
-                + ServiceCompliance<TriggerService<ETM, ETR>>,
+                + ServiceCompliance<TriggerService<ETM, ETR>>
+                + Debug
+                + Clone
+                + Send
+                + Sync
+                + 'static,
             <M3<TR, CTS> as StateContainer>::State:
                 State<Transaction = TT> + TriggerState<Trigger = TR>,
             <<M3<TR, CTS> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,
 
             M4<TR, CTS>: StateContainer<TimingEnum = ETM, TriggerEnum = ETR>
                 + TransitionInto<M1<TR, CTS>, CTS>
-                + ServiceCompliance<TriggerService<ETM, ETR>>,
+                + ServiceCompliance<TriggerService<ETM, ETR>>
+                + Debug
+                + Clone
+                + Send
+                + Sync
+                + 'static,
             <M4<TR, CTS> as StateContainer>::State:
                 State<Transaction = TT> + TriggerState<Trigger = TR>,
             <<M4<TR, CTS> as StateContainer>::State as TriggerState>::Timing: IntoEnum<ETM>,

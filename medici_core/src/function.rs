@@ -1,6 +1,7 @@
 //! Contains the core functionality items for our system.
 
 use ctstack::CTStack;
+use error::custom_type::StackPopError;
 use marker;
 
 /// Trait generalizing over any structure that could act as a container of states.
@@ -39,14 +40,6 @@ pub trait TriggerState: State {
     type Timing: marker::Timing;
     /// Encoded type value representing the trigger of the current state.
     type Trigger: marker::Triggerable;
-}
-
-/// Types which attribute functionality to state machines.
-///
-/// A Service is kind-of like a Trait (language item), but is used in a dynamic
-/// way to quickly de-/construct state machines with various functional methods.
-pub trait Service {
-    // Note; It's quite possible this trait will receive methods later on.
 }
 
 /// Type that's generally used to identify and order [`Entity`] objects.
@@ -115,11 +108,40 @@ pub trait CardBuilder<C: Card> {}
 /// the same state machine.
 pub trait ServiceCompliance<S>
 where
-    S: Service,
+    S: marker::Service,
     Self: StateContainer,
 {
     /// Retrieves an immutable reference to service `S`.
     fn get(&self) -> &S;
     /// Retrieves a mutable reference to service `S`.
     fn get_mut(&mut self) -> &mut S;
+}
+
+/// Defines stack behaviour for a certain storage object.
+pub trait StackStorageCompliance {
+    // TODO; Add Identifiable constraint.
+    /// The type of items found within the implementing storage.
+    type Item;
+
+    /// Adds the provided item onto this stack.
+    fn push<I: Into<Self::Item>>(&mut self, _: I);
+
+    /// Removes the top most item of the stack.
+    ///
+    /// The top most item is the one which was pushed last before
+    /// executing this method.
+    fn pop(&mut self) -> Result<Self::Item, StackPopError>;
+}
+
+/// Defines indexed behaviour for a certain storage object.
+pub trait IndexedStorageCompliance {
+    // TODO; Add Identifiable constraint.
+    /// The type of items found within the implementing storage.
+    type Item;
+
+    /// Returns the current storage as a slice, which is an indexed storage.
+    fn as_slice(&self) -> &[Self::Item];
+
+    /// Returns the current storage as a slice, which is an indexed storage.
+    fn as_slice_mut(&mut self) -> &mut [Self::Item];
 }

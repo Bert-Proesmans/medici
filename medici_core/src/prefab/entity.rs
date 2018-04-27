@@ -46,7 +46,7 @@ where
     pub human_readable: Option<String>,
 }
 
-impl<S, P> function::Entity for EntityStruct<S, P>
+impl<S, P> function::Identifiable for EntityStruct<S, P>
 where
     S: Clone + Eq + Hash,
     P: marker::ProtoEnumerator + Clone + Eq + Hash,
@@ -56,6 +56,13 @@ where
     fn id(&self) -> Self::ID {
         self.id
     }
+}
+
+impl<S, P> function::Entity for EntityStruct<S, P>
+where
+    S: Clone + Eq + Hash,
+    P: marker::ProtoEnumerator + Clone + Eq + Hash,
+{
 }
 
 impl<S, P> EntityBuilder<Self> for EntityStruct<S, P>

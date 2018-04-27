@@ -3,7 +3,7 @@
 use std::fmt::{Debug, Display};
 
 use error::custom_type::{MissingEntityError, OverflowError};
-use function::{Entity, EntityBuilder, IndexedStorageCompliance};
+use function::{ArrayStorageCompliance, Entity, EntityBuilder};
 use marker;
 use storage::EntityStorage;
 

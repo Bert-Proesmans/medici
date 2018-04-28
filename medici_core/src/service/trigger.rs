@@ -15,7 +15,7 @@ use storage::trigger::{TriggerStorage, UnsafeTrigger};
 // and returns it again.. or a generic error.
 //
 // TODO; Transfrom Error into a real error type.
-type _FNTrigger<M> = fn(M) -> Result<M, MachineError>;
+pub(crate) type _FNTrigger<M> = fn(M) -> Result<M, MachineError>;
 
 /// Safe abstraction over UnsafeTrigger objects.
 #[derive(Debug)]
@@ -43,7 +43,8 @@ where
     ETM: marker::TimingEnumerator + PartialEq + Copy,
     ETR: marker::TriggerEnumerator + PartialEq + Copy,
 {
-    fn new(cb: _FNTrigger<M>) -> Self {
+    /// Constructs a new trigger method wrapper from the provided method.
+    pub fn new(cb: _FNTrigger<M>) -> Self {
         Self {
             cb,
             phantom: PhantomData,

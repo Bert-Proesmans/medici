@@ -71,7 +71,9 @@ where
     pub fn unwrap_mut(&mut self) -> Result<&mut E, InvalidEntityMutUnwrap> {
         match self {
             Either::Mut(e) => Ok(e),
-            _ => Err(InvalidEntityMutUnwrap),
+            // TMP; Workaround https://github.com/dtolnay/syn/issues/410
+            Either::Imut(_do) => Err(InvalidEntityMutUnwrap),
+            // _ => Err(InvalidEntityMutUnwrap),
         }
     }
 }

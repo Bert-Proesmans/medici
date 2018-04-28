@@ -33,11 +33,13 @@ extern crate value_from_type_traits;
 // Medici opinionated framework.
 extern crate medici_core;
 
+pub mod card;
 pub mod entity;
 pub mod prototype;
 pub mod runtime;
 pub mod setup;
 pub mod state_machine;
+pub mod tag;
 
 /// Exported types from [`medici_core`].
 ///
@@ -68,20 +70,21 @@ pub mod prelude {
     // [`PushdownInto::pushdown`] and [`TransitionInto::transition`].
     pub use medici_core::ctstack::*;
     pub use medici_core::error::{self, ErrorKind, FrontendErrorExt, HydratedErrorExt, MachineError};
-    pub use medici_core::function::{ArrayStorageCompliance, Card, CardBuilder, Entity,
-                                    EntityBuilder, Identifiable, IndexedStorageCompliance,
+    pub use medici_core::function::{self, Card, Entity, Identifiable, CardBuilder, EntityBuilder, ArrayStorageCompliance, IndexedStorageCompliance,
                                     ServiceCompliance, StackStorageCompliance};
     // Macros
     pub use medici_core::stm::checked::{PullupInto, PushdownInto, TransitionInto};
     pub use medici_core::transaction::{pack_transaction, unpack_transaction};
     pub use medici_core::{ctxt, hydrate};
 
-    pub use entity::*;
+    pub use card::Card;
+    pub use entity::{Entity, GAME_E_ID};
     pub use state_machine::config::SetupConfig;
     pub use state_machine::machine::Machine;
     pub use state_machine::state::leaf::triggerable::*;
     pub use state_machine::state::leaf::*;
     pub use state_machine::state::toplevel::*;
+    pub use tag::EntityTags;
 
     // Transactions and Prototypes are NOT re-exported within the module
     // because their names could clash with States.

@@ -12,9 +12,9 @@ use state_machine::state::leaf::triggerable::Start;
 use state_machine::state::toplevel::Wait;
 use state_machine::transaction::Epsilon;
 
-use entity::EntityTags;
 use prototype::Game as GameProto;
 use prototype::Player as PlayerProto;
+use tag::EntityTags;
 
 pub mod error {
     //! Definitions for all possible errors thrown when setting up a

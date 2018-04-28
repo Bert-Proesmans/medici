@@ -13,8 +13,7 @@ where
     CTS: CTStack + Debug + Clone + Send + 'static,
 {
     let game_entity = ctxt!(x.entities.get(GAME_E_ID); x);
-    let player_idx =
-        ctxt!(game_entity.get_value(&EntityTags::CurrentPlayerOrd); x);
+    let player_idx = ctxt!(game_entity.get_value(&EntityTags::CurrentPlayerOrd); x);
     println!("[PRE_ENDTURN_TRIGGER] for player {:}", player_idx);
     //
     Ok(x)

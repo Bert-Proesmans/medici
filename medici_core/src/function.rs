@@ -80,11 +80,15 @@ pub trait EntityBuilder<E: Entity> {
     fn new_with_id(id: E::ID) -> E;
 }
 
-/// Type thet's generally used to identify and order [`Card`] objects.
+/// Type that's generally used to identify and order [`Card`] objects.
 ///
-/// Throughout medici-core it's assumed this type is an alias for a numeric
-/// type!
-pub type CardId = usize;
+/// The first numeric element is the SET IDENTIFIER.
+/// The second numeric element is the ordinal identifier within the set.
+/// 
+/// # Note
+/// The total bitsize of this ID should be less than the smallest platform supported usize!
+/// Here 32 bits is taken as maximum.
+pub type CardId = (u16, u16);
 
 /// Trait representing an actual game card.
 ///
@@ -109,7 +113,10 @@ pub trait Card: Identifiable {
 }
 
 /// Trait used to create a new [`Card`] object.
-pub trait CardBuilder<C: Card> {}
+pub trait CardBuilder<C: Card> {
+    /// Build a new [`Card`] with the provided identifier.
+    fn new_with_id<I: Into<C::UID>>(id: I) -> C;
+}
 
 /// Trait for implementing a certain service on the state machine.
 ///

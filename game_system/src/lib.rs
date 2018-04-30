@@ -29,15 +29,20 @@ extern crate failure_derive;
 extern crate maplit;
 extern crate value_from_type_macros;
 extern crate value_from_type_traits;
+#[macro_use]
+extern crate lazy_static;
 
 // Medici opinionated framework.
 extern crate medici_core;
 
+#[macro_use]
+pub mod card;
 pub mod entity;
 pub mod prototype;
 pub mod runtime;
 pub mod setup;
 pub mod state_machine;
+pub mod tag;
 
 /// Exported types from [`medici_core`].
 ///
@@ -68,20 +73,28 @@ pub mod prelude {
     // [`PushdownInto::pushdown`] and [`TransitionInto::transition`].
     pub use medici_core::ctstack::*;
     pub use medici_core::error::{self, ErrorKind, FrontendErrorExt, HydratedErrorExt, MachineError};
-    pub use medici_core::function::{ArrayStorageCompliance, Card, CardBuilder, Entity,
-                                    EntityBuilder, Identifiable, IndexedStorageCompliance,
-                                    ServiceCompliance, StackStorageCompliance};
-    // Macros
+    pub use medici_core::function::{self, ArrayStorageCompliance, Card as CardTrait, CardBuilder,
+                                    CardId, Entity as EntityTrait, EntityBuilder, EntityId,
+                                    Identifiable, IndexedStorageCompliance, ServiceCompliance,
+                                    StackStorageCompliance};
     pub use medici_core::stm::checked::{PullupInto, PushdownInto, TransitionInto};
     pub use medici_core::transaction::{pack_transaction, unpack_transaction};
-    pub use medici_core::{ctxt, hydrate};
 
-    pub use entity::*;
+    /* Macros */
+    // Error handling macro's
+    pub use medici_core::{ctxt, hydrate};
+    // Custom card implementation macro.
+    // FAILS TO BE FOUND!
+    // pub use super::card_impl;
+
+    pub use card::Card;
+    pub use entity::{Entity, GAME_E_ID};
     pub use state_machine::config::SetupConfig;
     pub use state_machine::machine::Machine;
     pub use state_machine::state::leaf::triggerable::*;
     pub use state_machine::state::leaf::*;
     pub use state_machine::state::toplevel::*;
+    pub use tag::EntityTags;
 
     // Transactions and Prototypes are NOT re-exported within the module
     // because their names could clash with States.

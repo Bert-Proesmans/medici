@@ -1,4 +1,5 @@
 //! Contains the core functionality items for our system.
+use std::fmt;
 
 use ctstack::CTStack;
 use error::custom_type::StackPopError;
@@ -80,12 +81,6 @@ pub trait EntityBuilder<E: Entity> {
     fn new_with_id(id: E::ID) -> E;
 }
 
-/// Type thet's generally used to identify and order [`Card`] objects.
-///
-/// Throughout medici-core it's assumed this type is an alias for a numeric
-/// type!
-pub type CardId = usize;
-
 /// Trait representing an actual game card.
 ///
 /// A card is an [`Entity`] but it's usage is semantically disjunct enough to warrant
@@ -109,7 +104,10 @@ pub trait Card: Identifiable {
 }
 
 /// Trait used to create a new [`Card`] object.
-pub trait CardBuilder<C: Card> {}
+pub trait CardBuilder<C: Card> {
+    /// Build a new [`Card`] with the provided identifier.
+    fn new_with_id<I: Into<C::ID>>(id: I) -> C;
+}
 
 /// Trait for implementing a certain service on the state machine.
 ///
@@ -118,7 +116,6 @@ pub trait CardBuilder<C: Card> {}
 pub trait ServiceCompliance<S>
 where
     S: marker::Service,
-    Self: StateContainer,
 {
     /// Retrieves an immutable reference to service `S`.
     fn get(&self) -> &S;
@@ -165,4 +162,29 @@ pub trait ArrayStorageCompliance {
 
     /// Returns the current storage as a slice, which is an indexed storage.
     fn as_slice_mut(&mut self) -> &mut [Self::Item];
+}
+
+/* ID sructures */
+
+#[derive(Debug, Clone, Copy)]
+/// Type that's generally used to identify and order [`Card`] objects.
+///
+/// The first numeric element is the SET IDENTIFIER.
+/// The second numeric element is the ordinal identifier within the set.
+///
+/// # Note
+/// The total bitsize of this ID should be less than the smallest platform supported usize!
+/// Here 32 bits is taken as maximum.
+pub struct CardId(u16, u16);
+impl fmt::Display for CardId {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "<Card(SET={},ID={})>", self.0, self.1)
+    }
+}
+
+impl CardId {
+    /// Creates a new identifier structure for a card.
+    pub const fn new(set: u16, id: u16) -> Self {
+        CardId(set, id)
+    }
 }

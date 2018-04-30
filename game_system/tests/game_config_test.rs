@@ -1,8 +1,6 @@
-extern crate game_rules;
+extern crate game_system;
 
-// use game_rules::action::*;
-use game_rules::game_system::prelude::*;
-// use game_rules::trigger::*;
+use game_system::prelude::*;
 
 #[test]
 #[should_panic]

@@ -42,6 +42,19 @@ pub trait TriggerState: State {
     type Trigger: marker::Triggerable;
 }
 
+/// Trait enforcing implementing objects to expose their identifier.
+/// The uniqueness of this identifier depends on the implementing object itself.
+pub trait Identifiable {
+    /// The type of identifier used to pass between functions during state machine
+    /// execution.
+    /// This type MUST be [`Copy`] because storing this identifier is the idiomatic
+    /// way of passing "references" around.
+    type ID: Copy;
+
+    /// Returns the identifier of the implementing object.
+    fn id(&self) -> Self::ID;
+}
+
 /// Type that's generally used to identify and order [`Entity`] objects.
 ///
 /// Throughout medici-core it's assumed this type is an alias for a numeric
@@ -50,15 +63,15 @@ pub type EntityId = usize;
 
 /// Trait representing an object which properties can be altered dynamically (at runtime).
 ///
+/// # Identifiable
+/// Entity objects receive an identifier which is only valid for the machine that created
+/// it.
+///
 /// # Note
 /// This trait MUST ALWAYS be object safe!
 /// This provides the flexibility to store a bunch of [`Entity`]s into one container.
-pub trait Entity {
-    /// Type used to identify an Entity.
-    type ID: Copy;
-
-    /// Returns the unique identifier of this specific entity.
-    fn id(&self) -> Self::ID;
+pub trait Entity: Identifiable {
+    //
 }
 
 /// Trait used to create a new [`Entity`] object.
@@ -78,25 +91,21 @@ pub type CardId = usize;
 /// A card is an [`Entity`] but it's usage is semantically disjunct enough to warrant
 /// a seperate type.
 ///
+/// # Identifiable
+/// Cards are identified with GLOBAL UNIQUE identifiers.
+/// This allows for cards to be constructed once and a static table could be generated
+/// to retrieve a reference from there.
+/// It's also possible to hand out owned cards given their identifier doesn't clash with
+/// any other card.
+///
 /// # Note
 /// This trait MUST ALWAYS be object safe!
 /// This provides the flexibility to store a bunch of [`Card`]s into one container.
-pub trait Card {
-    /// Type used to identify a Card.
-    ///
-    /// # Note
-    /// Do NOT confuse this UID with [`Entity::ID`]!
-    ///     - UID is constant, global ID
-    ///     - Entity::ID is a local ID that's only valid for the lifetime
-    ///     of the state-machine containing that entity object.
-    type UID: Copy;
+pub trait Card: Identifiable {
     /// All timing types this card holds listeners for.
     type TimingEnum: marker::TimingEnumerator;
     /// All trigger types this card holds listeners for.
     type TriggerEnum: marker::TriggerEnumerator;
-
-    /// Returns the globally unique identifier of this specific card.
-    fn uid(&self) -> Self::UID;
 }
 
 /// Trait used to create a new [`Card`] object.
@@ -119,7 +128,6 @@ where
 
 /// Defines stack behaviour for a certain storage object.
 pub trait StackStorageCompliance {
-    // TODO; Add Identifiable constraint.
     /// The type of items found within the implementing storage.
     type Item;
 
@@ -135,7 +143,20 @@ pub trait StackStorageCompliance {
 
 /// Defines indexed behaviour for a certain storage object.
 pub trait IndexedStorageCompliance {
-    // TODO; Add Identifiable constraint.
+    /// The type of items found within the implementing storage.
+    type Item: Identifiable;
+
+    /// Retrieves a reference to the requested item matching the provided
+    /// identifier.
+    fn get(&self, identifier: <Self::Item as Identifiable>::ID) -> Option<&Self::Item>;
+
+    /// Retrieves a reference to the requested item matching the provided
+    /// identifier.
+    fn get_mut(&mut self, identifier: <Self::Item as Identifiable>::ID) -> Option<&mut Self::Item>;
+}
+
+/// Defines array access behaviour for storage objects.
+pub trait ArrayStorageCompliance {
     /// The type of items found within the implementing storage.
     type Item;
 

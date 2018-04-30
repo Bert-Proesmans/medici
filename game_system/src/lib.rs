@@ -3,7 +3,10 @@
 // Prevent successful compilation when documentation is missing.
 #![deny(missing_docs)]
 // Unstable features.
-#![feature(associated_type_defaults, try_from, never_type, proc_macro, proc_macro_mod, proc_macro_path_invoc, nll)]
+#![feature(
+    associated_type_defaults, try_from, never_type, proc_macro, proc_macro_mod,
+    proc_macro_path_invoc, nll
+)]
 // Clippy linting when building debug versions.
 //#![cfg_attr(test, feature(plugin))]
 //#![cfg_attr(test, plugin(clippy))]
@@ -65,9 +68,9 @@ pub mod prelude {
     // [`PushdownInto::pushdown`] and [`TransitionInto::transition`].
     pub use medici_core::ctstack::*;
     pub use medici_core::error::{self, ErrorKind, FrontendErrorExt, HydratedErrorExt, MachineError};
-    pub use medici_core::function::{Card, CardBuilder, Entity, EntityBuilder,
-                                    IndexedStorageCompliance, ServiceCompliance,
-                                    StackStorageCompliance};
+    pub use medici_core::function::{ArrayStorageCompliance, Card, CardBuilder, Entity,
+                                    EntityBuilder, Identifiable, IndexedStorageCompliance,
+                                    ServiceCompliance, StackStorageCompliance};
     // Macros
     pub use medici_core::stm::checked::{PullupInto, PushdownInto, TransitionInto};
     pub use medici_core::transaction::{pack_transaction, unpack_transaction};

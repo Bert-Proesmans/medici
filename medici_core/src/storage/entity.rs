@@ -1,6 +1,6 @@
 //! Module containing structures for storing entities.
 
-use function::{Entity, IndexedStorageCompliance};
+use function::{ArrayStorageCompliance, Entity};
 
 #[derive(Debug, Clone)]
 /// Structure wrapping a [`Vec`] to provide a container for (all) entities
@@ -29,7 +29,7 @@ where
     }
 }
 
-impl<E> IndexedStorageCompliance for EntityStorage<E>
+impl<E> ArrayStorageCompliance for EntityStorage<E>
 where
     E: Entity + Clone,
     E::ID: Into<usize> + From<usize>,

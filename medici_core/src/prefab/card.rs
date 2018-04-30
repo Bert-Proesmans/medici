@@ -23,15 +23,21 @@ where
     pub properties: HashMap<S, u32>,
 }
 
+impl<S> function::Identifiable for CardStruct<S>
+where
+    S: Clone + Eq + Hash,
+{
+    type ID = CardId;
+
+    fn id(&self) -> CardId {
+        self.uid
+    }
+}
+
 impl<S> function::Card for CardStruct<S>
 where
     S: Clone + Eq + Hash,
 {
-    type UID = CardId;
     type TimingEnum = TimingItem;
     type TriggerEnum = TriggerItem;
-
-    fn uid(&self) -> CardId {
-        self.uid
-    }
 }

@@ -233,9 +233,29 @@ pub mod custom_type {
         }
     }
 
+    /// Specific error thrown when the requested card-id is not known.
+    #[derive(Debug)]
+    pub struct MissingCardError<ID>(pub ID)
+    where
+        ID: Display + Debug;
+
+    impl<ID> Fail for MissingCardError<ID>
+    where
+        ID: Display + Debug + Send + Sync + 'static,
+    {
+    }
+
+    impl<ID> fmt::Display for MissingCardError<ID>
+    where
+        ID: Display + Debug,
+    {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "The card with id `{:}` was not found", self.0)
+        }
+    }
+
     /// Specific error thrown when the requested property is not known.
     #[derive(Debug)]
-    // #[fail(display = "The entity with id `{:}` was not found", _0)]
     pub struct MissingPropertyError<ID, PROP>(pub ID, pub PROP)
     where
         ID: Display + Debug,
@@ -264,7 +284,6 @@ pub mod custom_type {
 
     /// Specific error thrown when the requested entity-id is not known.
     #[derive(Debug)]
-    // #[fail(display = "The entity with id `{:}` doesn't have the prototype `{:?}`", _0, _1)]
     pub struct MissingPrototypeError<ID, P>(pub ID, pub P)
     where
         ID: Display + Debug,
@@ -288,6 +307,27 @@ pub mod custom_type {
                 "The entity with id `{:}` doesn't have the prototype `{:?}`",
                 self.0, self.1
             )
+        }
+    }
+
+    /// Error thrown when the provided object's ID collides with an already known ID.
+    #[derive(Debug)]
+    pub struct IDCollisionError<ID>(pub ID)
+    where
+        ID: Display + Debug;
+
+    impl<ID> Fail for IDCollisionError<ID>
+    where
+        ID: Display + Debug + Send + Sync + 'static,
+    {
+    }
+
+    impl<ID> fmt::Display for IDCollisionError<ID>
+    where
+        ID: Display + Debug,
+    {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "An object with ID {:} is already registered", self.0)
         }
     }
 

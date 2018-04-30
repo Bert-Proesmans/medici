@@ -13,7 +13,10 @@
 //! a board game.
 
 extern crate failure;
+// Re-export of this crate to easily access the game_system types (including the prelude).
 pub extern crate game_system;
+#[macro_use]
+extern crate lazy_static;
 
 pub mod action;
 pub mod card_set;

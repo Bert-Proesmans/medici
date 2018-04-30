@@ -7,3 +7,4 @@ authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
 game_system = {path = "../game_system"}
 
 failure = "0.1.1"
+lazy_static = "1.0.0"

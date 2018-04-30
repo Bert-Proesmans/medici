@@ -5,10 +5,10 @@ pub mod test;
 
 /// Enumeration of all known sets of cards.
 pub enum CardSet {
-	/// Core card set, see module [`core`].
-	Core = 0,
-	/// Test card set, see module [`test`].
-	Test = 1,
+    /// Core card set, see module [`core`].
+    Core = 0,
+    /// Test card set, see module [`test`].
+    Test = 1,
 }
 
 // // Make sure any variation of Card ID will be accepted by Cards and

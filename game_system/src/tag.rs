@@ -14,7 +14,6 @@ pub enum EntityTags {
     RemainingTurns,
 
     //
-
     /// Amount of damage an entity can do.
     Attack,
     /// Amount of health an entity has.

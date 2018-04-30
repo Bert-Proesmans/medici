@@ -196,6 +196,11 @@ where
         self.storage.triggers.push(safe_wrapper.into());
     }
 
+    /// Returns an iterator over all stored triggers.
+    pub fn retrieve_all_triggers(&self) -> impl Iterator<Item = &UnsafeTrigger<ETM, ETR>> {
+        self.storage.triggers.iter()
+    }
+
     /// Retrieve all triggers matching the provided machine.
     ///
     /// # Borrow-check
@@ -203,7 +208,8 @@ where
     /// to be contained by a state machine. By accessing this specific service we place
     /// an immutable borrow onto that machine, which is also passed as parameter into
     /// this method.
-    /// In general this additional immutable borrow should not matter.
+    /// In general this additional immutable borrow should not matter, but it does when there is
+    /// already a mutable borrow of the machine.
     /// Returning [`UnsafeTrigger`] references will limit accessibility into the machine and
     /// this service.
     ///

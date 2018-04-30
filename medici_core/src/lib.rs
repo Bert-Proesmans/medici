@@ -4,7 +4,7 @@
 // Unstable features.
 #![feature(
     associated_type_defaults, try_from, never_type, proc_macro, proc_macro_mod,
-    proc_macro_path_invoc
+    proc_macro_path_invoc, const_fn
 )]
 // Clippy linting when building debug versions.
 // #![cfg_attr(test, feature(plugin))]

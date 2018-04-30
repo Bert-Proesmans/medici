@@ -1,15 +1,38 @@
 //! This module contains all game cards which are part of the test-set.
 
-use super::CardSet;
+use game_system::card_impl;
 use game_system::prelude::*;
+
+use super::CardSet;
 
 lazy_static! {
     static ref TST_01: Card = {
-        let mut c = Card::new_with_id(CardId::new(CardSet::Test as u16, 1));
-        c.name = "Wizard";
-        c.set_value(EntityTags::Attack, 5);
-        c.set_value(EntityTags::Health, 3);
-        c
+        card_impl!{
+            ID = CardId::new(CardSet::Test as u16, 1);
+            NAME = "Wizard";
+            properties {
+                EntityTags::Attack = 5;
+                EntityTags::Health = 3;
+            }
+
+            triggers {
+                print_on_play [
+                    TIMING = Peri;
+                    TRIGGER =  PlayCard;
+                ] => |machine| {
+                    println!("TEST");
+                    Ok(machine)
+                }
+
+                print_on_start [
+                    TIMING = Peri;
+                    TRIGGER = Start;
+                ] => |machine| {
+                    println!("Printing on Start");
+                    Ok(machine)
+                }
+            }
+        }
     };
 }
 

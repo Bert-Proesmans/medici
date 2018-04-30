@@ -29,10 +29,13 @@ extern crate failure_derive;
 extern crate maplit;
 extern crate value_from_type_macros;
 extern crate value_from_type_traits;
+#[macro_use]
+extern crate lazy_static;
 
 // Medici opinionated framework.
 extern crate medici_core;
 
+#[macro_use]
 pub mod card;
 pub mod entity;
 pub mod prototype;
@@ -74,10 +77,15 @@ pub mod prelude {
                                     CardId, Entity as EntityTrait, EntityBuilder, EntityId,
                                     Identifiable, IndexedStorageCompliance, ServiceCompliance,
                                     StackStorageCompliance};
-    // Macros
     pub use medici_core::stm::checked::{PullupInto, PushdownInto, TransitionInto};
     pub use medici_core::transaction::{pack_transaction, unpack_transaction};
+
+    /* Macros */
+    // Error handling macro's
     pub use medici_core::{ctxt, hydrate};
+    // Custom card implementation macro.
+    // FAILS TO BE FOUND!
+    // pub use super::card_impl;
 
     pub use card::Card;
     pub use entity::{Entity, GAME_E_ID};

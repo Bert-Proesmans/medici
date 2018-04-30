@@ -1,7 +1,7 @@
 //! Contains the core card set.
 //! Core cards are necessary at minimum to properly start a game.
 
-use game_system::card::{GAME_CARD_ID, PLAYER_CARD_ID};
+use game_system::card::PLAYER_CARD_ID;
 use game_system::card_impl;
 use game_system::prelude::*;
 

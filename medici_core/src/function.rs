@@ -172,10 +172,7 @@ pub trait ArrayStorageCompliance {
 /// The first numeric element is the SET IDENTIFIER.
 /// The second numeric element is the ordinal identifier within the set.
 ///
-/// # Note
-/// The total bitsize of this ID should be less than the smallest platform supported usize!
-/// Here 32 bits is taken as maximum.
-pub struct CardId(u16, u16);
+pub struct CardId(u32, u32);
 impl fmt::Display for CardId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "<Card(SET={},ID={})>", self.0, self.1)
@@ -184,7 +181,12 @@ impl fmt::Display for CardId {
 
 impl CardId {
     /// Creates a new identifier structure for a card.
-    pub const fn new(set: u16, id: u16) -> Self {
+    pub const fn new(set: u32, id: u32) -> Self {
         CardId(set, id)
+    }
+
+    /// Creates a new identifier structure for a card.
+    pub fn from_set<S: Into<u32>>(set: S, id: u32) -> Self {
+        CardId(set.into(), id)
     }
 }

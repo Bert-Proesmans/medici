@@ -11,12 +11,9 @@ pub enum CardSet {
     Test = 1,
 }
 
-// // Make sure any variation of Card ID will be accepted by Cards and
-// // Card Storage objects.
-// use game_system::re_export::function::CardId;
-
-// impl From<(CardSet, u16)> for CardId {
-//     fn from(x: (CardSet, u16)) -> CardId {
-//     	(x.0 as u16, x.1)
-//     }
-// }
+// Necessary for usage with CardId.
+impl From<CardSet> for u32 {
+    fn from(x: CardSet) -> u32 {
+        x as u32
+    }
+}

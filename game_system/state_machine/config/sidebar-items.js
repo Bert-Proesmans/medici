@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["MAX_PLAYERS","Constant defining how much memory at minimum MUST be (statically) allocated to support all players that joined the game."]],"struct":[["SetupConfig","Structure used for setting up a new [`Machine`]."]]});

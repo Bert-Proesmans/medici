@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["GAME_E_ID","The game entity should always have ID 0."]],"type":[["Entity","The specialized entity structure for our state machine."]]});

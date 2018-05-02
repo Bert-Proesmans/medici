@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["SetupError","Enumeration of possible errors when setting up a new game."]]});

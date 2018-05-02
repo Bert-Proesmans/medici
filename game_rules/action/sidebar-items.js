@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["end_turn","Method invoked by user action: EndTurn"],["start_game","Method invoked to start the game."]]});

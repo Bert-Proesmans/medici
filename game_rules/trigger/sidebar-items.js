@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["pre_end_turn_trigger","DBG"],["start_game_trigger","Defines all activities which must happen when the game is started."],["turn_end_trigger","Defines a trigger which will be run when the turn of the current player ends."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["action","Methods which, when invoked, execute the desired action of players."],["card_set","Contains all game card definitions."],["trigger","Methods which respond to a certain change in state within the game."]]});

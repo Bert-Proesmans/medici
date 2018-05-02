@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["checked","(Type) Checked transitions for state machines."]]});

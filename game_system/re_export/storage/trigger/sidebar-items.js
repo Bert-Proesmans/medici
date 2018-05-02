@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["TriggerStorage","Structure used to store a portable format of trigger entries, see [`UnsafeTrigger`]."],["UnsafeTrigger","Structure serializng/generalizing a trigger."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["CardSet","Enumeration of all known sets of cards."]],"mod":[["core","Contains the core card set. Core cards are necessary at minimum to properly start a game."],["test","This module contains all game cards which are part of the test-set."]]});

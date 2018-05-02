@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["GAME_CARD_ID","Reserved identifier for Game cards."],["PLAYER_CARD_ID","Reserved identifier for Player cards."]],"struct":[["CardStruct","Type representing a game card."]],"type":[["Card","Card structure which makes use of the items defined by the medici_core::prefab module."]]});

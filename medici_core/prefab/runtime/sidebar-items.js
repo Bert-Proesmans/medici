@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["exec_trigger_stepped","Executes all passed down triggers for the provided machine."],["fetch_triggers","Extract all triggers from the provided machine for matching conditions."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["exec_triggers","Takes the provided machine (in [`Effect`] state) and executes direct and indirect triggers."]]});

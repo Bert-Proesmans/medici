@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["pack_transaction","Transform a transaction into the wrapping variant."],["unpack_transaction","Unpack a wrapped transaction into an owned value."]]});

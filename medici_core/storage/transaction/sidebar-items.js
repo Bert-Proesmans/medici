@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["TransactionStorage","Object for storing [`Transaction`] objects."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["EntityService","Structure for working with [`Entity`] objects."]]});

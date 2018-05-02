@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["GAME_E_ID","The game entity should always have ID 0."]],"struct":[["EntityStruct","Type representing a stateful 'thing' within the state-machine."]],"type":[["Entity","Entity structure which makes use of structures defined by the medici_core::prefab module."]]});

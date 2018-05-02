@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["CardService","Object allowing manipulation of game [`Card`]s."]]});

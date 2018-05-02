@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["CardStorage","Structure holding onto all cards defined for a specific machine."]]});

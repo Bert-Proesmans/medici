@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["TriggerService","Structure wrapping and containing all [`Trigger`]s registered on the state machine."],["TriggerWrapper","Safe abstraction over UnsafeTrigger objects."]]});

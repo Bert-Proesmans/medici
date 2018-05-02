@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["card","Module containing structures for storing game card objects."],["entity","Module containing structures for storing entities."],["transaction","Module containing types for storing [`Transaction`] objects."],["trigger","Module containing types for storing game triggers."]]});

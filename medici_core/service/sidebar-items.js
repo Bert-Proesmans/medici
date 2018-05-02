@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["card","Contains functionality to work with [`Card`]s."],["entity","Contains functionality to work with [`Entity`]s."],["trigger","Contains the functionality to work with [`Trigger`]s."]]});

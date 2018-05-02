@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["EntityStorage","Structure wrapping a [`Vec`] to provide a container for (all) entities within the state machine."]]});

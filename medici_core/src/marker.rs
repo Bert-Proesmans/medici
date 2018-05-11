@@ -17,6 +17,15 @@ pub trait TransactionContainer {}
 /// way to quickly de-/construct state machines with various functional methods.
 pub trait Service {}
 
+/// Types that wrap a service.
+///
+/// Adapters provide aditional functionality making use of the wrapped service.
+/// Adapters are transitively also a [`Service`]!
+pub trait Adapter: Service {
+    /// The type that's being augmented.
+    type Adapting;
+}
+
 /// Types which enumerate all known [`Prototype`]s.
 pub trait ProtoEnumerator {}
 

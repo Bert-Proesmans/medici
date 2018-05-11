@@ -7,6 +7,7 @@
 pub mod card;
 pub mod entity;
 pub mod trigger;
+pub mod zone;
 
 pub use self::card::CardService;
 pub use self::entity::EntityService;

@@ -180,6 +180,17 @@ pub mod custom_type {
         }
     }
 
+    /// Enumeration of publicl cases of state machine failures.
+    #[derive(Debug, Fail, Clone, Eq, PartialEq)]
+    pub enum ZoneMoveError {
+        /// Error indicating that the entity was not found in a zone.
+        #[fail(display = "The entity was not found within the provided zone")]
+        NotInZone,
+        /// Error indicating that the targetted zone is already at maximum capacity.
+        #[fail(display = "The targetted zone is full")]
+        ZoneFull,
+    }
+
     /// Code failed to push a new item onto the chosen stack.
     #[derive(Debug, Fail)]
     #[fail(display = "Error unpacking the provided transaction")]

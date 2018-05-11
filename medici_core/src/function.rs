@@ -109,6 +109,18 @@ pub trait CardBuilder<C: Card> {
     fn new_with_id<I: Into<C::ID>>(id: I) -> C;
 }
 
+/// Types that construct an [`Adapter`] for a specific [`Service`].
+pub trait AdapterCompliant<A>
+where
+    A: marker::Adapter,
+{
+    /// Creates an adapter around the provided service.
+    fn build(&self, service: &A::Adapting) -> A;
+
+    /// Creates an adapter around the provided service.
+    fn build_mut(&mut self, service: &mut A::Adapting) -> A;
+}
+
 /// Trait for implementing a certain service on the state machine.
 ///
 /// Because of this design exactly one object of each service type can be hooked onto
@@ -162,6 +174,12 @@ pub trait ArrayStorageCompliance {
 
     /// Returns the current storage as a slice, which is an indexed storage.
     fn as_slice_mut(&mut self) -> &mut [Self::Item];
+}
+
+/// Types which enumerate all entity zones in the game.
+pub trait ZoneEnumerator {
+    /// Returns the amount of entities this zone can hold.
+    fn max_entities(&self) -> usize;
 }
 
 /* ID sructures */

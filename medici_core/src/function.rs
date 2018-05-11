@@ -110,15 +110,27 @@ pub trait CardBuilder<C: Card> {
 }
 
 /// Types that construct an [`Adapter`] for a specific [`Service`].
-pub trait AdapterCompliant<A>
+// Note: This trait holds an explicit lifetime because we're working with lifetimes
+// that live longer than the scoped borrow of self!
+// &'a self == the reference to self lives at least as long as a, if no lifetime
+// is explicitly stated the compiler inserts one automatically which is only valid 
+// for the function body. This leads to uncertainty about 'unk, which should be valid
+// for 'unkn: 'a -> unkn lives at least as long as a.
+pub trait AdapterCompliant<'a, A>
 where
-    A: marker::Adapter,
+    A: marker::Adapter + 'a,
 {
     /// Creates an adapter around the provided service.
-    fn build(&self, service: &A::Adapting) -> A;
+    fn build(&'a self, service: &'a A::Adapting) -> A;
+}
 
+/// Types that construct an [`Adapter`] for a specific [`Service`].
+pub trait AdapterCompliantMut<'a, A>
+where
+    A: marker::Adapter + 'a,
+{
     /// Creates an adapter around the provided service.
-    fn build_mut(&mut self, service: &mut A::Adapting) -> A;
+    fn build_mut(&'a mut self, service: &'a mut A::Adapting) -> A;
 }
 
 /// Trait for implementing a certain service on the state machine.

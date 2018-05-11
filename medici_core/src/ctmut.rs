@@ -35,10 +35,9 @@ impl CTBool for CTFalse {
 /// The intention is to have this enumeration abstract over mutable or immutable
 /// access so code doesn't need to be duplicated to create a mutable container
 /// for each immutable container.
-pub enum MutSwitch<'a, T, AllowMut>
+pub enum MutSwitch<'a, T: 'a, AllowMut>
 where
     AllowMut: CTBool,
-    T: 'a,
 {
     /// An immutable reference is stored.
     VarImut(&'a T),
@@ -51,7 +50,7 @@ where
 }
 
 // Implement immutable functionality.
-impl<'a, T> MutSwitch<'a, T, CTFalse> {
+impl<'a, T: 'a> MutSwitch<'a, T, CTFalse> {
     /// Constructs this enum with an immutable reference.
     pub fn from_ref(t: &'a T) -> Self {
         MutSwitch::VarImut(t)
@@ -67,7 +66,7 @@ impl<'a, T> MutSwitch<'a, T, CTFalse> {
 }
 
 // Implement mutable functionality.
-impl<'a, T> MutSwitch<'a, T, CTTrue> {
+impl<'a, T: 'a> MutSwitch<'a, T, CTTrue> {
     /// Constructs this enum with a mutable reference.
     pub fn from_mut(t: &'a mut T) -> Self {
         MutSwitch::VarMut(t, CTTrue)
@@ -82,25 +81,25 @@ impl<'a, T> MutSwitch<'a, T, CTTrue> {
     }
 }
 
-impl<'a, T> AsRef<T> for MutSwitch<'a, T, CTFalse> {
+impl<'a, T: 'a> AsRef<T> for MutSwitch<'a, T, CTFalse> {
     fn as_ref(&self) -> &T {
         self.get()
     }
 }
 
-impl<'a, T> AsMut<T> for MutSwitch<'a, T, CTTrue> {
+impl<'a, T: 'a> AsMut<T> for MutSwitch<'a, T, CTTrue> {
     fn as_mut(&mut self) -> &mut T {
         self.get()
     }
 }
 
-impl<'a, T> From<&'a T> for MutSwitch<'a, T, CTFalse> {
+impl<'a, T: 'a> From<&'a T> for MutSwitch<'a, T, CTFalse> {
     fn from(t: &'a T) -> Self {
         MutSwitch::from_ref(t)
     }
 }
 
-impl<'a, T> From<&'a mut T> for MutSwitch<'a, T, CTTrue> {
+impl<'a, T: 'a> From<&'a mut T> for MutSwitch<'a, T, CTTrue> {
     fn from(t: &'a mut T) -> Self {
         MutSwitch::from_mut(t)
     }

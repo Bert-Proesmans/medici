@@ -3,7 +3,7 @@
 use std::fmt::{Debug, Display};
 
 use error::custom_type::{MissingEntityError, OverflowError};
-use function::{ArrayStorageCompliance, Entity, EntityBuilder};
+use function::{ArrayStorageCompliance, Entity, EntityBuilder, Identifiable, EntityId};
 use marker;
 use storage::EntityStorage;
 
@@ -11,8 +11,7 @@ use storage::EntityStorage;
 /// Structure for working with [`Entity`] objects.
 pub struct EntityService<E>
 where
-    E: Entity + EntityBuilder<E> + Clone,
-    E::ID: Into<usize> + From<usize> + Debug + Display,
+    E: Entity + Identifiable<ID = EntityId> + Clone,
 {
     storage: EntityStorage<E>,
     maximum_items: usize,
@@ -20,15 +19,13 @@ where
 
 impl<E> marker::Service for EntityService<E>
 where
-    E: Entity + EntityBuilder<E> + Clone,
-    E::ID: Into<usize> + From<usize> + Debug + Display,
+    E: Entity + Identifiable<ID = EntityId> + Clone,
 {
 }
 
 impl<E> EntityService<E>
 where
-    E: Entity + EntityBuilder<E> + Clone,
-    E::ID: Into<usize> + From<usize> + Debug + Display,
+    E: Entity + Identifiable<ID = EntityId> + EntityBuilder<E> + Clone,
 {
     /// Creates a new object for storage.
     pub fn new<M: Into<usize>>(maximum_items: M) -> Self {
@@ -55,19 +52,17 @@ where
 
     /// Retrieves a reference to the entity matching the id.
     pub fn get(&self, id: E::ID) -> Result<&E, MissingEntityError<E::ID>> {
-        let idx_id = id.into();
         self.storage
             .as_slice()
-            .get(idx_id)
+            .get(id)
             .ok_or(MissingEntityError(id))
     }
 
     /// Retrieves a mutable reference to the entity matching the id.
     pub fn get_mut(&mut self, id: E::ID) -> Result<&mut E, MissingEntityError<E::ID>> {
-        let idx_id = id.into();
         self.storage
             .as_slice_mut()
-            .get_mut(idx_id)
+            .get_mut(id)
             .ok_or(MissingEntityError(id))
     }
 }

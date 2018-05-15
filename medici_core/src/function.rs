@@ -109,13 +109,24 @@ pub trait CardBuilder<C: Card> {
     fn new_with_id<I: Into<C::ID>>(id: I) -> C;
 }
 
-/// Types that construct an [`Adapter`] for a specific [`Service`].
-// Note: This trait holds an explicit lifetime because we're working with lifetimes
-// that live longer than the scoped borrow of self!
-// &'a self == the reference to self lives at least as long as a, if no lifetime
-// is explicitly stated the compiler inserts one automatically which is only valid 
-// for the function body. This leads to uncertainty about 'unk, which should be valid
-// for 'unkn: 'a -> unkn lives at least as long as a.
+/// Types that construct an [`Adapter`] around some [`Service`].
+/// 
+/// The adapter is built from service stubs, which own additional data, and the 
+/// selected service. The adapter often contains nothing more than borrows of 
+/// services and/or storage objects.
+/// 
+/// # See also
+/// [`marker::Adapter`]
+/// 
+// Note: This trait holds an explicit lifetime because all borrows that go into the
+// adapter must outlive that adapter (A: 'a).
+// &'a self == self outlives lifetime a.  OR
+// the reference to self is valid up to lifetime a.
+// When no lifetime is specified (lifetime ellision), the compiler will insert a new
+// one for us automatically. For example lifetime "unknown".
+// 'unknown is always strictly shorter than 'a because of scoping. The compiler cannot 
+// constraint make 'unknown == 'a if no constraints are provided 
+// ('unknown: 'a == lifetime unknown lives at least as long as lifetime a)
 pub trait AdapterCompliant<'a, A>
 where
     A: marker::Adapter + 'a,
@@ -124,7 +135,10 @@ where
     fn build(&'a self, service: &'a A::Adapting) -> A;
 }
 
-/// Types that construct an [`Adapter`] for a specific [`Service`].
+/// Types that construct an [`Adapter`] around some [`Service`].
+/// 
+/// # See also
+/// [`AdapterCompliant`]
 pub trait AdapterCompliantMut<'a, A>
 where
     A: marker::Adapter + 'a,

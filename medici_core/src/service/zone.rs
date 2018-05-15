@@ -34,6 +34,10 @@ where
     E: Entity + Identifiable<ID = EntityId> + Clone,
     ZE: ZoneEnumerator + Hash + Eq + Default,
 {
+    /// Returns an iterator over all entities within the provided zone.
+    pub fn iter_zone(&self, zone: ZE) -> impl Iterator<Item=&E> {
+        self.zones.get().zone_assignment.get(&zone).unwrap_or(&vec![]).iter()
+    }
 }
 
 impl<'a, E, ZE> ZoneAdapter<'a, CTTrue, E, ZE> 
@@ -41,6 +45,10 @@ where
     E: Entity + Identifiable<ID = EntityId> + Clone,
     ZE: ZoneEnumerator + Hash + Eq + Default,
 {
+    /// Returns an iterator over all entities within the provided zone.
+    pub fn iter_zone(&mut self, zone: ZE) -> impl Iterator<Item=&mut E> {
+        self.zones.get().zone_assignment.get_mut(&zone).unwrap_or(&mut vec![]).iter()
+    }
 }
 
 impl<'a, AllowMut, E, ZE> marker::Service for ZoneAdapter<'a, AllowMut, E, ZE>

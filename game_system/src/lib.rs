@@ -43,6 +43,7 @@ pub mod runtime;
 pub mod setup;
 pub mod state_machine;
 pub mod tag;
+pub mod zone;
 
 /// Exported types from [`medici_core`].
 ///

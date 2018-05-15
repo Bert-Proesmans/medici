@@ -10,6 +10,7 @@ use medici_core::storage::TransactionStorage;
 
 use state_machine::state::prelude::*;
 use state_machine::transaction::TransactionItem;
+use zone::ZoneItem;
 
 use entity::Entity;
 
@@ -52,6 +53,10 @@ where
     /// Storage object allowing [`PushdownInto`] and [`PullupInto`] to store
     /// the [`Transaction`] objects for each state to be re-used.
     pub transactions: TransactionStorage<TransactionItem>,
+    // Stub services, these are inaccessable because they only contain owned
+    // data. No functionality is defined on them.
+    // Build the service to manipulate its data.
+    pub(crate) stub_zone: ZoneServiceStub<Entity, ZoneItem>,
 }
 
 impl<X, CTS> StateContainer for Machine<X, CTS>

@@ -3,7 +3,7 @@
 use std::hash::Hash;
 
 use ctmut::{CTBool, MutSwitch, CTTrue, CTFalse};
-use function::{Entity, EntityId, Identifiable, ZoneEnumerator, AdapterCompliant};
+use function::{Entity, EntityId, Identifiable, ZoneEnumerator, AdapterCompliant, AdapterCompliantMut};
 use marker;
 use storage::ZoneStorage;
 use service::EntityService;
@@ -27,6 +27,20 @@ where
 {
     entities: MutSwitch<'a, EntityService<E>, AllowMut>,
     zones: MutSwitch<'a, ZoneStorage<E, ZE>, AllowMut>,
+}
+
+impl<'a, E, ZE> ZoneAdapter<'a, CTFalse, E, ZE> 
+where
+    E: Entity + Identifiable<ID = EntityId> + Clone,
+    ZE: ZoneEnumerator + Hash + Eq + Default,
+{
+}
+
+impl<'a, E, ZE> ZoneAdapter<'a, CTTrue, E, ZE> 
+where
+    E: Entity + Identifiable<ID = EntityId> + Clone,
+    ZE: ZoneEnumerator + Hash + Eq + Default,
+{
 }
 
 impl<'a, AllowMut, E, ZE> marker::Service for ZoneAdapter<'a, AllowMut, E, ZE>
@@ -81,6 +95,19 @@ where
         ZoneAdapter {
             entities: MutSwitch::from_ref(service),
             zones: MutSwitch::from_ref(&self.storage),
+        }
+    }
+}
+
+impl<'a, E, ZE> AdapterCompliantMut<'a, ZoneAdapter<'a, CTTrue, E, ZE>> for ZoneServiceStub<E, ZE> 
+where
+    E: Entity + Identifiable<ID = EntityId> + Clone,
+    ZE: ZoneEnumerator + Hash + Eq + Default,
+{
+    fn build_mut(&'a mut self, service: &'a mut EntityService<E>) -> ZoneAdapter<CTTrue, E, ZE> {
+        ZoneAdapter {
+            entities: MutSwitch::from_mut(service),
+            zones: MutSwitch::from_mut(&mut self.storage),
         }
     }
 }

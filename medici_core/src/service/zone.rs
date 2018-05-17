@@ -57,14 +57,20 @@ where
     ZE: ZoneEnumerator + Hash + Eq + Default,
 {
     /// Returns an iterator over all entities within the provided zone.
-    pub fn iter_zone(&mut self, zone: ZE) -> impl Iterator<Item = &mut E> {
+    pub fn iter_zone<'b>(&'b mut self, zone: ZE) -> impl Iterator<Item = &'a mut E> + 'b {
         let entity_service = self.entity_wrapper.get_mut();
         let zone_storage = self.zone_wrapper.get_mut();
         zone_storage
             .zone_assignment
             .get_mut(&zone)
             .map_or_else(|| [].iter_mut(), |z| z.iter_mut())
-            .map(move |e_id| entity_service.get_mut(*e_id).unwrap())
+            // Unsafe precondition:
+            // We are NOT allowed to created mutable reference aliases!
+            // This means that only 1 mutable reference per Entity can be returned.
+            // Fulfilling precondition:
+            // All zones consist of a SET of EntityIds, also EntityService returns exactly
+            // 1 and the same Entity for every provided ID.
+            .map(move |e_id| unsafe { &mut *(entity_service.get_mut(*e_id).unwrap() as *mut E) })
     }
 }
 

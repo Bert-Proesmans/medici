@@ -110,22 +110,22 @@ pub trait CardBuilder<C: Card> {
 }
 
 /// Types that construct an [`Adapter`] around some [`Service`].
-/// 
-/// The adapter is built from service stubs, which own additional data, and the 
-/// selected service. The adapter often contains nothing more than borrows of 
+///
+/// The adapter is built from service stubs, which own additional data, and the
+/// selected service. The adapter often contains nothing more than borrows of
 /// services and/or storage objects.
-/// 
+///
 /// # See also
 /// [`marker::Adapter`]
-/// 
+///
 // Note: This trait holds an explicit lifetime because all borrows that go into the
 // adapter must outlive that adapter (A: 'a).
 // &'a self == self outlives lifetime a.  OR
 // the reference to self is valid up to lifetime a.
 // When no lifetime is specified (lifetime ellision), the compiler will insert a new
 // one for us automatically. For example lifetime "unknown".
-// 'unknown is always strictly shorter than 'a because of scoping. The compiler cannot 
-// constraint make 'unknown == 'a if no constraints are provided 
+// 'unknown is always strictly shorter than 'a because of scoping. The compiler cannot
+// constraint make 'unknown == 'a if no constraints are provided
 // ('unknown: 'a == lifetime unknown lives at least as long as lifetime a)
 pub trait AdapterCompliant<'a, A>
 where
@@ -136,7 +136,7 @@ where
 }
 
 /// Types that construct an [`Adapter`] around some [`Service`].
-/// 
+///
 /// # See also
 /// [`AdapterCompliant`]
 pub trait AdapterCompliantMut<'a, A>

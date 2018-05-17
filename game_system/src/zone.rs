@@ -15,11 +15,11 @@ pub enum ZoneItem {
 
 impl ZoneEnumerator for ZoneItem {
     fn max_entities(&self) -> usize {
-    	match *self {
-    	    ZoneItem::SetAside => usize::MAX,
-    	    ZoneItem::Deck => 30,
-    	    ZoneItem::Play => 7,
-    	    ZoneItem::Hand => 10,
-    	}
+        match *self {
+            ZoneItem::SetAside => usize::MAX,
+            ZoneItem::Deck => 30,
+            ZoneItem::Play => 7,
+            ZoneItem::Hand => 10,
+        }
     }
 }

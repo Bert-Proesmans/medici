@@ -20,7 +20,7 @@ pub trait Service {}
 /// Types that wrap a service.
 ///
 /// Adapters provide aditional functionality making use of the wrapped service.
-/// 
+///
 /// # Note
 /// Adapters are transitively also a [`Service`]!
 pub trait Adapter: Service {

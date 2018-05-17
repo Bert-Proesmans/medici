@@ -4,13 +4,13 @@
 use std::convert::{AsMut, AsRef};
 
 /// Compile time boolean.
-/// 
+///
 /// Types implementing this trait are used to enforce certain behaviour.
-/// 
+///
 /// # See also
 /// [`MutSwitch`]
 pub trait CTBool {
-    /// Runtime value for 
+    /// Runtime value for
     const VALUE: bool;
 }
 
@@ -73,7 +73,7 @@ impl<'a, T: 'a> MutSwitch<'a, T, CTTrue> {
     }
 
     /// Returns the mutable reference stored within.
-    pub fn get(&mut self) -> &mut T {
+    pub fn get_mut(&mut self) -> &mut T {
         match *self {
             MutSwitch::VarMut(ref mut v, _) => v,
             _ => unreachable!(),
@@ -89,7 +89,7 @@ impl<'a, T: 'a> AsRef<T> for MutSwitch<'a, T, CTFalse> {
 
 impl<'a, T: 'a> AsMut<T> for MutSwitch<'a, T, CTTrue> {
     fn as_mut(&mut self) -> &mut T {
-        self.get()
+        self.get_mut()
     }
 }
 

@@ -1,0 +1,29 @@
+[package]
+name = "medici"
+repository = "https://github.com/Bert-Proesmans/medici"
+# documentation = ""
+version = "0.1.0"
+authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
+edition = "2018"
+
+[lib]
+name = "medici"
+path = "medici/src/lib.rs"
+edition = "2018"
+doc = true
+
+[workspace]
+members = [
+	"./",
+	"medici_core",
+]
+
+
+# [features]
+
+# [badges]
+
+[dependencies]
+medici_core = {version ="0.1.0", path="./medici_core"}
+
+# [dev-dependencies]

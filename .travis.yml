@@ -1,0 +1,36 @@
+language: rust
+rust:
+  - nightly
+cache: cargo
+branches:
+  only:
+    # This is where pull requests from "bors r+" are built.
+    - staging
+    # This is where pull requests from "bors try" are built.
+    - trying
+    # Keep building everything on master as well. This is actually duplicate
+    # work but necessary because of our doc generation.
+    - master
+# Note: RUST_BACKTRACE is explicitly unset (to 0) after building to not loiter the log
+# with value_from_type token output.
+script:
+  - export RUST_BACKTRACE="1"
+  - cargo build --all
+  - export RUST_BACKTRACE="0"
+  - cargo test --all --no-fail-fast
+# Note: --no-fail-fast runs ALL tests, even when one of them fails which by default
+# would lead to fast_exit!
+# 
+# Note: $DOC_SUBDIR should contain the name of the crate which doc-pages must be 
+# opened when users visit the documentation site.
+after_success: |
+  [ $TRAVIS_BRANCH = master ] &&
+  [ $TRAVIS_PULL_REQUEST = false ] &&
+  cargo doc --all --no-deps &&
+  echo "<meta http-equiv=refresh content=0;url=`echo $DOC_SUBDIR`/index.html>" > target/doc/index.html &&
+  sudo pip install ghp-import &&
+  ghp-import -n target/doc &&
+  git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
+env:
+  global:
+    secure: DIEcTDjBWWwpjMxSh3iRA5cNjmx0bUPMwKY8e7jlvRQbg4jCedqpiKhQ0yunDkwSITbOBdXFVyjqWA6AdYEkYgp/YOzPufQ9YxiTWgBsSUO6AR4gbMWG30BWlSE4agV14f6kKiVZpoRGmWUay4U0PPaBJzw2DJh24KSyvSBCngtBvIrY3/B16SA4beWZLWb6KtJiVsD8t/NJpvSmqmIhLpy3mqXLOhsXrigZgFCZCeMtvrkG4mN5EBEmoVVK/CF5GI39gx545OIjG5g4NXpUpRLDJkSjif1tLIGb05fX/iU9P34l+/Wcg1oDSW3fC9ito2y6TxLETHTwkwtueNZgpGAiGtanIQgwCWBMMN19s/0H5QGoiTTUenAbVmi6dDgfQois7sHOKI/DOkmOJoI7HlSgPFC1jd9JuGLQmEqqg4FmCHlrthMLnwZqpOJnLmisTRaqXjd+R7T7/XnTTUkZ4on8eeL6zOv2mCRT4PsHfuqcBVt9Sw4xaobnkaZzwdQLQ4fmddnBPSnt96vJ+lvth8Ige8agVxmhrciISzHJeLsjQ2pp2Ljw5MXmvNKSJjc5YYuJlVAepUCpOx2M5l5VlX8BM818pNhYGpuzBX8NCiqIYiDTHcxP7kExEpSQ2D/dAcBz70hW5cSHyOQefByo+/5OYt43F1BxNJEcmSJAQ7U=

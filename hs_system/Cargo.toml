@@ -1,0 +1,11 @@
+[package]
+name = "hs_system"
+version = "0.1.0"
+authors = ["Bert Proesmans <bproesmans@hotmail.com>"]
+edition = "2018"
+
+[dependencies]
+medici_core = {path = "../medici_core"}
+
+[dev-dependencies]
+#

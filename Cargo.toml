@@ -16,6 +16,7 @@ doc = true
 members = [
 	"./",
 	"medici_core",
+	"hs_system"
 ]
 
 

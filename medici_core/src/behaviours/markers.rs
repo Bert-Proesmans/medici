@@ -8,7 +8,7 @@
 /// Toplevel state types are owned directly by the state machine.
 ///
 /// Note: States can be nested!
-pub trait TopLevel {}
+pub trait TopLevelState {}
 
 /// Types used to transition between state machine States.
 pub trait Transaction: Copy + 'static {}

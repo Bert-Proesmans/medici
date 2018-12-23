@@ -1,8 +1,8 @@
 //! (Type) Checked transitions for state machines.
 
-use crate::behaviour::function::{State, StateMachine};
-use crate::behaviour::marker;
-use crate::compile_tools as CT;
+use crate::behaviours::functions::{MachineContainer, MachineWrapper, State, StateMachine};
+use crate::behaviours::markers;
+use crate::compile_tools as ct;
 
 /// Trait defining the contract for one-way transitions of a state machine.
 /// This kind of transition preserves the current state change history, no aditions are made.
@@ -11,22 +11,25 @@ use crate::compile_tools as CT;
 /// * the current state is A;
 /// * A [`Transaction`] object for state B is provided;
 /// * The following transition is valid [A -> B].
-pub trait TransitionFrom<T>
+pub trait Transition<Previous, Next, W>
 where
-    T: StateMachine,
-    Self: StateMachine,
-    Self::State: State,
-    <Self::State as State>::Transaction: marker::Transaction,
+    Next: StateMachine,
+    Next::State: State,
+    <Next::State as State>::Transaction: markers::Transaction,
+    W: MachineWrapper<Next>,
 {
     /// Transition from the provided state into the implementing state.
-    fn transition_from(_: T, _: <Self::State as State>::Transaction) -> Self;
+    fn transition(
+        self,
+        _: <Next::State as State>::Transaction,
+    ) -> <W as MachineWrapper<Next>>::Output;
 }
 
 /// Trait defining one part of two-way transitions of the state machine.
 /// A pushdown operation is used where next transitions will eventually loop around and perform an
-/// equivalent [`PullupFrom`] transition.
+/// equivalent [`Pullup`] transition.
 ///
-/// The amount of [`PullupFrom`] and [`PushdownFrom`] transitions must always match! The compile time
+/// The amount of [`Pullup`] and [`Pushdown`] transitions must always match! The compile time
 /// stack guarantees that no out-of-order transition happens or a Pullup without a PushDown.
 /// The Transaction object that was used to enter the current state (before pushing down) is stored and
 /// will be re-used when a pullup transition happens.
@@ -37,26 +40,30 @@ where
 /// * The following transition is valid [A -> B].
 ///
 /// # Note
-/// [`PushdownFrom`] is designed to be used together with [`PullupFrom`] because both operations
+/// [`Pushdown`] is designed to be used together with [`Pullup`] because both operations
 /// store and reload the [`Transaction`] object respectively (if applicable).
 ///
 /// # See also
-/// [`PullupFrom`]
-pub trait PushdownFrom<T, CTS>
+/// [`Pullup`]
+pub trait Pushdown<Previous, Next, CTS, W>
 where
-    T: StateMachine<TransitionRecord = <CTS as CT::Stack>::Tail>,
-    CTS: CT::Stack<Head = <Self as StateMachine>::State>,
-    Self: StateMachine,
-    Self::State: State,
-    <Self::State as State>::Transaction: marker::Transaction,
+    Next: StateMachine<TransitionRecord = CTS>,
+    Next::State: State,
+    Previous: StateMachine<TransitionRecord = CTS::Tail>,
+
+    W: MachineWrapper<Next>,
+    CTS: ct::Stack<Head = <Next as StateMachine>::State>,
 {
     /// Transition from the provided state into the implementing state.
-    fn pushdown_from(_: T, _: <Self::State as State>::Transaction) -> Self;
+    fn pushdown(
+        self,
+        _: <Next::State as State>::Transaction,
+    ) -> <W as MachineWrapper<Next>>::Output;
 }
 
 /// Trait defining one part of two-way transitions of the state machine.
 /// A pullup operation is used within a looping transition chain. The exact point of usage
-/// is at a point where an earlier matching [`PushdownFrom`] transition happened.
+/// is at a point where an earlier matching [`Pushdown`] transition happened.
 ///
 /// A state machine is said to pullup from B into A if the following conditions are met:
 /// * the current state is B;
@@ -64,19 +71,20 @@ where
 /// The following transition is valid [A <- B].
 ///
 /// # Note
-/// [`PushdownFrom`] is designed to be used together with [`PullupFrom`] because both operations
+/// [`Pushdown`] is designed to be used together with [`Pullup`] because both operations
 /// store and reload the [`Transaction`] object respectively.
 ///
 /// # See also
-/// [`PushdownFrom`]
-pub trait PullupFrom<T, CTS>
+/// [`Pushdown`]
+pub trait Pullup<Previous, Next, CTS, W>
 where
-    T: StateMachine<TransitionRecord = CTS>,
-    CTS: CT::Stack,
-    Self: StateMachine<TransitionRecord = <CTS as CT::Stack>::Tail>,
-    Self::State: State,
-    <Self::State as State>::Transaction: marker::Transaction,
+    Next: StateMachine<TransitionRecord = <CTS as ct::Stack>::Tail>,
+    Next::State: State,
+    Previous: StateMachine<TransitionRecord = CTS>,
+
+    W: MachineWrapper<Next>,
+    CTS: ct::Stack,
 {
     /// Transition from the provided state into the implementing state.
-    fn pullup_from(_: T, _: <Self::State as State>::Transaction) -> Self;
+    fn pullup(self, _: <Next::State as State>::Transaction) -> <W as MachineWrapper<Next>>::Output;
 }

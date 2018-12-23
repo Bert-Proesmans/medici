@@ -1,5 +1,23 @@
-use crate::behaviour::marker;
+use crate::behaviours::markers;
 use crate::compile_tools as ct;
+
+/// Supertrait of containers with custom fields AND a statemachine.
+pub trait MachineWrapper<Machine>
+where
+    Machine: StateMachine,
+{
+    type Output: MachineContainer;
+
+    fn wrap(self, machine: Machine) -> Self::Output;
+}
+
+pub trait MachineContainer {
+    type Machine: StateMachine;
+
+    fn get_core(&self) -> &Self::Machine;
+
+    fn get_core_mut(&mut self) -> &mut Self::Machine;
+}
 
 /// Supertrait of types that contain all information for keeping a game state machine
 /// running.
@@ -13,9 +31,9 @@ pub trait StateMachine {
     /// Type of the current state held by the state machine.
     type State: State;
     /// Type which enumerates all possible timings contained by the machine.
-    type TimingEnum: marker::TimingComparator;
+    // type TimingEnum: marker::TimingComparator;
     /// Type which enumerates all possible triggers contained by the machine.
-    type TriggerEnum: marker::TriggerComparator;
+    // type TriggerEnum: marker::TriggerComparator;
     /// Type representing the stack of types where the container state was
     /// transitioned in a pushdown manner.
     type TransitionRecord: ct::Stack;
@@ -26,7 +44,7 @@ pub trait StateMachine {
 pub trait State {
     /// Type of structure value that must be provided when transitioning into the current
     /// state.
-    type Transaction: marker::Transaction;
+    type Transaction: markers::Transaction;
 }
 
 /// Supertrait of machine states that bootstrap execution of a chain of triggers. These triggers
@@ -45,14 +63,14 @@ pub trait TriggerState: State {
 
 /// Supertrait of state types that encode timing.
 pub trait Timing: Copy + Sized {
-    type ComparatorType: marker::TimingComparator;
+    type ComparatorType: markers::TimingComparator;
 
     const COMPARATOR: Self::ComparatorType;
 }
 
 /// Supertrait of state types that encode an event. Handlers can be registered for this event.
 pub trait Trigger: Copy + Sized {
-    type ComparatorType: marker::TriggerComparator;
+    type ComparatorType: markers::TriggerComparator;
 
     const COMPARATOR: Self::ComparatorType;
 }
